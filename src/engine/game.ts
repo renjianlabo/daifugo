@@ -56,10 +56,13 @@ export type GameEvent =
   | { type: 'revolution'; player: number; active: boolean }
   | { type: 'elevenBack'; player: number; active: boolean }
   | { type: 'eightCut'; player: number }
+  /** 手札を動かす効果が始まった（これから数字・カードを選ぶ）。画面の演出用 */
+  | { type: 'effectStart'; kind: 'bomber' | 'sevenPass' | 'tenDiscard'; player: number }
   | { type: 'bomber'; player: number; ranks: number[]; removed: number[][] }
   | { type: 'sevenPass'; from: number; to: number; cards: number[] }
   | { type: 'tenDiscard'; player: number; cards: number[] }
-  | { type: 'lock'; kind: LockKind }
+  /** suits はしばったマーク（マークしばり・激しばのとき） */
+  | { type: 'lock'; kind: LockKind; player: number; suits: string | null }
   | { type: 'finish'; player: number; rank: number }
   | { type: 'fall'; player: number }
   | { type: 'roundEnd'; round: number; ranks: number[]; points: number[] }
@@ -322,7 +325,7 @@ export function play(s: State, player: number, p: Play) {
   emit(s, { type: 'play', player, play: p });
   if (p.cards.some(isJoker)) emit(s, { type: 'joker', player });
 
-  if (prev) updateLocks(s, prev, s.table[s.table.length - 1], reversedBefore);
+  if (prev) updateLocks(s, player, prev, s.table[s.table.length - 1], reversedBefore);
 
   if (s.hands[player].length === 0) finishPlayer(s, player);
   if (checkRoundEnd(s)) return;
@@ -346,6 +349,7 @@ function resumeEffects(s: State, player: number, eff: Effects) {
   if (eff.bomber > 0) {
     s.pendingBomber = { player, count: eff.bomber, eff };
     s.phase = 'bomber';
+    emit(s, { type: 'effectStart', kind: 'bomber', player });
     return;
   }
   // 手札が0枚（出して上がった）なら、渡す・捨てるカードがないので起きない
@@ -353,11 +357,13 @@ function resumeEffects(s: State, player: number, eff: Effects) {
   if (eff.sevenPass > 0 && left > 0) {
     s.pendingCards = { kind: 'sevenPass', player, count: Math.min(eff.sevenPass, left), to: nextActive(s, player), eff };
     s.phase = 'sevenPass';
+    emit(s, { type: 'effectStart', kind: 'sevenPass', player });
     return;
   }
   if (eff.tenDiscard > 0 && left > 0) {
     s.pendingCards = { kind: 'tenDiscard', player, count: Math.min(eff.tenDiscard, left), to: null, eff };
     s.phase = 'tenDiscard';
+    emit(s, { type: 'effectStart', kind: 'tenDiscard', player });
     return;
   }
   continueEffects(s, player, eff);
@@ -384,7 +390,7 @@ export function chooseCards(s: State, player: number, cards: number[]) {
   resumeEffects(s, player, { ...pc.eff, [pc.kind]: 0 });
 }
 
-function updateLocks(s: State, prev: TableEntry, cur: TableEntry, reversed: boolean) {
+function updateLocks(s: State, player: number, prev: TableEntry, cur: TableEntry, reversed: boolean) {
   const r = s.rules;
   const markCond = !s.lockSuit && prev.effSuitKey !== null && prev.effSuitKey === cur.effSuitKey && !isJokerSingle(cur.play);
   const numCond = !s.lockNum && cur.play.type !== 'stair' && !isJokerSingle(prev.play) && !isJokerSingle(cur.play)
@@ -400,7 +406,7 @@ function updateLocks(s: State, prev: TableEntry, cur: TableEntry, reversed: bool
   if (!newMark && !newNum) return;
   if (newMark) s.lockSuit = cur.effSuitKey;
   if (newNum) s.lockNum = true;
-  emit(s, { type: 'lock', kind: lockKind(s)! });
+  emit(s, { type: 'lock', kind: lockKind(s)!, player, suits: s.lockSuit });
 }
 
 function continueEffects(s: State, player: number, eff: Effects) {

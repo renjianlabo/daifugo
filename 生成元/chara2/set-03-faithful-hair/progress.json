@@ -1,0 +1,42 @@
+[
+  {
+    "name": "cards",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "special",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "rank1",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "rank2",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "rank3",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "rank4",
+    "saved": true,
+    "state": "saved_verified_pending_rank4_visual_approval"
+  },
+  {
+    "name": "icon",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  },
+  {
+    "name": "icon_game",
+    "saved": true,
+    "state": "saved_verified_pending_human_acceptance"
+  }
+]

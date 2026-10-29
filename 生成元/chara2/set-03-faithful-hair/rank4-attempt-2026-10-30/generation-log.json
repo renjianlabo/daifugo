@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-30",
+  "request": "４位のイラスト作って",
+  "tool": "built-in image_gen",
+  "status": "saved_verified_pending_human_acceptance",
+  "generation_calls_this_request": 1,
+  "automatic_retries": 0,
+  "seconds": 45.876,
+  "prompt": "request.json (unchanged prior benign hair-edit prompt)",
+  "source": "assets/characters/chara2/rank4.png",
+  "hair_reference": "hair-reference.png",
+  "output": "確認用/キャラ2_元絵の髪再現_2026-10-29/rank4.png",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 187483,
+  "pose_expression": "original preserved",
+  "body_protection_rows": [
+    480,
+    1024
+  ],
+  "face_protection_rectangles": [
+    [
+      523,
+      277,
+      596,
+      339
+    ],
+    [
+      490,
+      384,
+      543,
+      420
+    ]
+  ],
+  "prior_seven_unchanged": true,
+  "game_integration": false,
+  "human_acceptance": false
+}

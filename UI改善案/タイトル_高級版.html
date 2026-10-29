@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>タイトル 改善案</title>
+<!-- 改善案（アプリには入れていない）。中身は今のタイトル画面と同じ。最後に選んだキャラを大きく出す -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+.logo { position: relative; z-index: 1; flex: none; display: flex; flex-direction: column; align-items: center; padding: max(24px, 4vh) 16px 0; text-align: center; }
+.suits { display: flex; gap: 14px; font-size: 30px; line-height: 1; font-family: var(--font-read); }
+.suits span { color: var(--gold); }
+.suits .r { color: var(--vermilion); }
+/* 「大富豪」の上下に金の二重線と菱 */
+.logo h1 {
+  position: relative; margin: 10px 0 0; padding: 6px 0.2em 8px 0.4em;
+  font-family: var(--font-deco); font-weight: 800; font-size: 60px; line-height: 1.15; letter-spacing: 0.2em;
+  border-top: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line);
+  box-shadow: inset 0 3px 0 -2px var(--gold-line-2), inset 0 -3px 0 -2px var(--gold-line-2);
+}
+.logo h1::before, .logo h1::after {
+  content: ""; position: absolute; left: 50%; width: 9px; height: 9px; rotate: 45deg; translate: -50% 0;
+  background: var(--gold-fill); box-shadow: 0 0 0 1.5px var(--bg);
+}
+.logo h1::before { top: -5px; }
+.logo h1::after { bottom: -5px; }
+.lead { margin-top: 12px; color: var(--ink); font-size: 17px; line-height: 1.6; }
+
+/* 絵：説明の下から画面の下端まで（下が切れた絵なので、切れ目は画面の下端）。頭をまん中に。位置と大きさは layout() で決める */
+.stage { position: relative; flex: 1 1 auto; min-height: 0; }
+.stage::before {
+  content: ""; position: absolute; left: 50%; top: 0; width: 120%; height: 60%; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(ellipse 45% 50% at 50% 35%, rgba(255, 214, 140, 0.2), rgba(255, 214, 140, 0) 70%);
+}
+.title-art {
+  position: absolute; bottom: 0; display: block; user-select: none; pointer-events: none;
+  filter: drop-shadow(0 0 1px rgba(255, 240, 200, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+.start {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: grid;
+  padding: 28px 32px calc(28px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(23, 10, 20, 0) 0%, rgba(23, 10, 20, 0.85) 50%);
+}
+.start .btn { min-height: 56px; font-size: 22px; letter-spacing: 0.4em; padding-left: calc(18px + 0.4em); }
+</style>
+</head>
+<body>
+<main class="screen" id="screen">
+  <section class="logo">
+    <div class="suits" aria-hidden="true"><span>♠</span><span class="r">♥</span><span class="r">♦</span><span>♣</span></div>
+    <h1 class="gold-text">大富豪</h1>
+    <p class="lead">CPU 3人と 3回戦。<br>合計ポイントで 1位を めざそう。</p>
+  </section>
+  <section class="stage" id="stage">
+    <!-- 絵はお試し。data-head は絵の中の頭（髪のてっぺん〜あごの下の髪）の範囲：左,上,右,下 -->
+    <img class="title-art" id="art" src="素材/お試し_キャラ1.webp" alt="" draggable="false" data-head="0.18,0,0.74,0.33">
+  </section>
+  <div class="start"><button class="btn primary" data-act="start">はじめる</button></div>
+</main>
+<script>
+// 絵の大きさ：頭のてっぺんを説明の下8pxに置き、下端は画面の下端。頭の横のまん中を画面のまん中に置く
+function layout() {
+  const img = document.getElementById('art');
+  const stage = document.getElementById('stage');
+  if (!img.naturalWidth) return;
+  const [hx1, hy1, hx2] = img.dataset.head.split(',').map(Number);
+  const H = (stage.clientHeight - 8) / (1 - hy1);
+  const W = H * img.naturalWidth / img.naturalHeight;
+  Object.assign(img.style, { height: `${H}px`, width: `${W}px`, left: `${stage.clientWidth / 2 - ((hx1 + hx2) / 2) * W}px` });
+}
+document.getElementById('art').addEventListener('load', layout);
+addEventListener('resize', layout);
+layout();
+// 見本なので、押したことが分かるように画面を一瞬暗くするだけ
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  document.getElementById('screen').animate([{ filter: 'brightness(1)' }, { filter: 'brightness(0.6)' }, { filter: 'brightness(1)' }], { duration: 250 });
+  document.body.dataset.last = el.dataset.act;
+});
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+</script>
+</body>
+</html>

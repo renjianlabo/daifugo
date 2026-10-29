@@ -1,0 +1,213 @@
+{
+  "images": [
+    {
+      "name": "cards",
+      "size": [
+        1038,
+        1515
+      ],
+      "bytes": 389660,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "sha256": "92b53e865fc609430eec9cac24dbe5b45c81250e80ad0e270bd15d7f083e4753",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        360,
+        540
+      ],
+      "previous_pink_span": 561,
+      "new_pink_span": 490,
+      "span_change_percent": -12.66,
+      "visible_bbox": [
+        98,
+        21,
+        984,
+        1515
+      ]
+    },
+    {
+      "name": "special",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 192490,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "sha256": "a3700617b5445d3c26763c3428d471b64eb75e63c9f2f2c051aaa95806fc2c95",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        280,
+        420
+      ],
+      "previous_pink_span": 412,
+      "new_pink_span": 337,
+      "span_change_percent": -18.2,
+      "visible_bbox": [
+        210,
+        76,
+        874,
+        1024
+      ]
+    },
+    {
+      "name": "rank1",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 203057,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "sha256": "b94d78456fa95fcf999e89b862034dd96637015fdef96d8c1fb9ce9732338833",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        320,
+        480
+      ],
+      "previous_pink_span": 423,
+      "new_pink_span": 380,
+      "span_change_percent": -10.17,
+      "visible_bbox": [
+        158,
+        72,
+        865,
+        1024
+      ]
+    },
+    {
+      "name": "rank2",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 203368,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "sha256": "7f23363e12a6017660321a1d88080e880efa1760c2e02d865a4856168a6bf51c",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        330,
+        495
+      ],
+      "previous_pink_span": 433,
+      "new_pink_span": 402,
+      "span_change_percent": -7.16,
+      "visible_bbox": [
+        182,
+        67,
+        879,
+        1024
+      ]
+    },
+    {
+      "name": "rank3",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 192015,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "sha256": "bdbba21d55f6b3616adf1cefe591df36b96a3f9a958cb33adacc3f723d774013",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        280,
+        410
+      ],
+      "previous_pink_span": 361,
+      "new_pink_span": 315,
+      "span_change_percent": -12.74,
+      "visible_bbox": [
+        196,
+        71,
+        846,
+        1024
+      ]
+    },
+    {
+      "name": "icon",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 98951,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "sha256": "7aa3b65df7397d1611c52510e7388ecfa4cad2aaa6f68d1cca93afce98c6c9ea",
+      "body_exact_before_compression": true,
+      "face_core_exact_before_compression": true,
+      "hair_width_band": [
+        500,
+        850
+      ],
+      "previous_pink_span": 809,
+      "new_pink_span": 735,
+      "span_change_percent": -9.15,
+      "visible_bbox": [
+        29,
+        20,
+        245,
+        256
+      ]
+    }
+  ],
+  "generated_deliverables": 6,
+  "expected_generated": 7,
+  "protected_files": 85,
+  "changed_protected": [],
+  "human_acceptance": "pending",
+  "game_integration": "not performed",
+  "hair_metric_note": "Maximum horizontal span of pink pixels within a recorded jaw-side band. Auxiliary metric only; not a strand-count or full hairstyle identity test.",
+  "derived_icon_game": {
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 100216,
+    "sha256": "9c1243005eb4537d51ee6ee2840c7209b5b741653d2f1ca33bd5fa4db91f0311",
+    "layout": {
+      "source": "icon.png",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 100216,
+      "chin_source": 204,
+      "top_source": 20,
+      "head_y": 57,
+      "head_left": 63,
+      "head_right": 187,
+      "cx": 125,
+      "cropX": -1.0273972602739718,
+      "cropY": 7.397260273972602,
+      "side": 252.05479452054794,
+      "shift": 0,
+      "top_reach": 0.44893843156053287,
+      "top_reach_pass": true
+    }
+  },
+  "zip_files": 7,
+  "saved_deliverables": 7,
+  "missing": [
+    "rank4"
+  ],
+  "status": "partial_moderation_blocked_rank4"
+}

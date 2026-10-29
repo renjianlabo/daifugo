@@ -1,0 +1,21 @@
+{
+  "status": "eight_saved_verified_pending_rank4_visual_approval",
+  "date": "2026-10-30",
+  "assets": {
+    "icon": "7aa3b65df7397d1611c52510e7388ecfa4cad2aaa6f68d1cca93afce98c6c9ea",
+    "icon_game": "9c1243005eb4537d51ee6ee2840c7209b5b741653d2f1ca33bd5fa4db91f0311",
+    "special": "a3700617b5445d3c26763c3428d471b64eb75e63c9f2f2c051aaa95806fc2c95",
+    "rank1": "b94d78456fa95fcf999e89b862034dd96637015fdef96d8c1fb9ce9732338833",
+    "rank2": "7f23363e12a6017660321a1d88080e880efa1760c2e02d865a4856168a6bf51c",
+    "rank3": "bdbba21d55f6b3616adf1cefe591df36b96a3f9a958cb33adacc3f723d774013",
+    "rank4": "fb7373273a2456f8bf2b244a4a91efe487bfadbbc7d0d994fd2ff6586cf35363",
+    "cards": "92b53e865fc609430eec9cac24dbe5b45c81250e80ad0e270bd15d7f083e4753"
+  },
+  "zip": "確認用\\キャラ2_元絵の髪再現_2026-10-29\\キャラ2_元絵の髪再現8枚.zip",
+  "zip_sha256": "7552a64a6f0350a7425dce790493aeb2d6958da2119add599fa0593e299a9701",
+  "previous_seven_unchanged": true,
+  "original_files_unchanged": 85,
+  "hair_approval_previous_seven": "user confirmed 2026-10-30",
+  "rank4_human_acceptance": false,
+  "game_integration": false
+}

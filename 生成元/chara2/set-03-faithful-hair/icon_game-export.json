@@ -1,0 +1,20 @@
+{
+  "source": "icon.png",
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 100216,
+  "chin_source": 204,
+  "top_source": 20,
+  "head_y": 57,
+  "head_left": 63,
+  "head_right": 187,
+  "cx": 125,
+  "cropX": -1.0273972602739718,
+  "cropY": 7.397260273972602,
+  "side": 252.05479452054794,
+  "shift": 0,
+  "top_reach": 0.44893843156053287,
+  "top_reach_pass": true
+}

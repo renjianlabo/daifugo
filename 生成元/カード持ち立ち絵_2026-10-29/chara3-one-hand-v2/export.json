@@ -1,0 +1,14 @@
+{
+  "output": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-cards-one-hand-v2.png",
+  "size": [
+    1038,
+    1515
+  ],
+  "bytes": 473603,
+  "protected_rows": [
+    0,
+    660
+  ],
+  "protected_source": "../chara3-raw.png",
+  "method": "Original rows 0..659 reused without modification, then 256-color PNG compression; fullcolor retained"
+}

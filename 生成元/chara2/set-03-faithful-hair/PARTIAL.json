@@ -1,0 +1,20 @@
+{
+  "status": "partial_verified_seven_deliverables_rank4_blocked",
+  "ready": [
+    "cards",
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "icon",
+    "icon_game"
+  ],
+  "rank4": "output-stage moderation_blocked sexual; no image; no retry",
+  "icon": "high-resolution source edit and original crop resolved misalignment; final saved and visually checked; failed attempts archived",
+  "icon_game": "derived from accepted-for-review revised icon; saved and checked",
+  "originals_preserved": true,
+  "game_integration": false,
+  "human_acceptance": false,
+  "historical": true,
+  "superseded_by": "COMPLETE.json"
+}

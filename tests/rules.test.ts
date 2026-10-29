@@ -584,6 +584,16 @@ describe('7渡し・10捨て', () => {
     expect(order).toEqual(['sevenPass', 'tenDiscard', 'revolution', 'eightCut']);
     expect(s.turn).toBe(0);
   });
+  it('7渡し・10捨ての始まりの知らせ（帯の演出のもと）は、選ぶ前に1回ずつ、効果の順に出る', () => {
+    const s = makeTestState({ hands: [H('H7 H8 H9 H10 S3 S4 S5'), H('C4'), H('D7'), H('C10')], turn: 0 });
+    doPlay(s, 0, 'H7 H8 H9 H10');
+    const starts = () => s.events.filter((e) => e.type === 'effectStart').map((e) => (e as { kind: string }).kind);
+    expect(starts()).toEqual(['sevenPass']);
+    chooseCards(s, 0, H('S3'));
+    expect(starts()).toEqual(['sevenPass', 'tenDiscard']);
+    chooseCards(s, 0, H('S4'));
+    expect(starts()).toEqual(['sevenPass', 'tenDiscard']);
+  });
   it('12ボンバーのあとに7渡し。ボンバーで手札がなくなったら7渡しはない', () => {
     const only: Partial<Rules> = { eightCut: false, elevenBack: false, revolution: false, tenDiscard: false };
     const s = makeTestState({ hands: [H('S7 S8 S9 S10 SJ SQ S3 D4'), H('C5'), H('D7'), H('C10')], turn: 0, rules: only });

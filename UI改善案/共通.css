@@ -1,0 +1,137 @@
+/* 改善案の共通部分（基準版 2026-10-29）。色・書体・枠・見出し・ボタンはここだけで決め、各画面はこれを読み込んで使う */
+:root {
+  /* 色：強い色は金（主操作・手番）と朱（パス）の2つだけ */
+  --bg: #241020;
+  --bg-deep: #170a14;
+  --bg-lift: #3a1d33;
+  --ink: #f6ecdc;
+  --ink-dim: #d9c7b8;
+  --gold-hi: #fff4cc;
+  --gold: #e6c068;
+  --gold-mid: #c9a24a;
+  --gold-lo: #b98c38;
+  --gold-line: rgba(214, 176, 92, 0.85);
+  --gold-line-2: rgba(214, 176, 92, 0.45);
+  /* 光沢のある金：明るい帯を2本入れる */
+  --gold-gloss: linear-gradient(180deg, #fff4cc 0%, #f0d184 30%, #b98c38 52%, #e9c977 74%, #fff0c0 100%);
+  --gold-fill: linear-gradient(180deg, #fff1c2 0%, #edc96f 38%, #c99a3f 55%, #e8c46c 80%, #f8e2a2 100%);
+  --vermilion: #ff8473;
+  --vermilion-line: #ff6a55;
+  --paper: #fffaf0;
+  --paper-ink: #1d1d1f;
+  --red: #c62828;
+  --joker: #5b2a86;
+  /* 書体は2種類：飾り（見出し・名前・ボタン）と、読みやすい書体（数字・枚数） */
+  --font-deco: "Shippori Mincho B1", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", serif;
+  --font-read: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --track: 0.12em;
+  --gap: 8px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+html, body, button { touch-action: manipulation; }
+body {
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: var(--font-read);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  /* 日本語を言葉の途中で折り返さない（折り返し位置は空白か <wbr>）。今のアプリと同じ */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, p { margin: 0; }
+
+/* ---------- 画面と背景 ---------- */
+.screen {
+  position: relative; isolation: isolate;
+  max-width: 480px; height: 100vh; height: 100dvh; margin: 0 auto; overflow: hidden;
+  display: flex; flex-direction: column;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse 90% 55% at 50% 40%, #4a2440 0%, rgba(36, 16, 32, 0) 70%);
+  padding-top: env(safe-area-inset-top);
+}
+/* うっすら模様（菱の格子）。手前の文字を読みにくくしない濃さ */
+.screen::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='none' stroke='%23e6c068' stroke-width='1'%3E%3Cpath d='M14 1 27 14 14 27 1 14Z'/%3E%3Cpath d='M14 8 20 14 14 20 8 14Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 28px 28px;
+}
+
+/* ---------- 金の飾り（枠と見出しにだけ使う） ---------- */
+.gold-text {
+  background: var(--gold-gloss); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+/* 細い金の二重線の枠 */
+.frame { position: relative; border: 1px solid var(--gold-line); }
+.frame::before {
+  content: ""; position: absolute; inset: 3px; border: 1px solid var(--gold-line-2); border-radius: inherit; pointer-events: none;
+}
+/* 角の小さな飾り（L字の線と菱） */
+.corner {
+  position: absolute; width: 18px; height: 18px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4cc'/%3E%3Cstop offset='.5' stop-color='%23c9a24a'/%3E%3Cstop offset='1' stop-color='%23f0d184'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M1.5 17V6.5Q1.5 1.5 6.5 1.5H17' fill='none' stroke='url(%23g)' stroke-width='1.6'/%3E%3Cpath d='M7 4.2 9.8 7 7 9.8 4.2 7Z' fill='url(%23g)'/%3E%3C/svg%3E") no-repeat;
+}
+.corner.tl { top: -3px; left: -3px; }
+.corner.tr { top: -3px; right: -3px; transform: scaleX(-1); }
+.corner.bl { bottom: -3px; left: -3px; transform: scaleY(-1); }
+.corner.br { bottom: -3px; right: -3px; transform: scale(-1, -1); }
+
+/* ---------- 見出し ---------- */
+.gbar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--gap);
+  padding: 8px 16px 10px; position: relative;
+}
+/* 見出しの下に二重線 */
+.gbar::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 4px;
+  border-top: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line-2);
+}
+.round { font-family: var(--font-deco); font-weight: 800; font-size: 26px; letter-spacing: 0.14em; line-height: 1.3; }
+/* 見出し（ほかの画面）：戻るを左、見出しをまん中 */
+.gbar.sub { display: grid; grid-template-columns: 88px 1fr 88px; }
+.gbar.sub .round { text-align: center; font-size: 24px; }
+
+/* ---------- ボタン ---------- */
+.btn {
+  position: relative; min-height: 48px; padding: 8px 18px;
+  font-family: var(--font-deco); font-weight: 800; letter-spacing: var(--track);
+  border-radius: 4px; white-space: nowrap; transition: transform 0.1s ease, filter 0.1s ease;
+}
+.btn.ghost { background: rgba(23, 10, 20, 0.85); color: var(--gold-hi); border: 1px solid var(--gold-line); }
+.btn.ghost::before { content: ""; position: absolute; inset: 3px; border: 1px solid var(--gold-line-2); border-radius: 2px; pointer-events: none; }
+.btn.primary { background: var(--gold-fill); color: #2e1a04; border: 1px solid #fff1c2; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 1px #8a6424; }
+.btn.primary::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(90, 60, 10, 0.55); border-radius: 2px; pointer-events: none; }
+.btn.small { min-height: 44px; padding: 6px 14px; font-size: 16px; }
+.btn:not(:disabled):active { transform: translateY(1px); filter: brightness(1.12); }
+.btn:disabled { cursor: default; filter: grayscale(0.7) brightness(0.6); }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+/* ---------- 枠つきの区画（設定など） ---------- */
+.panel { background: rgba(23, 10, 20, 0.55); border-radius: 4px; padding: 16px 14px; }
+.panel-title { font-family: var(--font-deco); font-weight: 800; font-size: 19px; letter-spacing: var(--track); line-height: 1.3; margin: 0 0 12px; }
+/* 下の決定ボタンの帯 */
+.foot-bar {
+  flex: none; position: relative; z-index: 2; display: grid; gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(23, 10, 20, 0.6), rgba(23, 10, 20, 0.92));
+  border-top: 1px solid var(--gold-line-2);
+}
+.foot-bar .btn { min-height: 52px; font-size: 19px; }
+.foot-bar.two { grid-template-columns: 1fr 1.4fr; }
+
+/* ---------- 小窓 ---------- */
+.modal-back { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10, 4, 9, 0.7); }
+.modal { width: 100%; max-width: 380px; max-height: 100%; overflow-y: auto; background: #2b1428; border-radius: 6px; padding: 24px 18px 20px; display: grid; gap: 18px; }
+.modal-title { font-family: var(--font-deco); font-weight: 800; font-size: 22px; letter-spacing: 0.16em; text-align: center; line-height: 1.3; }
+.modal p { text-align: center; font-size: 16px; }
+.modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal .btn { font-size: 17px; }
+[hidden] { display: none !important; }

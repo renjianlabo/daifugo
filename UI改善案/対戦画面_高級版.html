@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>対戦画面 改善案</title>
+<!-- 改善案（アプリには入れていない）。貼ってもらった新デザインの配置をそのまま使い、見た目だけを詰めたもの -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+/* ---------- 盤（CPUと場を囲む枠） ---------- */
+.board {
+  margin: 10px 12px 0; padding: 10px 6px 10px; border-radius: 28px 28px 10px 10px;
+  display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0;
+  background: linear-gradient(180deg, rgba(23, 10, 20, 0.35), rgba(23, 10, 20, 0.15));
+}
+.opps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.opp { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.opp-name { font-family: var(--font-deco); font-weight: 800; font-size: 17px; letter-spacing: var(--track); line-height: 1.3; white-space: nowrap; margin-top: 4px; }
+.opp-count { font-weight: 700; font-size: 16px; line-height: 1.3; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.opp-status { min-height: 28px; display: flex; align-items: center; }
+
+/* アイコン：金の細い輪。手番のキャラは金色に光らせる。パスしたキャラは少し暗くする */
+.avatar {
+  width: 60px; height: 60px; border-radius: 50%; overflow: hidden; flex: none; display: block;
+  background: #3a1d33; box-shadow: 0 0 0 1.5px var(--gold-mid), 0 0 0 3.5px var(--bg-deep), 0 0 0 4.5px var(--gold-line-2);
+  transition: box-shadow 0.25s ease, filter 0.25s ease;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; user-select: none; }
+.opp.turn .avatar {
+  box-shadow: 0 0 0 2px var(--gold-hi), 0 0 0 4px var(--gold), 0 0 14px 5px rgba(255, 214, 120, 0.75), 0 0 30px 10px rgba(230, 192, 104, 0.35);
+}
+.opp.passed .avatar { filter: brightness(0.5) saturate(0.6); }
+.opp.passed .opp-name, .opp.passed .opp-count { color: var(--ink-dim); }
+/* パス：目立つ朱色の枠で囲んだ札 */
+.pass-tag {
+  font-family: var(--font-deco); font-weight: 800; font-size: 16px; line-height: 1; letter-spacing: 0.3em;
+  color: var(--vermilion); background: rgba(120, 18, 24, 0.55);
+  border: 1.5px solid var(--vermilion-line); border-radius: 3px; padding: 5px 4px 5px 10px;
+  box-shadow: inset 0 0 0 2px rgba(23, 10, 20, 0.9), inset 0 0 0 3px rgba(255, 106, 85, 0.45);
+}
+
+/* ---------- 場 ---------- */
+.table {
+  position: relative; flex: none; height: 112px; margin-top: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50% 50% 18px 18px / 48px 48px 18px 18px;
+  border-top: 1px solid var(--gold-line);
+  background: radial-gradient(ellipse 70% 80% at 50% 45%, rgba(110, 70, 80, 0.45), rgba(23, 10, 20, 0) 75%);
+}
+.table::before {
+  content: ""; position: absolute; inset: 4px 10px auto; height: 40px; pointer-events: none;
+  border-radius: 50% 50% 0 0 / 44px 44px 0 0; border-top: 1px solid var(--gold-line-2);
+}
+/* 場の上の菱の飾り */
+.table-gem {
+  position: absolute; top: -9px; left: 50%; width: 16px; height: 16px; translate: -50% 0; rotate: 45deg;
+  background: var(--gold-fill); box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 2.5px var(--gold-line);
+}
+.table-cards { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* ---------- カード（数字・マークは読みやすさ優先。飾りは縁の細い金線だけ） ---------- */
+.card {
+  position: relative; flex: none; width: var(--cw); height: calc(var(--cw) * 1.36); padding: 0;
+  background: var(--paper); color: var(--paper-ink); border: 1px solid #b8913f; border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75), 0 2px 5px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-read); text-align: left; transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.card.red { color: var(--red); }
+.card.joker { color: var(--joker); }
+.c-rank { position: absolute; left: 6px; top: 4px; font-weight: 800; font-size: 18px; line-height: 1; letter-spacing: -0.5px; }
+.c-suit { position: absolute; left: 6px; top: 24px; font-size: 18px; line-height: 1; }
+.card:not(.big) .c-center { display: none; }
+.card.big .c-rank { font-size: 20px; left: 7px; top: 6px; }
+.card.big .c-suit { display: none; }
+.card.big .c-center { position: absolute; right: 7px; bottom: 6px; font-size: 32px; line-height: 1; }
+.table .card { --cw: 54px; }
+
+/* ---------- 自分の欄（イラスト・手札・操作）。盤の下から画面の下端まで ---------- */
+.lower { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+/* 手札は下（ボタンのすぐ上）でそろえる */
+.mine { position: relative; z-index: 1; flex: none; margin-top: auto; padding: 8px 12px 0; display: flex; flex-direction: column; align-items: flex-end; }
+.me-label {
+  font-family: var(--font-deco); font-weight: 800; font-size: 17px; letter-spacing: 0.16em; line-height: 1.4;
+  padding: 3px 4px 4px 12px; border-top: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line);
+  box-shadow: inset 0 3px 0 -2px var(--gold-line-2), inset 0 -3px 0 -2px var(--gold-line-2);
+  min-height: 34px; display: flex; align-items: center;
+}
+.me-label .pass-tag { margin-left: 2px; }
+.me-label.off { visibility: hidden; }
+.hand {
+  /* 手札の列は幅を決めておく（イラストの頭をこの列の左に収めるため） */
+  /* 高さは配られる最大の14枚（--rows 段）ぶんで固定。カードは上の段から詰め、空きは下の段に出る。
+     こうすると「あなたの番」と上の段の位置が、枚数で動かない */
+  --cols: 4; --rows: 4; --cw: clamp(44px, 12vw, 52px);
+  width: calc(var(--cols) * var(--cw) + (var(--cols) - 1) * var(--gap));
+  min-height: calc(var(--rows) * var(--cw) * 1.36 + (var(--rows) - 1) * 8px);
+  margin-top: 8px; display: grid; grid-template-columns: repeat(var(--cols), var(--cw)); grid-auto-rows: calc(var(--cw) * 1.36);
+  align-content: start; gap: 8px var(--gap);
+}
+.hand .card { cursor: pointer; }
+.hand .card.sel { transform: translateY(-5px); box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75), 0 0 0 2.5px var(--gold), 0 0 12px 2px rgba(255, 214, 120, 0.7); }
+/* 自分の番でないときは押せないので少し暗くする */
+.hand .card:disabled { cursor: default; filter: brightness(0.72); }
+
+/* ---------- イラスト ----------
+   大きく見せる：盤の下から画面の下端までの高さいっぱいに出す（下が切れた絵なので、切れ目は画面の下端）。
+   顔に手札がかからない：絵の中の頭の範囲（data-head）を、手札の列の左の空きに収める。位置と大きさは layoutArt() で決める */
+.art {
+  position: absolute; bottom: 0; left: 0; z-index: 0; pointer-events: none;
+  /* 頭の後ろにうっすら光 */
+  background: radial-gradient(ellipse 58% 30% at 46% 24%, rgba(255, 214, 140, 0.22), rgba(255, 214, 140, 0) 70%);
+}
+.me-art {
+  display: block; width: 100%; height: 100%; user-select: none;
+  filter: drop-shadow(0 0 1px rgba(255, 240, 200, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+
+/* ---------- 操作 ---------- */
+.actions {
+  flex: none; display: grid; grid-template-columns: 1fr 2.2fr; gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  position: relative; z-index: 1; margin-top: 12px;
+  background: linear-gradient(180deg, rgba(23, 10, 20, 0) 0%, rgba(23, 10, 20, 0.88) 38%);
+}
+.actions .btn { min-height: 52px; }
+.actions .ghost { font-size: 18px; letter-spacing: 0.3em; }
+.actions .primary { font-size: 23px; letter-spacing: 0.4em; }
+/* 7渡し・10捨て・カード交換：パス・出すの代わりに、横いっぱいのボタン1つ */
+.actions .give { grid-column: 1 / -1; font-size: 20px; letter-spacing: 0.12em; }
+
+/* 背の低い画面：場を低くし、手札を5列×3段にして高さに収める */
+@media (max-height: 760px) {
+  .table { height: 100px; }
+  .table .card { --cw: 50px; }
+  .hand { --cols: 5; --rows: 3; --cw: min(calc((100dvh - 500px) / 4.1), 48px); }
+}
+
+/* ---------- 回の結果 ---------- */
+.result { width: 100%; border-collapse: collapse; font-size: 16px; }
+.result th { font-family: var(--font-deco); font-weight: 800; color: var(--gold-hi); letter-spacing: 0.08em; padding: 0 4px 6px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--gold-line); }
+.result td { padding: 6px 4px; border-bottom: 1px solid rgba(214, 176, 92, 0.25); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.result td.place { font-family: var(--font-deco); font-weight: 800; letter-spacing: 0.06em; }
+.result td.who { display: flex; align-items: center; gap: 8px; }
+.result td.num { text-align: right; }
+.result th.num { text-align: right; }
+.result .avatar { width: 56px; height: 56px; }
+.result .me td { color: var(--gold); font-weight: 700; }
+/* ---------- 12ボンバー：数字を選ぶ ---------- */
+.rank-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.rank-btn {
+  min-height: 48px; border-radius: 4px; border: 1px solid #b8913f; background: var(--paper); color: var(--paper-ink);
+  font-family: var(--font-read); font-size: 18px; font-weight: 800;
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75); transition: transform 0.1s ease;
+}
+.rank-btn.on { background: var(--gold-fill); color: #2e1a04; box-shadow: 0 0 0 2px var(--gold-hi), 0 0 10px 2px rgba(255, 214, 120, 0.6); }
+.modal > .btn.primary { min-height: 52px; font-size: 19px; }
+</style>
+</head>
+<body>
+<main class="screen" id="screen">
+  <header class="gbar">
+    <h1 class="round gold-text" id="round">第1回戦</h1>
+    <button class="btn ghost small" data-act="quit">やめる</button>
+  </header>
+
+  <section class="board frame">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="opps" id="opps"></div>
+    <div class="table">
+      <i class="table-gem"></i>
+      <div class="table-cards" id="table"></div>
+    </div>
+  </section>
+
+  <section class="lower" id="lower">
+    <!-- お試しのイラスト。data-head は絵の中の頭（髪のてっぺん〜あごの下の髪）の範囲：左,上,右,下（絵の幅・高さに対する割合） -->
+    <div class="art" id="art"><img class="me-art" id="artImg" src="素材/お試し_キャラ1.webp" alt="" draggable="false" data-head="0.18,0,0.74,0.33"></div>
+    <div class="mine">
+      <p class="me-label" id="meLabel"></p>
+      <div class="hand" id="hand"></div>
+    </div>
+    <footer class="actions" id="actions"></footer>
+  </section>
+
+  <div class="modal-back" id="quit" hidden>
+    <div class="modal frame">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <p>この対戦の結果は残りません。</p>
+      <div class="row">
+        <button class="btn ghost" data-act="quitNo">続ける</button>
+        <button class="btn primary" data-act="quitYes">やめる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-back" id="result" hidden>
+    <div class="modal frame" role="dialog" aria-label="第1回戦の結果">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <h2 class="modal-title gold-text">結果</h2>
+      <table class="result">
+        <thead><tr><th>順位</th><th>キャラ</th><th class="num">今回</th><th class="num">合計</th></tr></thead>
+        <tbody id="resultRows"></tbody>
+      </table>
+      <button class="btn primary" data-act="nextRound">第2回戦へ</button>
+    </div>
+  </div>
+
+  <div class="modal-back" id="bomber" hidden>
+    <div class="modal frame" role="dialog" aria-label="12ボンバー">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <h2 class="modal-title gold-text">12ボンバー</h2>
+      <div class="rank-grid" id="rankGrid"></div>
+      <button class="btn primary" data-act="bomberOk" id="bomberOk"></button>
+    </div>
+  </div>
+</main>
+
+<script>
+// 見本の場面だけを動かす小さな仕掛け（ルール処理は入れていない）
+const ICON = (n) => `../assets/characters/${n}/icon_game.png`;
+const RANK = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
+const SUIT = { S: '♠', H: '♥', D: '♦', C: '♣' };
+const card = (s, r) => ({ s, r });
+
+function initial() {
+  return {
+    turn: 'me', // 'me' | 1 | 2 | 3
+    opps: [
+      { name: 'キャラ2', icon: ICON('chara2'), count: 13, passed: true },
+      { name: 'キャラ3', icon: ICON('chara3'), count: 12, passed: false },
+      { name: 'キャラ4', icon: ICON('blonde-tomboy'), count: 13, passed: true },
+    ],
+    table: [card('H', 9), card('D', 9)],
+    hand: [card('S', 3), card('H', 3), card('C', 4), card('D', 5), card('S', 6), card('D', 7), card('C', 8), card('S', 10),
+      card('H', 10), card('D', 11), card('C', 12), card('S', 13), card('H', 2), card('X', 0)],
+    sel: new Set([7, 8]),
+    mePassed: false,
+    round: 1,
+    // 7渡し・10捨て・カード交換で、手札から選ぶとき：{ kind: 'sevenPass' | 'tenDiscard' | 'exchange', to, count }
+    task: null,
+  };
+}
+let st = initial();
+
+const face = (c, cls = '', attrs = '') => {
+  if (c.s === 'X') return `<button class="card joker ${cls}" ${attrs}><span class="c-rank">JK</span><span class="c-suit">★</span><span class="c-center">★</span></button>`;
+  const red = c.s === 'H' || c.s === 'D' ? 'red' : '';
+  return `<button class="card ${red} ${cls}" ${attrs}><span class="c-rank">${RANK[c.r] ?? c.r}</span><span class="c-suit">${SUIT[c.s]}</span><span class="c-center">${SUIT[c.s]}</span></button>`;
+};
+
+// 回の結果（見本の値）。自分の行は「あなた」
+const RESULT = [
+  ['大富豪', 'キャラ3', ICON('chara3'), 3, 3],
+  ['富豪', 'あなた', ICON('chara1'), 2, 2],
+  ['貧民', 'キャラ2', ICON('chara2'), 1, 1],
+  ['大貧民', 'キャラ4', ICON('blonde-tomboy'), 0, 0],
+];
+const RANK_LABEL = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+let bomber = { need: 1, pick: new Set() };
+
+function render() {
+  document.getElementById('resultRows').innerHTML = RESULT.map(([place, name, icon, add, total]) => `
+    <tr class="${name === 'あなた' ? 'me' : ''}"><td class="place">${place}</td>
+      <td class="who"><span class="avatar" aria-label="${name}"><img src="${icon}" alt="" draggable="false"></span>${name}</td>
+      <td class="num">+${add}</td><td class="num">${total}点</td></tr>`).join('');
+  document.getElementById('rankGrid').innerHTML = RANK_LABEL.map((r, i) => `<button class="rank-btn ${bomber.pick.has(i) ? 'on' : ''}" aria-pressed="${bomber.pick.has(i)}" data-act="bomberRank" data-i="${i}">${r}</button>`).join('');
+  const ok = document.getElementById('bomberOk');
+  ok.textContent = `決定（${bomber.pick.size}/${bomber.need}）`;
+  ok.disabled = bomber.pick.size !== bomber.need;
+  document.getElementById('opps').innerHTML = st.opps.map((o, i) => `
+    <div class="opp ${st.turn === i + 1 ? 'turn' : ''} ${o.passed ? 'passed' : ''}">
+      <span class="avatar" aria-label="${o.name}"><img src="${o.icon}" alt="" draggable="false"></span>
+      <span class="opp-name">${o.name}</span>
+      <span class="opp-count">${o.count}枚</span>
+      <span class="opp-status">${o.passed ? '<span class="pass-tag">パス</span>' : ''}</span>
+    </div>`).join('');
+  document.getElementById('table').innerHTML = st.table.map((c) => face(c, 'big', 'tabindex="-1" disabled')).join('');
+  document.getElementById('round').textContent = `第${st.round}回戦`;
+  const task = st.task;
+  const myTurn = st.turn === 'me' && !task;
+  // 手札の上の表示：自分の番は「あなたの番」、7渡し・10捨ては「カードを選ぶ」（今のアプリと同じく、カード交換では出さない）
+  const label = document.getElementById('meLabel');
+  const labelText = st.mePassed ? '<span class="pass-tag">パス</span>'
+    : task ? (task.kind === 'exchange' ? '' : '<span class="gold-text">カードを選ぶ</span>')
+    : myTurn ? '<span class="gold-text">あなたの番</span>' : '';
+  label.className = 'me-label' + (labelText ? '' : ' off');
+  label.innerHTML = labelText || '<span class="gold-text">あなたの番</span>';
+  const canPick = myTurn || !!task;
+  document.getElementById('hand').innerHTML = st.hand.map((c, i) => face(c, st.sel.has(i) ? 'sel' : '', `data-act="card" data-i="${i}" ${canPick ? '' : 'disabled'}`)).join('');
+  const actions = document.getElementById('actions');
+  if (task) {
+    const verb = task.kind === 'tenDiscard' ? '捨てる' : `${task.to}に渡す`;
+    actions.innerHTML = `<button class="btn primary give" data-act="give" ${st.sel.size === task.count ? '' : 'disabled'}>${verb}（${st.sel.size}/${task.count}枚）</button>`;
+  } else {
+    actions.innerHTML = `<button class="btn ghost" data-act="pass" id="passBtn" ${myTurn ? '' : 'disabled'}>パス</button>
+      <button class="btn primary" data-act="play" id="playBtn" ${myTurn && st.sel.size === st.table.length ? '' : 'disabled'}>出す</button>`;
+  }
+  layoutArt();
+}
+
+// イラストの位置と大きさ：下端は画面の下端、高さは盤の下から画面の下端まで。
+// 頭が手札の列の左の空き（左右の余白4px・列との間8px）に入りきらないときだけ小さくし、頭を空きのまん中に置く
+function layoutArt() {
+  const img = document.getElementById('artImg');
+  if (!img.naturalWidth) return;
+  const [hx1, , hx2] = img.dataset.head.split(',').map(Number);
+  const lower = document.getElementById('lower').getBoundingClientRect();
+  const col = document.getElementById('hand').getBoundingClientRect();
+  const ratio = img.naturalWidth / img.naturalHeight;
+  const free = col.left - lower.left - 8 - 4;
+  const h = Math.min(lower.height, free / (hx2 - hx1) / ratio);
+  const w = h * ratio;
+  const headLeft = 4 + (free - (hx2 - hx1) * w) / 2;
+  const art = document.getElementById('art');
+  art.style.height = `${h}px`;
+  art.style.width = `${w}px`;
+  art.style.left = `${headLeft - hx1 * w}px`;
+}
+document.getElementById('artImg').addEventListener('load', layoutArt);
+addEventListener('resize', layoutArt);
+
+// CPUの番の場面（キャラ3が考えている）にする
+function toCpu() {
+  st.turn = 2;
+  st.sel = new Set();
+}
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const act = el.dataset.act;
+  if (act === 'card') { const i = Number(el.dataset.i); st.sel.has(i) ? st.sel.delete(i) : st.sel.add(i); }
+  if (act === 'play') { st.table = [...st.sel].sort((a, b) => a - b).map((i) => st.hand[i]); st.hand = st.hand.filter((_, i) => !st.sel.has(i)); toCpu(); }
+  if (act === 'pass') { st.mePassed = true; toCpu(); }
+  if (act === 'quit') document.getElementById('quit').hidden = false;
+  if (act === 'quitNo') document.getElementById('quit').hidden = true;
+  if (act === 'quitYes') { document.getElementById('quit').hidden = true; st = initial(); }
+  if (act === 'give') {
+    st.hand = st.hand.filter((_, i) => !st.sel.has(i));
+    st.task = null;
+    toCpu();
+  }
+  if (act === 'nextRound') document.getElementById('result').hidden = true;
+  if (act === 'bomberRank') { const i = Number(el.dataset.i); bomber.pick.has(i) ? bomber.pick.delete(i) : bomber.pick.size < bomber.need && bomber.pick.add(i); }
+  if (act === 'bomberOk') { document.getElementById('bomber').hidden = true; bomber.pick = new Set(); }
+  render();
+});
+
+// 写真用に、途中の場面から開く：?s=cpu キャラ3の番／result 回の結果／bomber 12ボンバー／seven 7渡し／ten 10捨て／exchange カード交換
+const scene = new URLSearchParams(location.search).get('s');
+if (scene === 'result') document.getElementById('result').hidden = false;
+if (scene === 'bomber') { document.getElementById('bomber').hidden = false; bomber.pick = new Set([5]); }
+// 7渡し・10捨て：自分が7（10）を1枚出したあと、手札から1枚選ぶ
+if (scene === 'seven' || scene === 'ten') {
+  const i = scene === 'seven' ? 5 : 7;
+  st.table = [st.hand[i]];
+  st.hand = st.hand.filter((_, k) => k !== i);
+  st.opps.forEach((o) => { o.passed = false; });
+  st.sel = new Set();
+  st.task = scene === 'seven' ? { kind: 'sevenPass', to: 'キャラ2', count: 1 } : { kind: 'tenDiscard', count: 1 };
+}
+// カード交換：2回戦目の始め。前の回が大富豪なので、大貧民のキャラ2に好きなカードを2枚渡す（キャラ2からは強いカード2枚を受け取って15枚）
+if (scene === 'exchange') {
+  st.round = 2;
+  st.table = [];
+  st.opps = [
+    { name: 'キャラ2', icon: ICON('chara2'), count: 11, passed: false },
+    { name: 'キャラ3', icon: ICON('chara3'), count: 13, passed: false },
+    { name: 'キャラ4', icon: ICON('blonde-tomboy'), count: 13, passed: false },
+  ];
+  st.hand = [card('S', 3), card('H', 3), card('C', 4), card('D', 4), card('D', 5), card('S', 6), card('C', 7), card('C', 8), card('H', 9),
+    card('S', 11), card('C', 12), card('H', 1), card('S', 1), card('D', 2), card('X', 0)];
+  st.sel = new Set([0, 1]);
+  st.task = { kind: 'exchange', to: 'キャラ2', count: 2 };
+}
+if (scene === 'cpu') {
+  st.table = [st.hand[7], st.hand[8]]; st.hand = st.hand.filter((_, i) => i !== 7 && i !== 8); toCpu();
+}
+// iPhone の2本指の拡大を止める
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+render();
+</script>
+</body>
+</html>

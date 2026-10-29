@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>帯の演出 改善案</title>
+<!-- 改善案（アプリには入れていない）。特殊効果の帯の演出。
+     ・帯だけの効果（8切りなど）：画面のまん中に横長の帯。効果の名前と、発動したキャラのアイコン
+     ・キャラの絵を出す場面（革命・ジョーカー・1〜4位）：演出_高級版.html の絵の出し方（まん中の枠の中に、縦の長さをそろえて置く）に、
+       帯を絵の上（頭より上）に重ねる。絵とは重ならない
+     開き方：?s=revolution など（下の SCENES の名前） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+.stage { position: relative; height: 100dvh; overflow: hidden; background: var(--bg-deep) center top / 100% auto no-repeat; }
+.dim { position: absolute; inset: 0; background: rgba(15, 6, 13, 0.55); }
+.dim.light { background: rgba(15, 6, 13, 0.32); }
+.fx-hint {
+  position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 5;
+  color: var(--ink-dim); font-size: 16px; padding: 4px 14px; border-radius: 3px; background: rgba(23, 10, 20, 0.8); white-space: nowrap;
+  border: 1px solid var(--gold-line-2);
+}
+
+/* ---------- 帯 ----------
+   横は画面いっぱい。色は効果ごと（--c1 濃い色・--c2 明るい色・--ink 文字の色・--line 上下の線の色）。
+   上下に細い二重線、斜めに薄い光。左にアイコン（発動したキャラ）、まん中に効果の名前 */
+.fxband {
+  --c1: #2a1022; --c2: #5a2448; --ink: #fff8ec; --line: rgba(255, 240, 210, 0.75);
+  position: absolute; left: 0; right: 0; height: var(--bh); z-index: 4;
+  display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 16px;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.16) 44%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(180deg, var(--c1) 0%, var(--c2) 46%, var(--c2) 54%, var(--c1) 100%);
+  box-shadow: 0 -1px 0 var(--line), 0 1px 0 var(--line), 0 -4px 0 rgba(15, 6, 13, 0.85), 0 4px 0 rgba(15, 6, 13, 0.85),
+    0 -5px 0 var(--line), 0 5px 0 var(--line), 0 14px 30px rgba(0, 0, 0, 0.55);
+  animation: band-in 0.25s ease-out;
+}
+.fxband .avatar {
+  width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex: none; background: #3a1d33;
+  box-shadow: 0 0 0 2px var(--line), 0 0 0 4px rgba(15, 6, 13, 0.85), 0 0 0 5px var(--gold-line-2);
+}
+.fxband .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fxband .name {
+  font-family: var(--font-deco); font-weight: 800; font-size: 40px; letter-spacing: 0.14em; line-height: 1.2; white-space: nowrap;
+  color: var(--ink); text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45), 0 0 14px rgba(0, 0, 0, 0.35);
+  animation: name-pop 0.3s ease-out;
+}
+/* アイコンがある帯は、名前を帯のまん中に置くため、右にアイコンと同じ幅の空きを作る */
+.fxband.has-icon::after { content: ""; width: 64px; flex: none; }
+.fxband .name small { font-size: 0.8em; letter-spacing: 0.04em; margin-left: 0.1em; }
+
+/* 効果ごとの色 */
+.fxband.revolution { --c1: #4a0b14; --c2: #b3263a; }                       /* 革命：深紅 */
+.fxband.joker      { --c1: #24103e; --c2: #6a3aa6; }                       /* ジョーカー：紫（カードのジョーカーの色） */
+.fxband.eight      { --c1: #0b3a40; --c2: #1d8590; }                       /* 8切り：青緑（場を断ち切る） */
+.fxband.five       { --c1: #123d1c; --c2: #2f8a45; }                       /* 5スキップ：緑（先へ進む） */
+.fxband.eleven     { --c1: #10265a; --c2: #3561c0; }                       /* 11バック：青（11バック中の札と同じ系統） */
+.fxband.bomber     { --c1: #5a1c04; --c2: #d0581a; }                       /* 12ボンバー：橙（爆発） */
+.fxband.ten        { --c1: #1e232c; --c2: #586477; }                       /* 10捨て：鉄色（捨てる） */
+.fxband.seven      { --c1: #4d1232; --c2: #b2407a; }                       /* 7渡し：桃（渡す） */
+.fxband.lock       { --c1: #4a3208; --c2: #946a16; }                       /* しばり：金茶（しばり中の札と同じ金系統） */
+.fxband.geki       { --c1: #4a1606; --c2: #b8461a; --line: #ffd27a; }      /* 激しば：赤金（しばりより強い） */
+.fxband.rank1      { --c1: #6e4f12; --c2: #f0cf7a; --ink: #2a1606; --line: #fff4cc; } /* 大富豪：金 */
+.fxband.rank2      { --c1: #4a5260; --c2: #c9d0da; --ink: #1d222b; --line: #f4f7fb; } /* 富豪：銀 */
+.fxband.rank3      { --c1: #3e2414; --c2: #9a6238; }                       /* 貧民：銅 */
+.fxband.rank4      { --c1: #15181f; --c2: #3a4150; --ink: #d9dde6; --line: rgba(200, 208, 222, 0.6); } /* 大貧民：くすんだ灰青 */
+/* 明るい帯は、文字の影を明るくする */
+.fxband.rank1 .name, .fxband.rank2 .name { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55); }
+
+/* ---------- キャラの絵を出す場面：演出_高級版.html と同じ枠 ---------- */
+.panel {
+  position: absolute; left: 0; right: 0; height: var(--ph);
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 38%, rgba(255, 214, 140, 0.20), rgba(255, 214, 140, 0) 70%),
+    linear-gradient(180deg, rgba(23, 10, 20, 0.96), rgba(36, 16, 32, 0.96));
+  box-shadow: 0 0 0 1px var(--gold-line), 0 0 0 4px rgba(15, 6, 13, 0.9), 0 0 0 5px var(--gold-line-2), 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+.art-clip {
+  position: absolute; inset: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+}
+.fx-art {
+  position: absolute; display: block; max-width: none; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+  animation: rise 0.3s ease-out;
+}
+.corner { position: absolute; width: 12px; height: 12px; rotate: 45deg; background: var(--gold-fill); box-shadow: 0 0 0 1.5px var(--bg-deep); }
+.corner.tl { left: 14px; top: -6px; } .corner.tr { right: 14px; top: -6px; }
+.corner.bl { left: 14px; bottom: -6px; } .corner.br { right: 14px; bottom: -6px; }
+
+@keyframes band-in { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes name-pop { from { scale: 0.7; opacity: 0; } to { scale: 1; opacity: 1; } }
+@keyframes rise { from { transform: translateY(12%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+
+@media (max-height: 760px) {
+  .fxband .name { font-size: 34px; }
+  .fxband .avatar { width: 56px; height: 56px; }
+  .fxband.has-icon::after { width: 56px; }
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<script>
+// 絵の中で人物が写っている範囲：左,上,右（絵の幅・高さに対する割合）。2026-10-30 に透明でない画素を測った値
+const VIS = {
+  'chara1/special': [0.057, 0.080, 0.863], 'chara1/rank1': [0.188, 0.080, 0.855], 'chara1/rank2': [0.219, 0.080, 0.795], 'chara1/rank3': [0.211, 0.080, 0.805], 'chara1/rank4': [0.258, 0.080, 0.791],
+  'chara2/special': [0.205, 0.074, 0.854], 'chara2/rank1': [0.154, 0.070, 0.846], 'chara2/rank2': [0.178, 0.066, 0.857], 'chara2/rank3': [0.191, 0.070, 0.826], 'chara2/rank4': [0.225, 0.074, 0.813],
+  'chara3/special': [0.109, 0.070, 0.906], 'chara3/rank1': [0.072, 0.070, 0.939], 'chara3/rank2': [0.154, 0.070, 0.863], 'chara3/rank3': [0.188, 0.070, 0.838], 'chara3/rank4': [0.164, 0.070, 0.859],
+  'blonde-tomboy/special': [0.043, 0.061, 0.965], 'blonde-tomboy/rank1': [0.014, 0.063, 0.994], 'blonde-tomboy/rank2': [0.068, 0.063, 0.938], 'blonde-tomboy/rank3': [0.051, 0.063, 0.961], 'blonde-tomboy/rank4': [0.059, 0.063, 0.953],
+};
+// 場面：cls 帯の色、name 効果の名前、who 発動したキャラ（帯のアイコン）、art キャラの絵（あれば絵の上に帯）
+const SCENES = {
+  revolution: { cls: 'revolution', name: '革命', art: 'chara2/special' },
+  joker: { cls: 'joker', name: 'ジョーカー', art: 'chara3/special' },
+  rank1: { cls: 'rank1', name: '大富豪', art: 'chara1/rank1' },
+  rank2: { cls: 'rank2', name: '富豪', art: 'chara2/rank2' },
+  rank3: { cls: 'rank3', name: '貧民', art: 'chara3/rank3' },
+  rank4: { cls: 'rank4', name: '大貧民', art: 'blonde-tomboy/rank4' },
+  eight: { cls: 'eight', name: '8切り', who: 'chara2' },
+  five: { cls: 'five', name: '5スキップ', who: 'chara3' },
+  eleven: { cls: 'eleven', name: '11バック', who: 'blonde-tomboy' },
+  bomber: { cls: 'bomber', name: '12ボンバー', who: 'chara1' },
+  ten: { cls: 'ten', name: '10捨て', who: 'chara2' },
+  seven: { cls: 'seven', name: '7渡し', who: 'chara3' },
+  mark: { cls: 'lock', name: 'マークしばり<small>♥</small>', who: 'blonde-tomboy' },
+  num: { cls: 'lock', name: '数しば', who: 'chara1' },
+  geki: { cls: 'geki', name: '激しば<small>♥</small>', who: 'chara2' },
+};
+const sc = SCENES[new URLSearchParams(location.search).get('s') ?? 'revolution'];
+const stage = document.getElementById('stage');
+stage.style.backgroundImage = `url("素材/背景_対戦画面_${innerWidth < 400 ? 375 : 430}.png")`;
+const short = matchMedia('(max-height: 760px)').matches;
+const BH = short ? 80 : 92; // 帯の高さ
+const icon = (who) => `<span class="avatar"><img src="../assets/characters/${who}/icon_game.png" alt=""></span>`;
+const band = (top) => `<div class="fxband ${sc.cls} ${sc.who ? 'has-icon' : ''}" style="--bh:${BH}px; top:${top}px">${sc.who ? icon(sc.who) : ''}<span class="name">${sc.name}</span></div>`;
+
+/** 名前が長くて帯に入りきらないときだけ、文字を小さくする（最小24px） */
+function fitName() {
+  const bandEl = document.querySelector('.fxband'), name = bandEl.querySelector('.name');
+  const icon = bandEl.querySelector('.avatar');
+  // 使える幅：帯の幅から左右の余白16pxずつ、アイコンと右の空き（アイコンと同じ幅）、すき間14pxずつを引いたもの
+  const avail = bandEl.clientWidth - 32 - (icon ? 2 * (icon.offsetWidth + 14) : 0);
+  let size = parseFloat(getComputedStyle(name).fontSize);
+  while (name.offsetWidth > avail && size > 24) { size -= 2; name.style.fontSize = `${size}px`; }
+}
+addEventListener('load', () => document.fonts.ready.then(fitName));
+
+if (!sc.art) {
+  // 帯だけ：画面のまん中
+  stage.innerHTML = `<div class="dim light"></div><span class="fx-hint">タップでとばす</span>${band(Math.round(innerHeight / 2 - BH / 2))}`;
+} else {
+  // 絵を出す場面：帯（上）＋すき間16px＋絵の枠（下）をひとまとまりにして、画面の上下のまん中に置く。帯は頭より上で、絵とは重ならない
+  const PH = Math.min(innerHeight * 0.54, innerHeight - BH - 16 - 120);
+  const top = Math.max(64, Math.round((innerHeight - (BH + 16 + PH)) / 2));
+  stage.innerHTML = `<div class="dim"></div><span class="fx-hint">タップでとばす</span>${band(top)}
+    <div class="panel" style="--ph:${PH}px; top:${top + BH + 16}px"><div class="art-clip"><img class="fx-art" id="art" alt="" draggable="false"></div>
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i></div>`;
+  const img = document.getElementById('art');
+  img.src = `../assets/characters/${sc.art}.png`;
+  // 縦の長さ：どの絵も「髪のてっぺんから絵の下端まで」を枠の高さの1.2倍にそろえる。髪のてっぺんは枠の上の縁から20px下。切れ目は枠の外で見えない
+  img.addEventListener('load', () => {
+    const [l, t, r] = VIS[sc.art];
+    const K = PH * 1.2, h = K / (1 - t), w = (h * img.naturalWidth) / img.naturalHeight;
+    Object.assign(img.style, { width: `${w}px`, height: `${h}px`, top: `${20 - t * h}px`, left: `${innerWidth / 2 - ((l + r) / 2) * w}px` });
+  });
+}
+</script>
+</body>
+</html>

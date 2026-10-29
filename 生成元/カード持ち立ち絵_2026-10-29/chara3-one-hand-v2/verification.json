@@ -1,0 +1,38 @@
+{
+  "output": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-cards-one-hand-v2.png",
+  "size": [
+    1038,
+    1515
+  ],
+  "bytes": 473603,
+  "alpha_range": [
+    0,
+    254
+  ],
+  "visible_bbox": [
+    53,
+    34,
+    988,
+    1515
+  ],
+  "sha256": "65e45e2fc7b0d3b4dfa7055b6f5cadeee99e2af483f425e169efc57c73fae621",
+  "original_top_660_rows_exact_before_compression": true,
+  "compression_composite_mean_error": {
+    "#f4f4f4": [
+      0.5719656358699454,
+      0.4821044532198885,
+      0.5553444361777218
+    ],
+    "#281727": [
+      0.5715815512187057,
+      0.4881728635291275,
+      0.5689120357122417
+    ]
+  },
+  "preserved_files": 79,
+  "changed_protected": [],
+  "zip": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\カード持ち立ち絵4枚_キャラ3片手版.zip",
+  "zip_files": 4,
+  "human_acceptance": "pending",
+  "game_integration": "not performed"
+}

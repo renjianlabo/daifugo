@@ -1,0 +1,28 @@
+{
+  "method": "Similar-scale alignment at eye/mouth; pink hair mask only; original non-hair face and body reused",
+  "source_eye": {
+    "x": 642,
+    "y": 540
+  },
+  "source_mouth": {
+    "x": 557,
+    "y": 694
+  },
+  "target_eye": {
+    "x": 640,
+    "y": 560
+  },
+  "target_mouth": {
+    "x": 548,
+    "y": 735
+  },
+  "matrix": [
+    1.1237516563782683,
+    -0.02284994020878446,
+    0.02284994020878446,
+    1.1237516563782683,
+    -93.7875311075919,
+    -32.15623283022535
+  ],
+  "bytes": 107706
+}

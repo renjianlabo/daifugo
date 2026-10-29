@@ -1,0 +1,32 @@
+{
+  "name": "rank2",
+  "generated_size": [
+    1254,
+    1254
+  ],
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 203368,
+  "source": "C:/github/daifugo/assets/characters/chara2/rank2.png",
+  "body_protected_rows": [
+    550,
+    1024
+  ],
+  "face_protected_rectangles": [
+    [
+      539,
+      289,
+      614,
+      365
+    ],
+    [
+      501,
+      412,
+      572,
+      450
+    ]
+  ],
+  "method": "256 color PNG, RGBA approximated; fullcolor retained"
+}

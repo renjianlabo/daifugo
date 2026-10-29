@@ -1,0 +1,38 @@
+{
+  "source": "C:\\github\\daifugo\\生成元\\chara2\\set-01\\icon.png",
+  "generated": "icon-highres-generated.png",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "crop": [
+    150,
+    30,
+    1110,
+    990
+  ],
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 98951,
+  "original_body_rows": [
+    900,
+    1254
+  ],
+  "original_face_rectangles": [
+    [
+      681,
+      474,
+      810,
+      608
+    ],
+    [
+      620,
+      694,
+      712,
+      750
+    ]
+  ],
+  "restored_output_features": true
+}

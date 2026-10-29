@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>演出 改善案</title>
+<!-- 改善案（アプリには入れていない）。革命・ジョーカー・上がりの演出。
+     画面全体ではなく、まん中の帯だけを暗くして絵を置く。絵の下の切れ目は帯の下の縁に隠す。
+     開き方：?c=chara2&p=special&t=革命！（c は assets/characters/ のフォルダ名、p は special・rank1〜4） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+.stage { position: relative; height: 100dvh; overflow: hidden; background: var(--bg-deep) url("素材/背景_対戦画面_430.png") center top / 100% auto no-repeat; }
+/* 帯の外：ゲームの画面が見える程度に暗くする */
+.fx { position: absolute; inset: 0; background: rgba(15, 6, 13, 0.55); }
+.fx-hint {
+  position: absolute; top: calc(16px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 3;
+  color: var(--ink-dim); font-size: 16px; padding: 4px 14px; border-radius: 3px; background: rgba(23, 10, 20, 0.8); white-space: nowrap;
+  border: 1px solid var(--gold-line-2);
+}
+/* まん中の帯：横は画面いっぱい、高さは画面の54%。上下に細い金の二重線 */
+.band {
+  --h: 54dvh;
+  position: absolute; left: 0; right: 0; top: calc(50% - var(--h) / 2); height: var(--h);
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 38%, rgba(255, 214, 140, 0.20), rgba(255, 214, 140, 0) 70%),
+    linear-gradient(180deg, rgba(23, 10, 20, 0.96), rgba(36, 16, 32, 0.96));
+  box-shadow: 0 0 0 1px var(--gold-line), 0 0 0 4px rgba(15, 6, 13, 0.9), 0 0 0 5px var(--gold-line-2), 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+/* 絵の入れ物：帯の中だけ見せる（絵の下の切れ目は帯の下の縁の外に出して隠す）。下の方は帯の色にぼかす */
+.art-clip {
+  position: absolute; inset: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+}
+.fx-art {
+  position: absolute; display: block; max-width: none; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+  animation: rise 0.3s ease-out;
+}
+/* 文字は帯の下の縁にまたがせる（顔にかからない） */
+.fx-text {
+  position: absolute; left: 50%; bottom: 0; translate: -50% 50%; z-index: 2;
+  font-family: var(--font-deco); font-size: 52px; font-weight: 800; letter-spacing: 0.14em; line-height: 1.2; white-space: nowrap;
+  background: var(--gold-gloss); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.7)) drop-shadow(0 0 10px rgba(15, 6, 13, 0.9));
+  animation: pop 0.3s ease-out;
+}
+.corner { position: absolute; width: 12px; height: 12px; rotate: 45deg; background: var(--gold-fill); box-shadow: 0 0 0 1.5px var(--bg-deep); }
+.corner.tl { left: 14px; top: -6px; } .corner.tr { right: 14px; top: -6px; }
+.corner.bl { left: 14px; bottom: -6px; } .corner.br { right: 14px; bottom: -6px; }
+@keyframes rise { from { transform: translateY(12%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes pop { from { scale: 0.6; } to { scale: 1; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="fx">
+    <span class="fx-hint">タップでとばす</span>
+    <div class="band" id="band">
+      <div class="art-clip"><img class="fx-art" id="art" alt="" draggable="false"></div>
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <span class="fx-text" id="text"></span>
+    </div>
+  </div>
+</div>
+<script>
+// 絵の中で人物が写っている範囲：左,上,右（絵の幅・高さに対する割合）。2026-10-30 に透明でない画素を測った値
+const VIS = {
+  'chara1/special': [0.057, 0.080, 0.863], 'chara1/rank1': [0.188, 0.080, 0.855], 'chara1/rank2': [0.219, 0.080, 0.795], 'chara1/rank3': [0.211, 0.080, 0.805], 'chara1/rank4': [0.258, 0.080, 0.791],
+  'chara2/special': [0.205, 0.074, 0.854], 'chara2/rank1': [0.154, 0.070, 0.846], 'chara2/rank2': [0.178, 0.066, 0.857], 'chara2/rank3': [0.191, 0.070, 0.826], 'chara2/rank4': [0.225, 0.074, 0.813],
+  'chara3/special': [0.109, 0.070, 0.906], 'chara3/rank1': [0.072, 0.070, 0.939], 'chara3/rank2': [0.154, 0.070, 0.863], 'chara3/rank3': [0.188, 0.070, 0.838], 'chara3/rank4': [0.164, 0.070, 0.859],
+  'blonde-tomboy/special': [0.043, 0.061, 0.965], 'blonde-tomboy/rank1': [0.014, 0.063, 0.994], 'blonde-tomboy/rank2': [0.068, 0.063, 0.938], 'blonde-tomboy/rank3': [0.051, 0.063, 0.961], 'blonde-tomboy/rank4': [0.059, 0.063, 0.953],
+};
+const q = new URLSearchParams(location.search);
+const key = `${q.get('c') ?? 'chara2'}/${q.get('p') ?? 'special'}`;
+document.getElementById('text').textContent = q.get('t') ?? '革命！';
+const img = document.getElementById('art');
+img.src = `../assets/characters/${key}.png`;
+
+/**
+ * 大きさ：どの絵も「髪のてっぺんから絵の下端（切れ目）まで」を同じ長さ（帯の高さの1.2倍）にする。
+ * 髪のてっぺんは帯の上の縁から20px下。切れ目は帯の下の縁より下に出るので、見えない。
+ * 横は、人物の写っている範囲のまん中を画面のまん中に合わせる
+ */
+function place() {
+  const band = document.getElementById('band');
+  const [l, t, r] = VIS[key];
+  const K = band.clientHeight * 1.2;
+  const h = K / (1 - t);
+  const w = (h * img.naturalWidth) / img.naturalHeight;
+  Object.assign(img.style, { width: `${w}px`, height: `${h}px`, top: `${20 - t * h}px`, left: `${band.clientWidth / 2 - ((l + r) / 2) * w}px` });
+}
+img.addEventListener('load', place);
+addEventListener('resize', place);
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "status": "partial_rank4_moderation_blocked",
+  "tool": "built-in image_gen",
+  "calls": 8,
+  "returned_images": 7,
+  "saved_deliverables": 7,
+  "missing": [
+    "rank4"
+  ],
+  "used": [
+    "cards",
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "icon-highres"
+  ],
+  "derived": [
+    "icon",
+    "icon_game"
+  ],
+  "seconds": {
+    "cards": 52.996,
+    "special": 83.266,
+    "rank1": 55.148,
+    "rank2": 60.211,
+    "rank3": 58.88,
+    "rank4": null,
+    "icon_initial": 51.34,
+    "icon_highres_revision": 72.993
+  },
+  "rank4": {
+    "attempts": 1,
+    "retries": 0,
+    "error": "output moderation_blocked sexual; specific cause unknown",
+    "request_id": "ecbf3292-b026-4648-abb0-9c977c3f451a"
+  },
+  "resolved_quality_issues": [
+    "Square output was 1254 instead of 1024; exporter now validates aspect ratio and normalizes uniformly before restoring pixels.",
+    "Initial icon composite face/neck misalignment; color-based hair extraction produced holes; both rejected and archived.",
+    "One high-resolution icon edit using original 1254 square and known crop [150,30,1110,990] resolved icon geometry."
+  ],
+  "human_acceptance": false,
+  "game_integration": false
+}
