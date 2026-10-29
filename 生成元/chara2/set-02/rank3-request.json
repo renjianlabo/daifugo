@@ -1,0 +1,14 @@
+{
+  "asset": "rank3",
+  "status": "requested",
+  "tool": "built-in image_gen",
+  "promptSource": "prompts.json",
+  "references": [
+    "参考イラスト/キャラ2/服装/01.png",
+    "参考イラスト/キャラ2/03.png",
+    "参考イラスト/キャラ2/06.png"
+  ],
+  "requestedOutput": "rank3.png",
+  "retry": false,
+  "conditionsChanged": false
+}

@@ -1,0 +1,46 @@
+{
+  "status": "ai_visual_checks_passed_pending_human_acceptance",
+  "required_issues": 0,
+  "asset_sha256": {
+    "icon": "090c648d5bfe214d7817471c0c72da092c82c668ff60a6bf4c28ffba42accfba",
+    "special": "0c6c9414931fac406dd28d5c1e394e08b591222790ad24c8ac00d1348c4d209a",
+    "rank1": "36b89430987ed6517c928cc7d00457c42f27ae2f50f602229c43b10bbb3491d1",
+    "rank2": "ab47ab99ad761ea070c222f3f14bad402fc8173d5b5cce1f7aedf5cbdbce9890",
+    "rank3": "4778bed739bd5e49aad6b3759ae30eedb3542067a4187cc81aa386d038f7abe3",
+    "rank4": "7c5abf092272cdf4cfcaf044b72463caf3a669de07f8faa69e253cf4645bb3e8"
+  },
+  "inspected": [
+    "per-image light-dark composites",
+    "キャラ4一覧.png",
+    "キャラ4_暗背景一覧.png",
+    "キャラ4_順位256確認.png",
+    "キャラ4_基準比較.png",
+    "キャラ4_手の確認.png",
+    "キャラ1〜4_ポーズ比較.png",
+    "キャラ1〜4_3位表情比較.png"
+  ],
+  "checks": {
+    "no_white_jacket_or_outer_layer": "pass",
+    "black_sleeveless_high_neck_top_and_skirt": "pass",
+    "black_bob_green_eyes_reference_identity": "pass",
+    "reference_earrings_necklace_no_extra_jewelry": "pass",
+    "hair_hands_fingertips_elbows_inside": "pass",
+    "visible_hand_anatomy_and_support_contact": "pass",
+    "calculating_composed_adult_personality": "pass",
+    "rank3_neutral_thinking_not_wry_smile": "pass",
+    "rank4_dejected_no_anger_or_fists": "pass",
+    "light_dark_edges": "pass",
+    "style_consistency": "pass",
+    "expressions_at_256px": "pass",
+    "rank3_distinct_from_previous_three": "pass"
+  },
+  "limitations": [
+    "User acceptance pending.",
+    "Face and body are compared visually; pixel-identical geometry is not claimed.",
+    "Fingers obscured by the paired-hand gesture or elbow support cannot all be individually traced.",
+    "Skirt full length is outside waist-level framing.",
+    "Interpretation: new chara4 rank3 is changed; previous three rank3 images are preserved."
+  ],
+  "human_acceptance": false,
+  "game_integration": false
+}

@@ -1,0 +1,35 @@
+{
+  "name": "special",
+  "source": "生成元\\chara3\\set-01\\special.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "source_sha256": "aedce016c515d85b89d6783064f7464f19f88ba1c65f686120d93e993aeb34ac",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 472588,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    111,
+    72,
+    927,
+    1024
+  ],
+  "rgb_rounding_step": 5,
+  "rgb_mean_abs_error": [
+    1.1840845914863465,
+    1.2050493268654277,
+    1.175610181501063
+  ],
+  "sha256": "b5803e4d9e73853d86ba23c8f80e8c57dd04799bf6efd312636e1f47bf56d7e9",
+  "top_padding_pixels": 79,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "ai_passed_pending_human_acceptance"
+}

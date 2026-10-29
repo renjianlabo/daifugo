@@ -1,0 +1,17 @@
+{
+  "tool": "built-in image_gen",
+  "asset": "body-trial-01",
+  "scope": "new body reference single trial, not one of the final six",
+  "status": "failed",
+  "attempts": 1,
+  "error": {"code":"moderation_blocked","category":"sexual","stage":"output","requestId":"28d4a597-e802-480e-919d-91815ad2e747","specific_cause":"unknown"},
+  "output": null,
+  "retry": false,
+  "prompt": "Use case: illustration-story. Asset type: one transparent square PNG character proportions trial for a Japanese card game. Input image 1 is the new BODY PROPORTIONS reference: use the overall head-to-body ratio, shoulder width, torso length, waist and arms from it, without exaggeration. Input image 2 is the STRICT OUTFIT reference, overriding differences in image 1. Input image 3 is the face/rendering reference of the same character. Create one ordinary relaxed standing character portrait, eye-level camera, head to just below the waist and top of skirt, three-quarter torso but face looking toward viewer, blue eyes open and a small calm closed-mouth smile. Arms naturally relaxed with both hands resting lightly together in front of the waist, entire hands and all fingertips visible. Same character identity: glossy black chin-length bob, straight bangs, blue almond-shaped eyes, warm tan skin and softly flushed cheeks. Keep the proportions natural and faithful to reference; use an ordinary non-suggestive game character pose. Clothes match input image 2 exactly: opaque white short-sleeved sailor blouse with PLAIN WHITE sleeve hems (no navy cuff bands), navy sailor collar with two narrow white edge stripes, plain white triangular chest insert without stripes, red neckerchief with navy loop, single plain white patch pocket on HER LEFT chest (viewer right), dark navy pleated skirt waistband. Blouse meets waistband and covers torso. No bag, no shoulder straps, no accessories, no props. Match the polished anime fine linework and rich soft cel shading of the references. Keep full head and hair, both elbows, both hands inside the square with generous 8% transparent margin at top and sides. No text, no symbols, no frame, no scenery or cast shadow. True transparent background with clean preserved hair edges. Output one single 1024x1024 image.",
+  "referenceImages": [
+    "参考イラスト/キャラ1/体格/01.png",
+    "参考イラスト/キャラ1/服装/01.png",
+    "生成元/chara1/icon.png"
+  ],
+  "summary": "新しい添付を体格基準、前回1枚目を服装基準にして鞄なしの通常立ち姿を1枚だけ試す。既存iconと正式な6枚は置き換えない。"
+}

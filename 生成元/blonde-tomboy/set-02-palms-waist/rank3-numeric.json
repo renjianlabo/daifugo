@@ -1,0 +1,38 @@
+{
+  "name": "rank3",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 376365,
+  "alpha_range": [
+    0,
+    254
+  ],
+  "visible_bbox": [
+    52,
+    63,
+    984,
+    1024
+  ],
+  "rgb_rounding_step": null,
+  "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank3.png",
+  "source_sha256": "2003f081a0b00d19333b0e0832094ca2bcb96c1b6000b49b6ccf94472f3c1670",
+  "sha256": "19e3fa5661904dbf85f0e74278b9ccece98b4194f9d4960228c5d910adc05f68",
+  "alpha_preserved_after_resize": false,
+  "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+  "alpha_mean_absolute_error": 0.43325138092041016,
+  "alpha_max_absolute_error": 61,
+  "composite_mean_absolute_error": {
+    "#162438": [
+      1.3291902542114258,
+      1.2008323669433594,
+      1.3117399215698242
+    ],
+    "#f4f4f4": [
+      1.2639265060424805,
+      1.1749544143676758,
+      1.3540353775024414
+    ]
+  }
+}

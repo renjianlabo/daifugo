@@ -1,0 +1,370 @@
+{
+  "status": "two_edits_and_ai_checks_complete_pending_human_acceptance",
+  "assets": [
+    {
+      "name": "icon",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 117663,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        0,
+        18,
+        256,
+        256
+      ],
+      "rgb_rounding_step": 1,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank2.png",
+      "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+      "sha256": "a807416807dfe46547ffaaf0135b46ff4492dca6defdbee57205689414ce48d8",
+      "alpha_preserved_after_resize": true,
+      "compression_method": "RGB rounding; resized alpha unchanged",
+      "alpha_mean_absolute_error": 0.0,
+      "alpha_max_absolute_error": 0,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "#f4f4f4": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "layout": {
+        "scale": 0.8165869218500797,
+        "dx": 0,
+        "dy": 0,
+        "reason": "Uniform resize of full edited square, preserve composition"
+      },
+      "name": "special",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 394921,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        44,
+        63,
+        988,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\special.png",
+      "source_sha256": "841bdd929deba94bef8d4da14d1969c24f3ceb2db42bbfd3d564884d24930298",
+      "sha256": "580ddf3d76e2d96ef64c0e5db83b38e00ff70f2e600e3c848747594f58c5fdc4",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.42786216735839844,
+      "alpha_max_absolute_error": 81,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.2655725479125977,
+          1.1251516342163086,
+          1.2408580780029297
+        ],
+        "#f4f4f4": [
+          1.1911582946777344,
+          1.11199951171875,
+          1.2792243957519531
+        ]
+      }
+    },
+    {
+      "layout": {
+        "scale": 0.8206304467420856,
+        "dx": -3,
+        "dy": 6,
+        "normalized_crown_y": 58,
+        "normalized_gem_center_y": 894.07,
+        "target_crown_y": 64,
+        "target_gem_center_y": 904.21,
+        "uniform_scale_ratio": 1.0049517384907962,
+        "reason": "Uniform scale and translation to match crown and measured blue waist jewel; no local stretching"
+      },
+      "name": "rank1",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 388130,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        14,
+        63,
+        1018,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\rank1.png",
+      "source_sha256": "d03b10921de2f5b63b39ad58a059182f6ebfdf9c395ec63833f3cc4322cab2f4",
+      "sha256": "6a9a42aa26259c03ba3d33be3a933a87141ee122d8edc59629d0d9600aef77b9",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.3548412322998047,
+      "alpha_max_absolute_error": 48,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.1087064743041992,
+          1.0240764617919922,
+          1.141707420349121
+        ],
+        "#f4f4f4": [
+          1.0495119094848633,
+          1.020686149597168,
+          1.164626121520996
+        ]
+      }
+    },
+    {
+      "name": "rank2",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 369781,
+      "alpha_range": [
+        0,
+        253
+      ],
+      "visible_bbox": [
+        69,
+        60,
+        959,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank2.png",
+      "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+      "sha256": "673739999050fac3171214f101277eb384f97e10cbbb24583e8beb70da21a3e5",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.43819427490234375,
+      "alpha_max_absolute_error": 44,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.3286991119384766,
+          1.2050094604492188,
+          1.3284482955932617
+        ],
+        "#f4f4f4": [
+          1.2665061950683594,
+          1.197035789489746,
+          1.3710746765136719
+        ]
+      }
+    },
+    {
+      "name": "rank3",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 376365,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        52,
+        63,
+        984,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank3.png",
+      "source_sha256": "2003f081a0b00d19333b0e0832094ca2bcb96c1b6000b49b6ccf94472f3c1670",
+      "sha256": "19e3fa5661904dbf85f0e74278b9ccece98b4194f9d4960228c5d910adc05f68",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.43325138092041016,
+      "alpha_max_absolute_error": 61,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.3291902542114258,
+          1.2008323669433594,
+          1.3117399215698242
+        ],
+        "#f4f4f4": [
+          1.2639265060424805,
+          1.1749544143676758,
+          1.3540353775024414
+        ]
+      }
+    },
+    {
+      "name": "rank4",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 370632,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        60,
+        63,
+        976,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank4.png",
+      "source_sha256": "dfcda4b8c881074eed74cc95b20d4edd0e4f4278c72ea57d3ba55d4a45a2a468",
+      "sha256": "67e0c7358bba36b35a387a6e63ce3bdf081fa23689aa0a0fc00ad5154c9a4b11",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.49316978454589844,
+      "alpha_max_absolute_error": 68,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.2307558059692383,
+          1.1085872650146484,
+          1.197122573852539
+        ],
+        "#f4f4f4": [
+          1.1273279190063477,
+          1.0928373336791992,
+          1.2478466033935547
+        ]
+      }
+    }
+  ],
+  "protected_files_checked": 63,
+  "protected_changed": [],
+  "zip_verified": true,
+  "human_acceptance": false,
+  "game_integration": false,
+  "game_tests_run": false,
+  "edited": [
+    "special",
+    "rank1"
+  ],
+  "unchanged_images": {
+    "icon": true,
+    "rank2": true,
+    "rank3": true,
+    "rank4": true
+  },
+  "generation_calls": 3,
+  "output_images": 3,
+  "quality_retries": 1,
+  "generation_failures": 0,
+  "waist_measurement": {
+    "landmarks": {
+      "rank1_before": {
+        "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank1.png",
+        "method": "largest connected blue belt-gem region in fixed ROI",
+        "roi": [
+          400,
+          700,
+          600,
+          970
+        ],
+        "pixels": 307,
+        "bbox": [
+          468,
+          764,
+          491,
+          788
+        ],
+        "center": [
+          479.42,
+          776.18
+        ]
+      },
+      "rank2_ref": {
+        "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank2.png",
+        "method": "largest connected blue belt-gem region in fixed ROI",
+        "roi": [
+          400,
+          700,
+          600,
+          970
+        ],
+        "pixels": 280,
+        "bbox": [
+          456,
+          894,
+          480,
+          920
+        ],
+        "center": [
+          466.98,
+          907.79
+        ]
+      },
+      "rank3_ref": {
+        "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank3.png",
+        "method": "largest connected blue belt-gem region in fixed ROI",
+        "roi": [
+          400,
+          700,
+          600,
+          970
+        ],
+        "pixels": 321,
+        "bbox": [
+          459,
+          888,
+          484,
+          912
+        ],
+        "center": [
+          470.84,
+          900.64
+        ]
+      },
+      "rank1_after": {
+        "file": "C:\\github\\daifugo\\確認用\\金髪キャラ_男勝り6枚_修正版\\rank1.png",
+        "method": "largest connected blue belt-gem region in fixed ROI",
+        "roi": [
+          400,
+          700,
+          600,
+          970
+        ],
+        "pixels": 432,
+        "bbox": [
+          476,
+          890,
+          503,
+          919
+        ],
+        "center": [
+          489.3,
+          904.46
+        ]
+      }
+    },
+    "target_blue_gem_center_y": 904.21,
+    "tolerance_px": 15,
+    "after_delta_px": 0.25,
+    "alignment_pass": true
+  },
+  "visual_review": "pass; see report for scope and limits",
+  "hair_tying_ribbons_visible": false,
+  "earring_blue_tassels_preserved": true,
+  "unverified": [
+    "human acceptance",
+    "game display",
+    "pixel-perfect preservation inside edited images"
+  ]
+}

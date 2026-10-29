@@ -1,0 +1,38 @@
+{
+  "special": {
+    "source_sha256": "9075e73ec643add67317b415e132f5ede595924cd52cb5a6e357edef8ebfa003",
+    "complete_crown": true,
+    "top_alpha_max": 1,
+    "visible_bbox_top_at_alpha_over_16": 9,
+    "evidence": "special-top-check.png",
+    "decision": "complete crown visually inspected; preserve all source pixels and alpha; add transparent margin; no regeneration"
+  },
+  "rank1": {
+    "source_sha256": "d41e3531bb9b9ff5dc750d5c86bfed8879dccd76c2fde22fdfd930d8dc45851d",
+    "complete_crown": true,
+    "top_alpha_max": 2,
+    "visible_bbox_top_at_alpha_over_16": 8,
+    "decision": "Native output visually inspected; preserve source and all alpha; add transparent margin only."
+  },
+  "rank2": {
+    "source_sha256": "c68f0e8d73038555a4c22e5e27fee071bae1f4b92b76d8b30ab1da464545c0a7",
+    "complete_crown": true,
+    "top_alpha_max": 0,
+    "visible_bbox_top_at_alpha_over_16": 26,
+    "decision": "Native output visually inspected; preserve source and all alpha; add transparent margin only."
+  },
+  "rank3": {
+    "source_sha256": "ff1c477570a89763fac65e1560d6f318decc211b709ddf0ada6474af9f461492",
+    "complete_crown": true,
+    "top_alpha_max": 0,
+    "visible_bbox_top_at_alpha_over_16": 61,
+    "decision": "Native output visually inspected; preserve source and all alpha; add transparent margin only."
+  },
+  "rank4": {
+    "source_sha256": "572d4966b162be06aba53bd3c2f5f7b0b11d7d3eadd9c9565468297dc88a1823",
+    "complete_crown": true,
+    "top_alpha_max": 0,
+    "visible_bbox_top_at_alpha_over_16": 16,
+    "decision": "Native output visually inspected; preserve source and all alpha; add transparent margin only."
+  }
+}

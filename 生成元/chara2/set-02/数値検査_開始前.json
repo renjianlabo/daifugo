@@ -1,0 +1,56 @@
+{
+  "status": "partial_stopped",
+  "expected_assets": 6,
+  "saved_assets": 1,
+  "icon": {
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 88332,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "sha256": "7e47cb656098faff2f807d942f96f002b8a7a203516beefe6f3dd53b67c626df",
+    "crop": [
+      150,
+      30,
+      1110,
+      990
+    ]
+  },
+  "missing": [
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "rank4"
+  ],
+  "generation_calls": 5,
+  "output_images": 2,
+  "quality_retries": 1,
+  "moderation_failures": 3,
+  "protected_files_unchanged": {
+    "assets/characters/chara1/icon.png": true,
+    "assets/characters/chara1/rank1.png": true,
+    "assets/characters/chara1/rank2.png": true,
+    "assets/characters/chara1/rank3.png": true,
+    "assets/characters/chara1/rank4.png": true,
+    "assets/characters/chara1/special.png": true,
+    "src/characters.ts": true,
+    "src/cpu/cpu.ts": true,
+    "src/engine/cards.ts": true,
+    "src/engine/game.ts": true,
+    "src/engine/plays.ts": true,
+    "src/main.ts": true,
+    "src/ui/app.ts": true,
+    "src/ui/avatar.ts": true,
+    "src/ui/storage.ts": true,
+    "src/ui/style.css": true,
+    "src/vite-env.d.ts": true
+  },
+  "references_copy_hash_match": true,
+  "game_integration": false,
+  "human_acceptance": false
+}

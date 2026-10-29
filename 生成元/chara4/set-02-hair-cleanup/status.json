@@ -1,0 +1,22 @@
+{
+  "character": "chara4",
+  "status": "interrupted_by_user_hair_policy_change",
+  "dateJst": "2026-10-29",
+  "requested": 5,
+  "generatedCandidateNames": [
+    "special",
+    "rank1",
+    "rank2"
+  ],
+  "notGenerated": [
+    "rank3",
+    "rank4"
+  ],
+  "generationCalls": 5,
+  "qualityCorrectionCalls": 2,
+  "moderationFailures": 0,
+  "humanAdoption": false,
+  "gameIntegration": false,
+  "continuation": "Do not resume the broad-lock hair simplification prompts. Latest policy is maintained in Notion. No new images requested in this rule-update turn.",
+  "notion": "https://app.notion.com/p/4063ea603c5381dd81d2cd5b1abe2171"
+}

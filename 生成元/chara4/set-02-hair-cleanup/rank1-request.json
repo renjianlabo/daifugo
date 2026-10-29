@@ -1,0 +1,29 @@
+{
+  "name": "rank1",
+  "attempt1": {
+    "args": {
+      "prompt": "Use case: illustration-story. Create exactly ONE transparent square anime card-game character sprite based on image 1, the NEW MASTER for this adult woman's identity and simplified hair, face, natural physique, green eyes, outfit, jewelry, fine clean linework and smooth shading. Preserve the NEW MASTER's glossy black neck-to-shoulder bob, side part, long sweeping front lock, soft inward tips and natural volume. Hair: few cohesive broad natural locks with restrained clean linework and broad shading. Keep both side sections from ears to neck organized in large flowing locks, smooth outer contour, only a few substantial tapered tips. Avoid excessive fine subdivisions, detached wiry hairs, tiny curling wisps or loops at the forehead, eyes, temples, cheeks and side-hair silhouette; do not recreate the former many-stranded hair. Keep her same refined adult face, green eyes, skin and gentle blush, black opaque sleeveless high-neck vertically ribbed top, and plain black high-waisted skirt. Preserve both delicate gold geometric oval drop earrings with horizontal bars and thin gold chain with one oval pendant. No jacket, sleeves, outerwear, new accessories or body exaggeration. Her personality is a calculating, perceptive, composed adult woman. Upright natural standing pose. True transparent background; no scenery, objects, cards, text, logo, watermark, sparkles, sweat icons or drawn effects. Frame the complete crown, all side hair, both elbows and every finger entirely INSIDE the square, with at least 8 percent clear top margin and comfortable side margins. View head through waist and upper skirt; do not crop any hand at the bottom. Keep head size and height appropriate to the existing head-to-waist series (head about 27-30 percent of canvas height), not the close-up master crop. Output 1024x1024. FIRST PLACE: elegant unmistakable delighted laughter, both eyes happily CLOSED, cheeks lifted and mouth OPEN laughing. One hand floats just beside the mouth, relaxed fingers together without hiding the open smile; other relaxed hand rests at side of her waist. Complete hand at the mouth and low hand, fingers and elbows all comfortably in frame. This is joyful laughter rather than a tiny polite smile.",
+      "referenced_image_paths": [
+        "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\candidate.png"
+      ],
+      "transparent_background": true
+    },
+    "sourcePath": "C:\\Users\\81805\\.codex\\generated_images\\01a181bb-9b54-7061-96fb-40c41b7dc91c\\exec-c43b9918-a454-4587-8787-d598006b6f18.png",
+    "seconds": 49.477,
+    "status": "rejected_low_hand_at_bottom_edge"
+  },
+  "corrected": {
+    "args": {
+      "prompt": "Use case: precise-object-edit. Image 1 is the new character master, image 2 is the target first-place laughing sprite to FIX. Produce ONE corrected transparent square sprite. Preserve image 2's laughing face (eyes closed, mouth open), hand beside mouth, identity, organized broad black bob hair, gold jewelry, black sleeveless high-neck ribbed top and black skirt, natural physique, shading and linework. CHANGE ONLY the hanging arm on VIEWER-RIGHT: bend this elbow outward slightly and bring that relaxed hand to rest at the SIDE OF HER WAIST, with the full hand and all five fingers visible well above the bottom edge, in the elegant first-place laughter pose. The low hanging hand that is clipped in image 2 must no longer hang down. Keep mouth-side hand unchanged. Fit the entire crown, both elbows, both complete hands with fingers inside the square, giving 8% clear headroom and at least 5% side margins. Frame head through waist/upper skirt, bottom below both hands. Keep hair in large orderly cohesive locks, without adding fine frizz, isolated wiry strands or loops. Transparent background, no scenery/objects/text/effects, no jacket or new accessories. Do not change the laughter into a small smile. Output square 1024x1024.",
+      "referenced_image_paths": [
+        "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\candidate.png",
+        "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank1-attempt1.png"
+      ],
+      "transparent_background": true
+    },
+    "sourcePath": "C:\\Users\\81805\\.codex\\generated_images\\01a181bb-9b54-7061-96fb-40c41b7dc91c\\exec-35079bee-693f-418c-b178-415c8b77accb.png",
+    "seconds": 50.288,
+    "status": "saved_pending_final_visual_review"
+  },
+  "intentSummary": "笑顔と髪を保ち、下端の手を腰横へ戻す。既存素材は変更しない。"
+}

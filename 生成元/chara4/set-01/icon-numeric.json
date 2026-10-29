@@ -1,0 +1,41 @@
+{
+  "name": "icon",
+  "source": "生成元\\chara4\\set-01\\icon.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "crop_box": [
+    160,
+    -70,
+    1160,
+    930
+  ],
+  "source_sha256": "538cdadb6bfa6d10eb469110b477a1a6bb97c9533b7584985e83d2c944893205",
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 80471,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    13,
+    20,
+    235,
+    256
+  ],
+  "rgb_rounding_step": 1,
+  "rgb_mean_abs_error": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "sha256": "090c648d5bfe214d7817471c0c72da092c82c668ff60a6bf4c28ffba42accfba",
+  "top_padding_pixels": 0,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "ai_passed_pending_human_acceptance"
+}

@@ -1,0 +1,63 @@
+{
+  "character": "chara2",
+  "status": "partial_stopped",
+  "tool": "built-in image_gen",
+  "savedAssets": [
+    "icon"
+  ],
+  "missingAssets": [
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "rank4"
+  ],
+  "calls": [
+    {
+      "asset": "icon",
+      "attempt": 1,
+      "status": "quality_rejected",
+      "reason": "hair crown clipped",
+      "promptSource": "prompts.json",
+      "output": "icon-attempt1.png",
+      "callWallSeconds": 51.1
+    },
+    {
+      "asset": "icon",
+      "attempt": 2,
+      "status": "saved",
+      "promptSource": "icon-fix.json",
+      "output": "icon.png",
+      "callWallSeconds": 49.2
+    },
+    {
+      "asset": "special",
+      "attempt": 1,
+      "status": "moderation_blocked",
+      "category": "sexual",
+      "stage": "output",
+      "output": null,
+      "requestId": "91f8b3dc-b3b4-47b2-a93e-4820ca3efefd",
+      "promptSource": "prompts.json",
+      "callWallSeconds": 79.3
+    },
+    {
+      "asset": "rank1",
+      "attempt": 1,
+      "status": "moderation_blocked",
+      "category": "sexual",
+      "stage": "output",
+      "output": null,
+      "requestId": "8db162f6-0071-4fa4-a6aa-a470fc4d44f4",
+      "promptSource": "prompts.json",
+      "callWallSeconds": 51.5
+    }
+  ],
+  "unattempted": [
+    "rank2",
+    "rank3",
+    "rank4"
+  ],
+  "gameIntegration": false,
+  "humanAcceptance": false
+}

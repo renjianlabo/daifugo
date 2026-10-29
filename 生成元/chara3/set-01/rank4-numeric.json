@@ -1,0 +1,35 @@
+{
+  "name": "rank4",
+  "source": "生成元\\chara3\\set-01\\rank4.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "source_sha256": "8d6c471d0e0476110e720861b1858b00ba4d715ed10964eea8403ba615e1202a",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 473494,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    169,
+    72,
+    880,
+    1024
+  ],
+  "rgb_rounding_step": 3,
+  "rgb_mean_abs_error": [
+    0.6619997153892052,
+    0.6603394857532324,
+    0.6592909196673549
+  ],
+  "sha256": "5aa971f307284cf2ada477124435f2a0de51f35fcb534c1a522f56b347530238",
+  "top_padding_pixels": 85,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "ai_passed_pending_human_acceptance"
+}

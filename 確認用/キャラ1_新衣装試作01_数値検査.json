@@ -1,0 +1,41 @@
+{
+  "status": "trial_saved_pending_visual_acceptance",
+  "attempts": 1,
+  "source_size": [
+    1254,
+    1254
+  ],
+  "export_size": [
+    1024,
+    1024
+  ],
+  "export_bytes": 462915,
+  "rgb_quantization_step": 4,
+  "rgb_mean_abs_error": [
+    0.9955363319884216,
+    0.9866283671221656,
+    0.9924203430355156
+  ],
+  "alpha_unchanged_after_quantization": true,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_gt16_bbox": [
+    241,
+    84,
+    812,
+    1024
+  ],
+  "padding_before_resize": [
+    50,
+    100,
+    50,
+    0
+  ],
+  "source_sha256": "356fa8678bf902ad13118bd3649cbdfe3ce7ec607adc9fe3f2e6805444e69cf7",
+  "export_sha256": "346ffd3171df2ab2783eb9cd7530db257e1f98c74edc7a4591d8ba98dab0d2e6",
+  "reference_copies_match": true,
+  "adopted": false,
+  "game_integration": false
+}

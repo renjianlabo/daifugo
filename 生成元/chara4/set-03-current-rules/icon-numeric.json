@@ -1,0 +1,23 @@
+{
+  "name": "icon",
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 83224,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "visible_bbox": [
+    0,
+    23,
+    253,
+    256
+  ],
+  "rgb_rounding_step": 1,
+  "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\special.png",
+  "source_sha256": "8956a212a90950cac85cad1b9f713e73173613c2c050def468e12370d84c822f",
+  "sha256": "74ec1fee7f25f79c85d57505bd5c9bb66134df8e2e85590d00c471c22a94eaad",
+  "alpha_preserved_after_resize": true
+}

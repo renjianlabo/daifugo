@@ -1,0 +1,718 @@
+[
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\icon.png",
+    "Hash": "11D8FBBE0F1726E3C55819B112319B0D6F96E4EA59AFD29D927E4484F0A11E42"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank1.png",
+    "Hash": "7DCF846BEAC09C27F4D23DECE31889E08261F0B8851E8C7A0D3F31A9D2AA0508"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank2.png",
+    "Hash": "AAA40FB3538E39623D80CB9EB1E72F186633532EC4FCB1F7DC91D1D7B3047A2A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank3.png",
+    "Hash": "E1397E0ADD36D7B6DF780E9B0C183B912FF0386BF572E4FCE202D6DF5BDB3186"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank4.png",
+    "Hash": "A886C8DDFE08D0439FEF5D149FA62E524DB136596CB5EF479C03BF45B07A7EC5"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara1\\special.png",
+    "Hash": "44C9AE1AC85D4AFFFF246B170A5CFD1758E6B9020083A5840C16AE81AB485841"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\icon.png",
+    "Hash": "7E47CB656098FAFF2F807D942F96F002B8A7A203516BEEFE6F3DD53B67C626DF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank1.png",
+    "Hash": "4E1153CDE8126372733791ED936EBDB00249965FBC76EA297198297A3A10D68F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank2.png",
+    "Hash": "D063A6DE302F7F8052C451930E48CA3197D164F766219382567945753DBE2C55"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank3.png",
+    "Hash": "14199EBC15DA35E7D36942A731B7130562760174E9320887C4A82A0E039530F0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank4.png",
+    "Hash": "543AE3CB62D5B543635A8AF305FADDCE130FE0A7D37CD9B3DF665C66C1D8F500"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara2\\special.png",
+    "Hash": "B39E972507CE55D750E0389712013D19F4D1709161A8014B8591C6D394CFF10C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\icon.png",
+    "Hash": "C106F8F180C8B1377811A70FD65023B4FC7591C42BEE8F8F163882F771842DDF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank1.png",
+    "Hash": "7B93378C851106E144FCFCF670030E70F6C1738F51650E0E8B23D774F5857FA0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank2.png",
+    "Hash": "069290DE6957A06908E5C07A59F0EB9DE321F8C3FF6D81169681732F16D74389"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank3.png",
+    "Hash": "5F3C7FC19A3D9DE2559C9C1C391EF85B667DE75282C95EDB583CF40BDA2B19F9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank4.png",
+    "Hash": "5AA971F307284CF2ADA477124435F2A0DE51F35FCB534C1A522F56B347530238"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara3\\special.png",
+    "Hash": "B5803E4D9E73853D86BA23C8F80E8C57DD04799BF6EFD312636E1F47BF56D7E9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\icon.png",
+    "Hash": "090C648D5BFE214D7817471C0C72DA092C82C668FF60A6BF4C28FFBA42ACCFBA"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank1.png",
+    "Hash": "36B89430987ED6517C928CC7D00457C42F27AE2F50F602229C43B10BBB3491D1"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank2.png",
+    "Hash": "AB47AB99AD761EA070C222F3F14BAD402FC8173D5B5CCE1F7AEDF5CBDBCE9890"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank3.png",
+    "Hash": "4778BED739BD5E49AAD6B3759AE30EEDB3542067A4187CC81AA386D038F7ABE3"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank4.png",
+    "Hash": "7C5ABF092272CDF4CFCAF044B72463CAF3A669DE07F8FAA69E253CF4645BB3E8"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\assets\\characters\\chara4\\special.png",
+    "Hash": "0C6C9414931FAC406DD28D5C1E394E08B591222790AD24C8AC00D1348C4D209A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\icon-attempt1.png",
+    "Hash": "4EE7038EF509099C726796D1B33FD761A0044A7301150BF9669A32A303FA1525"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\icon.png",
+    "Hash": "4077E123CDB194FC2092ABACBB9AC6F3897C68C42A49E1E5CED41463B0A75363"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\outfit-v2-trial-01-palette192.png",
+    "Hash": "C03818F98D25F0EFCFC91BE470F7DB99BDA0CEB869DA779703C7B6FCC32FB276"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\outfit-v2-trial-01.png",
+    "Hash": "356FA8678BF902AD13118BD3649CBDFE3CE7EC607ADC9FE3F2E6805444E69CF7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-rank4-sad-01\\attempt1-hands-clipped.png",
+    "Hash": "C4A253400728668B568B4BAEED42D8AC64A0F50016611E5292B58DC19FF3264D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-rank4-sad-01\\rank4.png",
+    "Hash": "415822ECE6CB1C4A3195264910F605D91ECC09D6D511A4546FADAE12171173C0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-rank4-sad-01\\before\\rank4.png",
+    "Hash": "3618F8461056252B44C0BFE14912E72229C639C78C5767EE478DF9254602B0F7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-rank4-sad-01\\before\\stage-rank4.png",
+    "Hash": "3618F8461056252B44C0BFE14912E72229C639C78C5767EE478DF9254602B0F7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-rank4-sad-01\\before\\キャラ1一覧.png",
+    "Hash": "E710725547C54169CBACDAF76BC6DE52A56C3AB5FF5C9A7D48D7C2E7B9663347"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\base-approved.png",
+    "Hash": "356FA8678BF902AD13118BD3649CBDFE3CE7EC607ADC9FE3F2E6805444E69CF7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\rank1.png",
+    "Hash": "1E71C202C555165C61365AA3C853840E7C97BAAD412779031C7164D10AEC083E"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\rank2.png",
+    "Hash": "19B295486DE707DC9BA641E2DD50FF3394A435618253C568F5A463473B9AD73A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\rank3.png",
+    "Hash": "2D2F2524C7C7B66390ED37EBFB067E912D8702E348C26A09D9CEBA86719107A0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\rank4.png",
+    "Hash": "AB05829D7B19E213043E0EBB40E4B565271DA21E98D529932CB71C27F3F2AB50"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\special.png",
+    "Hash": "A4DBCECCC49F4B7BF279E0676476CC69470DF6935E14E70C62A18A6EA7DB1203"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\旧一覧_未完成.png",
+    "Hash": "B362B25EDCA413C641AE410D6C584D07945325D3271E327D3B7AC06D41C35A89"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\icon.png",
+    "Hash": "11D8FBBE0F1726E3C55819B112319B0D6F96E4EA59AFD29D927E4484F0A11E42"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\rank1.png",
+    "Hash": "7DCF846BEAC09C27F4D23DECE31889E08261F0B8851E8C7A0D3F31A9D2AA0508"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\rank2.png",
+    "Hash": "AAA40FB3538E39623D80CB9EB1E72F186633532EC4FCB1F7DC91D1D7B3047A2A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\rank3.png",
+    "Hash": "E1397E0ADD36D7B6DF780E9B0C183B912FF0386BF572E4FCE202D6DF5BDB3186"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\rank4.png",
+    "Hash": "A886C8DDFE08D0439FEF5D149FA62E524DB136596CB5EF479C03BF45B07A7EC5"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\v2-set-01\\書き出し\\special.png",
+    "Hash": "44C9AE1AC85D4AFFFF246B170A5CFD1758E6B9020083A5840C16AE81AB485841"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara1\\旧衣装\\icon-256.png",
+    "Hash": "70FF20BE467C5E1DC960A223A6E325D002B5CDB8778A1B2A957E220DFBED43EF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-01\\icon-attempt1.png",
+    "Hash": "17DFE71B56364A0E4B9B3761AC91526AF8910338D1AF2FD3389457C242B5C532"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-01\\icon.png",
+    "Hash": "8914EBB38727A0673E3F582E8224C66F24EC16CD71A15436B7050FEAADC80761"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank1-light-dark.png",
+    "Hash": "9BFBC613180CB888C9EDA754AF93FC8ACB402AF01099DD8D09352A5EFC2302F4"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank1.png",
+    "Hash": "094A58B8858CDA6F4E3706DA6A8B9E66A9E304847A345FFDB72C5C3CD405FFD1"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank2-light-dark.png",
+    "Hash": "9CEFB17522AE3F216E98C95359D8F8CAC681FFD75426EDEE03BBCEA27066B1F2"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank2.png",
+    "Hash": "B702A005EDD8A624F7D72EAD3FE157ADBD2FC5B15465708BD8D72F61951C111E"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-attempt1-light.png",
+    "Hash": "DA8D5A9722CAF934B762C364037449320E2B4B868F575CFBA4B60BA51D58A332"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-attempt1.png",
+    "Hash": "B2075C65878C243110476753A7C770710B890088E95D430BC84008E2430FD321"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-light-dark.png",
+    "Hash": "F0D96AD8AFD202B2B8C17E015537AE44711EF7FBA54F728868C65F1480229428"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3.png",
+    "Hash": "B250D18CA4123AEEDDD8D7A55FA048B6C6E4FB81657DD83AD84D158F7753361A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank4-attempt1.png",
+    "Hash": "563436A4AEC38614C69CD4CDCB825B441D8E49E860FBB37D7EA747ED58EFE17A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank4-light-dark.png",
+    "Hash": "A52913E3D5D411ABC062E5E71702BAC481BCDFAE408BB79C98EB12260916EC7D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank4.png",
+    "Hash": "86F65F111FCCC9A7E26B63242EBACE734AE4AE9DB4A6320A892741BDCB29DA87"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\special-light-dark.png",
+    "Hash": "F4DB8AE70E53A6F60B9539C64C02D2BD35AABB326ACDB0FE47AB3D4B5B0A2821"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\special.png",
+    "Hash": "50B89D0E5391E8913B0CF0083670CDC554DBAC05DC2CDCEC910B00730CBA913F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\一覧_開始前.png",
+    "Hash": "FFCA9BF6F412E496E0A6A5F829447E8960E3ABABEDCE3D125006EFAA9243035A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-before-hand-fix\\final-replaced.png",
+    "Hash": "295C16F8FB794F2FA6F5F9498B7944020DF0E0F0BB52EDB575E4C242320082A2"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-before-hand-fix\\rank3-final.png",
+    "Hash": "295C16F8FB794F2FA6F5F9498B7944020DF0E0F0BB52EDB575E4C242320082A2"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-before-hand-fix\\rank3-light-dark.png",
+    "Hash": "17AA4B7B293674FB970BA1B87F1FC1841A2269A636BA717D6177980EF32F7869"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-before-hand-fix\\rank3-source.png",
+    "Hash": "A412FCB25AD1F67EBAD23FD0B7366EE2A1BCC42F6BDA72AFD5F124E217910689"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara2\\set-02\\rank3-before-hand-fix\\raw-replaced.png",
+    "Hash": "A412FCB25AD1F67EBAD23FD0B7366EE2A1BCC42F6BDA72AFD5F124E217910689"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\icon-light-dark.png",
+    "Hash": "2DA43EE4AABCE31B23CDDC3D44DDF138C7DDAAD9207F0C4AF6DCDE738B2C1E6F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\icon.png",
+    "Hash": "7B5AB40BEFAF0D622624C343B104E1E4923B44FF53EA57F0840DEA4AF1CC4C49"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank1-attempt1.png",
+    "Hash": "38F28324826C1E6F3998B56390725B33378B416F1780154EC000260A2BEFDDB7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank1-light-dark.png",
+    "Hash": "013BE18DD0876784997CDC8C5441BFF5687ADB686AB9F70752DF8566FAE297C9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank1.png",
+    "Hash": "01D9DBFF00ED1A4A36791101FF838221022D8347B9B5A024D742A56B43DA7288"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank2-light-dark.png",
+    "Hash": "C435CEC5BBABB0A19A52716C37690913C4A2EDFEF1371FA5AA77B0A34D396B62"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank2.png",
+    "Hash": "A378A3D56E81CE31FAC5B1375C4A25E114A4815E6E8C967042307949C7D33925"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank3-light-dark.png",
+    "Hash": "0B75F141A0DC0AC49D9CE15B199DF48532D14DCF33A87A95621D919407FFFB7C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank3.png",
+    "Hash": "4A6021AB954BAB292BBC4D8AD0007ABB1CD4B9A58D12D29E76125966FDB0742A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank4-attempt1.png",
+    "Hash": "0D9620634ADA6D0A848149A8AC0FD9C2DA03C08F6283A127AC0AAFA7E57FB5C0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank4-light-dark.png",
+    "Hash": "DBD815D91F6208E2F1F0943C598D65E16B8540145339294FB07AB662BCEAC33E"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\rank4.png",
+    "Hash": "8D6C471D0E0476110E720861B1858B00BA4D715ED10964EEA8403BA615E1202A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\special-light-dark.png",
+    "Hash": "84C68878DBB803ECD8B0EFC91A8946050BC38ADB167F77B1D0E5D1621E7B4990"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara3\\set-01\\special.png",
+    "Hash": "AEDCE016C515D85B89D6783064F7464F19F88BA1C65F686120D93E993AEB34AC"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\candidate.png",
+    "Hash": "992986C0C742CFF098E507EB7D305272BD316F0C70AAE7FB233315EE2218E3B6"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\comparison.png",
+    "Hash": "7447F32B2CBECC40601C27824177B6C118BCB9AD1B0C0C56676DCB4DE215D29D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\hair-detail.png",
+    "Hash": "B6293F14C81960EB664EB33B82705A875BC59152381A776EADB7179B6665793D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\hair-cleanup-01\\input.png",
+    "Hash": "9906FAF194FA4DEFAC2943076AA51A0334A5243D6FF596EBB0AA894CD021D168"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\icon-light-dark.png",
+    "Hash": "CC375E0A9B440875250D8020561D8FA2A0B6008C65C4A39A20071BA7BD3D777A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\icon.png",
+    "Hash": "538CDADB6BFA6D10EB469110B477A1A6BB97C9533B7584985E83D2C944893205"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank1-light-dark.png",
+    "Hash": "6D64DAC48A4D313F5857126C37A127B52E07E4D60BFD360C75B6A4EBC9B48966"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank1.png",
+    "Hash": "D41E3531BB9B9FF5DC750D5C86BFED8879DCCD76C2FDE22FDFD930D8DC45851D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank2-attempt1.png",
+    "Hash": "35144BCD336165D5D3CDCEB14AB338F0FFD971FEF153CAF9BFD09855D2994D20"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank2-light-dark.png",
+    "Hash": "0708FDA11656D4848B9BFBF2071A38F9AE0BB768167F7F04B4969D52D56E76B1"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank2.png",
+    "Hash": "C68F0E8D73038555A4C22E5E27FEE071BAE1F4B92B76D8B30AB1DA464545C0A7"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank3-attempt1.png",
+    "Hash": "D8FC6972833F909385622066B667ABD084EE2E35F2A4CBB84D286D55F0BE268D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank3-light-dark.png",
+    "Hash": "FEE9394651A3C470A83707A27D1B6F2CF3342B2AC25FA1A1D4CEBA31F346F9FD"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank3.png",
+    "Hash": "FF1C477570A89763FAC65E1560D6F318DECC211B709DDF0ADA6474AF9F461492"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank4-light-dark.png",
+    "Hash": "94DD353B7568329347F19EF6B03F703BFFEA7C902E2BB7952625515E29314C13"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\rank4.png",
+    "Hash": "572D4966B162BE06ABA53BD3C2F5F7B0B11D7D3EADD9C9565468297DC88A1823"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\special-light-dark.png",
+    "Hash": "75C6685C9B0A6B08AB940C9DE6667721CAC342925649082BFD6009FFE4E9B63C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\special-top-check.png",
+    "Hash": "61E38C3353A3538C48BADF28C3794A93A1AC09077867872DA1E6504EF3E376E4"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-01\\special.png",
+    "Hash": "9075E73EC643ADD67317B415E132F5EDE595924CD52CB5A6E357EDEF8EBFA003"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank1-attempt1.png",
+    "Hash": "A90CE642ED0FCE7EA3A997E3F2F53E6DE8421225D111978A0C5D8FD03F6346FF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank1-light-dark.png",
+    "Hash": "4CA9145354AB688E891FE807F8B75D6E10184CC5F4D570032ABA73F2672E785C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank1.png",
+    "Hash": "103163276B9D92DCAA487392421D212157924A1ADC678A6840D54EF9B8E1625B"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank2-attempt1.png",
+    "Hash": "4CA9726E84D3A74BD6F698EDCFEBDF39A01ACB7B80789EE85E2A8070305A25F3"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank2-light-dark.png",
+    "Hash": "C78C2296504446613CB769F0515A62DC17C8246C84FED0D1D3E78FE6A4BDC7F5"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\rank2.png",
+    "Hash": "EE26262540540C7479E8EBD416FCC4E43B8A12C7EF539D11F03F41ACB1B7C045"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\special-light-dark.png",
+    "Hash": "89FF604806FD7B4961AE78D961DA2688177971CA450F98D354CFAE37699F7C1D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\生成元\\chara4\\set-02-hair-cleanup\\special.png",
+    "Hash": "034DEC496B45006FE29A78438A97749A6FFBBBE248805F30982DB50B40BD00B4"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\01.png",
+    "Hash": "3F00575F7E9D7E99479EA147D8BA94DA810BDB4E668CD13C53EF4504B979893C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\02.png",
+    "Hash": "EA42C5F38C2C9F06D4B752A8F10B154A252EF1997B469446164C12B3B0996507"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\03.png",
+    "Hash": "C1C6E84E404F968ADB6D562D6F4928545EDFC054262D4C744AD501CE507F7728"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\04.png",
+    "Hash": "9B5083098F7B9EB08814C25C22293CCD01D15DC8711FC8F45BD407497ECDC135"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\05.png",
+    "Hash": "88BF4A20BF6061E10E516F21492968C7AE847726149D95C655554FFA18C9865B"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\06.png",
+    "Hash": "9F0DEE8E103BCACB90958C14094A11E4481D696FA606CF3B497B9A9EBFE49445"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\07.png",
+    "Hash": "D210D788CCF524CB18336EAB32021DA99F60C68DA59D4225E70885CF0BC1CF1E"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\体格\\01.png",
+    "Hash": "C664CE18C8DFDD1723301111D41F572DC4015B0057EF27463CA16BA798ACEA58"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装\\01.png",
+    "Hash": "3F00575F7E9D7E99479EA147D8BA94DA810BDB4E668CD13C53EF4504B979893C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装_v2\\01.png",
+    "Hash": "8B8F9F4AFF8DEABF972F9590307A33F1E751A3633D8009953369845D7E941651"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装_v2\\02.png",
+    "Hash": "0526CC4339A81B1618EE9ACE4F0087AEFA871DDD25D7C6E057AC545A4926B0A3"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\01.png",
+    "Hash": "9BE6B890A87D18C4736B9E453D0D85AD5A5229105CE30658F3D51E7C119D136B"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\02.png",
+    "Hash": "5778E1973A0294DB3F2D06CAE71D60E4F4A2B9F31B9DBAA92BB7D5DD5898452B"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\03.png",
+    "Hash": "9D3BA01F8B2ABA04B879BF42665189CEAF6AA24D10CC76D074F971F11A10CAA8"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\04.png",
+    "Hash": "887E121571C958423418B88BE90147744EE057EABF4FF99C32082ED0318CD643"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\05.png",
+    "Hash": "2E95CC51A68E8169A60DD40FE550F244F1E1869428D87F25654DA742DC5604E2"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\06.png",
+    "Hash": "5E1BFE562A4F210029BC4DCCD5B50F78B5DD49AA8F6DFA58C06C575B29D5FDA9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\07.png",
+    "Hash": "B14668C2AEAFB96ACB13055131179E1675A0A20B4114A622D5CD33F4A6535ADB"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\服装\\01.png",
+    "Hash": "9BE6B890A87D18C4736B9E453D0D85AD5A5229105CE30658F3D51E7C119D136B"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ3\\01.png",
+    "Hash": "2FBA37A4FC7AD1442CA324D736522DD9F19910B6253129E09DC2AFAF86AADDD5"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\参考イラスト\\キャラ4\\01.png",
+    "Hash": "5099E26D203631EDF257352B8C659D73F71AB59B144795658FCDFC7245FF29AC"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_4位修正比較.png",
+    "Hash": "2402057DCDCCDA0D9EEF4E1E320C7E165B89484BDA6F709DA8F0143B4F5D9901"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_icon_明暗確認.png",
+    "Hash": "9BD805A77813C28968BC4953D37BF1A7000D8DD8901BA5F59B37396EFB21A89D"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_基準と6枚比較.png",
+    "Hash": "B227A993E7A255850998CA852D048E1A96D718E7D0017F8642729C9C7E854EFD"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_順位256確認.png",
+    "Hash": "F53259ED25481C019D5F9B61748C2AAFF8F4756460FB7808F41D3A7B21E15A7A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚_暗背景.png",
+    "Hash": "EC2946B1F4899F803BBE41B5C11A9BD4A72002AA8E412FA046590D06D25EC851"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装試作01_比較.png",
+    "Hash": "D88700AFDEA3471A7203A9AD9D2D8760AC9DA998AF23C61CC688042EC6F128AF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装試作01.png",
+    "Hash": "346FFD3171DF2AB2783EB9CD7530DB257E1F98C74EDC7A4591D8BA98DAB0D2E6"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1〜3_ポーズ比較.png",
+    "Hash": "CB251C1AF0A06C4FCAA5B46E799D55515C81DBDDF8B5F0AF3EA25EE869448224"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1〜4_3位表情比較.png",
+    "Hash": "77AF8A839DA66DEEA8FB66589E46DB395123B22F7F11460580AFED2C43FF3F50"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1〜4_ポーズ比較.png",
+    "Hash": "2FA0BEDBC19D8BD5B496649C510B57AC22076E3C9E0A3262CC16FED84B1EE314"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1一覧_v2.png",
+    "Hash": "39645C97DF11FB3E86CF6FFBFA322E2A30D00C61FFEB7CBD8AB09064F8EAB234"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1一覧.png",
+    "Hash": "39645C97DF11FB3E86CF6FFBFA322E2A30D00C61FFEB7CBD8AB09064F8EAB234"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_icon_明暗確認.png",
+    "Hash": "217BFB14E1F04EAE5DE97A510859F364B4C2E1E838589373FC239AB55AA58D63"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_暗背景一覧.png",
+    "Hash": "7FC1FF9330F606097156FFE73AEBD4BCD68F665045AD2B236CD8AEF92C4B4F22"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_基準比較.png",
+    "Hash": "7B92CBED13290C74F55BDCB7AD72BAE88197D4C9CA59BC85E0963D357849E93C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_手の確認.png",
+    "Hash": "5B49AB5763B888CBDEA865DF0087F53B42C2F6C923E23B1A73F27FEA1C3FB9AF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_順位256確認.png",
+    "Hash": "04EBB447C9EC34A0F799F5697C6D3EC63FB8AB0B20E7789EF2CCAD8F3851C51E"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2一覧.png",
+    "Hash": "30E86A00E289824D1E83FEC5278FDCC640F3A031823C0648904FD4A49EC53380"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_暗背景一覧.png",
+    "Hash": "FBA0EE3572AB3150C9054F40A55A8A4D454BB54DD3482F9C5F37B6DA3C9DC46F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_基準比較.png",
+    "Hash": "DBE0D79B0F9DC236AE6544125BA8FD77E6CC5504DCE149FBBFCD3237AD681DB4"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_手の確認.png",
+    "Hash": "08D684F42E823862846A75BB71D73274A34A6BB52123BF8E542EB942B23984BB"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_順位256確認.png",
+    "Hash": "0F328196DCE68C474B1F147A982B32B3402729F2AB68A0F66D88DA7015226D5F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3一覧.png",
+    "Hash": "EFDEBCD2BFB0A52CC7DFB914E3F053F686636EFE38180D1B64044A6B4230942C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_暗背景一覧.png",
+    "Hash": "887F26CE186F61034EFCC82610F57B8537F9836E92A3180A01428694EAAC7AAC"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_基準比較.png",
+    "Hash": "919584DE1E6E1E09B52D5892740861846C508A037DB0912C8DFFCD5117992BC6"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_手の確認.png",
+    "Hash": "EB65F7392003739AFB0C874160C56B307D63BFD27260E37400D0733DB32E9693"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_順位256確認.png",
+    "Hash": "AE2551D0612277A362520AC1D5314FB7217E08B730F55CA8D9FED76A76219344"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4一覧.png",
+    "Hash": "C7CBB4D0B802A850955D4EE89427A266D1E096A5C31E07FF91364885E7203569"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\icon.png",
+    "Hash": "11D8FBBE0F1726E3C55819B112319B0D6F96E4EA59AFD29D927E4484F0A11E42"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\rank1.png",
+    "Hash": "7DCF846BEAC09C27F4D23DECE31889E08261F0B8851E8C7A0D3F31A9D2AA0508"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\rank2.png",
+    "Hash": "AAA40FB3538E39623D80CB9EB1E72F186633532EC4FCB1F7DC91D1D7B3047A2A"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\rank3.png",
+    "Hash": "E1397E0ADD36D7B6DF780E9B0C183B912FF0386BF572E4FCE202D6DF5BDB3186"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\rank4.png",
+    "Hash": "A886C8DDFE08D0439FEF5D149FA62E524DB136596CB5EF479C03BF45B07A7EC5"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ1_新衣装6枚\\special.png",
+    "Hash": "44C9AE1AC85D4AFFFF246B170A5CFD1758E6B9020083A5840C16AE81AB485841"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\icon.png",
+    "Hash": "7E47CB656098FAFF2F807D942F96F002B8A7A203516BEEFE6F3DD53B67C626DF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\rank1.png",
+    "Hash": "4E1153CDE8126372733791ED936EBDB00249965FBC76EA297198297A3A10D68F"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\rank2.png",
+    "Hash": "D063A6DE302F7F8052C451930E48CA3197D164F766219382567945753DBE2C55"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\rank3.png",
+    "Hash": "14199EBC15DA35E7D36942A731B7130562760174E9320887C4A82A0E039530F0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\rank4.png",
+    "Hash": "543AE3CB62D5B543635A8AF305FADDCE130FE0A7D37CD9B3DF665C66C1D8F500"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ2_完成候補6枚\\special.png",
+    "Hash": "B39E972507CE55D750E0389712013D19F4D1709161A8014B8591C6D394CFF10C"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\icon.png",
+    "Hash": "C106F8F180C8B1377811A70FD65023B4FC7591C42BEE8F8F163882F771842DDF"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\rank1.png",
+    "Hash": "7B93378C851106E144FCFCF670030E70F6C1738F51650E0E8B23D774F5857FA0"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\rank2.png",
+    "Hash": "069290DE6957A06908E5C07A59F0EB9DE321F8C3FF6D81169681732F16D74389"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\rank3.png",
+    "Hash": "5F3C7FC19A3D9DE2559C9C1C391EF85B667DE75282C95EDB583CF40BDA2B19F9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\rank4.png",
+    "Hash": "5AA971F307284CF2ADA477124435F2A0DE51F35FCB534C1A522F56B347530238"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ3_完成候補6枚\\special.png",
+    "Hash": "B5803E4D9E73853D86BA23C8F80E8C57DD04799BF6EFD312636E1F47BF56D7E9"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_髪整理版5枚\\rank1.png",
+    "Hash": "E93CB0CF6FD1FFCCFE5A295ACB4472AFC7F58DCB237B4030E9BD3CF5FE46ABCE"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_髪整理版5枚\\rank2.png",
+    "Hash": "F759EE5561C40E2D573ED544C5DFA64FE0CC3375079D17AD338BD7E0A53F3DBA"
+  },
+  {
+    "Path": "C:\\github\\daifugo\\確認用\\キャラ4_髪整理版5枚\\special.png",
+    "Hash": "FF86D13B4AD1D91E904F5B8A486F20CA710FB9018A3A1A61261991C1E6A397F7"
+  }
+]

@@ -1,0 +1,65 @@
+{
+  "approvedDesign": true,
+  "approvedSource": "base-approved.png",
+  "humanAcceptanceOfSix": false,
+  "icon": {
+    "method": "crop of approved source",
+    "generationCalls": 0,
+    "crop": [
+      290,
+      -35,
+      930,
+      605
+    ]
+  },
+  "generations": [
+    {
+      "name": "special",
+      "attempts": 1,
+      "status": "saved",
+      "source": "special.png",
+      "outputDefaultPath": "C:\\Users\\81805\\.codex\\generated_images\\01a180be-cb75-7c42-86fd-ed65ac545121\\exec-20894135-1342-4917-aad2-603368e01dbc.png",
+      "callWallSeconds": 42.4,
+      "promptSource": "prompts.json"
+    },
+    {
+      "name": "rank1",
+      "attempts": 1,
+      "status": "saved",
+      "source": "rank1.png",
+      "outputDefaultPath": "C:\\Users\\81805\\.codex\\generated_images\\01a180be-cb75-7c42-86fd-ed65ac545121\\exec-0d71d632-0ab6-4218-9c7d-954d3677e31b.png",
+      "callWallSeconds": 42,
+      "promptSource": "prompts.json"
+    },
+    {
+      "name": "rank2",
+      "attempts": 1,
+      "status": "saved",
+      "source": "rank2.png",
+      "outputDefaultPath": "C:\\Users\\81805\\.codex\\generated_images\\01a180be-cb75-7c42-86fd-ed65ac545121\\exec-0efafe46-a3b4-424b-add9-fe970eee123d.png",
+      "callWallSeconds": 46,
+      "promptSource": "prompts.json"
+    },
+    {
+      "name": "rank3",
+      "attempts": 1,
+      "status": "saved",
+      "source": "rank3.png",
+      "outputDefaultPath": "C:\\Users\\81805\\.codex\\generated_images\\01a180be-cb75-7c42-86fd-ed65ac545121\\exec-539b91db-3b32-4152-a8b0-07e4454d466d.png",
+      "callWallSeconds": 59.2,
+      "promptSource": "prompts.json"
+    },
+    {
+      "name": "rank4",
+      "attempts": 1,
+      "status": "saved",
+      "source": "rank4.png",
+      "outputDefaultPath": "C:\\Users\\81805\\.codex\\generated_images\\01a180be-cb75-7c42-86fd-ed65ac545121\\exec-81f55e3c-3d0a-4b62-9f72-190d1f8e7295.png",
+      "callWallSeconds": 61.6,
+      "promptSource": "prompts.json"
+    }
+  ],
+  "totalGenerationCalls": 5,
+  "failures": 0,
+  "retries": 0
+}

@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "asset": "rank4",
+  "revision": "sad-01",
+  "status": "saved_pending_human_acceptance",
+  "userRequest": "4位をしょんぼりした絵に変更",
+  "referenceImages": [
+    "../v2-set-01/rank4.png",
+    "../v2-set-01/base-approved.png"
+  ],
+  "prompt": "Use case: identity-preserve character illustration edit. Input image 1 is the CURRENT RANK-4 IMAGE TO EDIT. Input image 2 is the user-approved neutral design anchor for the same character. Make only a revised rank4 illustration with a visibly SAD, DOWNCAST, DEJECTED expression after losing a card game. Preserve the same face identity, head size and general position, glossy black bob with straight bangs, blue eyes, tan skin, body proportions, eye-level framing, art style, white short-sleeved button-front shirt, white pointed collar and buttons, left chest patch pocket, blue bow ribbon and navy pleated skirt. No bag. Facial expression: eyebrows softly raised at the INNER ends and drooping at outer ends, soft lowered eyelids, blue gaze cast downward, small closed downturned mouth. Not angry or stern: no inward-downward angry eyebrows, no scowl, no glare, no bared teeth, no smile, no tears or sweat icons. Shoulders visibly lowered and slightly rounded, head inclined modestly downward. Release both clenched fists: relaxed hands held low together loosely in front of the waist, one hand lightly holding the other relaxed wrist, natural fingers. Convey quiet disappointment and slumped sadness, not tension or aggression. Keep entire head/hair, elbows, wrists and hands inside the square with clear transparent margin. Same head-to-waist/top-of-skirt framing and same detailed polished anime shading and palette. True transparent PNG, square 1024x1024, no scenery, no props, no text, no symbols, no shadow or watermark. One image only.",
+  "summary": "4位だけをしょんぼりした表情と脱力した姿勢に修正。顔・髪・体格・衣装・画風を維持し、こぶしをほどく。他5枚は変更しない。元画像と旧版を保持する。",
+  "generation_calls": 2,
+  "quality_retries": 1,
+  "output": "rank4.png",
+  "quality_rejection": "attempt1-hands-clipped.png",
+  "notion_rule_page": "https://app.notion.com/p/4063ea603c5381dd81d2cd5b1abe2171"
+}

@@ -1,0 +1,14 @@
+{
+  "special": {
+    "complete_crown": true,
+    "source_sha256": "034dec496b45006fe29a78438a97749a6ffbbbe248805f30982db50b40bd00b4"
+  },
+  "rank1": {
+    "complete_crown": true,
+    "source_sha256": "103163276b9d92dcaa487392421d212157924a1adc678a6840d54ef9b8e1625b"
+  },
+  "rank2": {
+    "source_sha256": "ee26262540540c7479e8ebd416fcc4e43b8a12c7ef539d11f03f41acb1b7c045",
+    "complete_crown": true
+  }
+}

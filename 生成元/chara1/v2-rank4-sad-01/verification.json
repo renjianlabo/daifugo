@@ -1,0 +1,14 @@
+{
+  "other_five_unchanged": {
+    "icon": true,
+    "special": true,
+    "rank1": true,
+    "rank2": true,
+    "rank3": true
+  },
+  "rank4_replaced": true,
+  "zip_images_match": true,
+  "rank4_bytes": 457146,
+  "notion_page": "https://app.notion.com/p/4063ea603c5381dd81d2cd5b1abe2171",
+  "notion_update_success": true
+}

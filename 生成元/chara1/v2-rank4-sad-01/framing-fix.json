@@ -1,0 +1,6 @@
+{
+  "reason": "lower hand fingertips clipped",
+  "attempt": 2,
+  "reference": "attempt1-hands-clipped.png",
+  "prompt": "Edit the attached current sad rank-4 illustration. Keep her NEW soft dejected/downcast facial expression, eyebrows, blue eyes, black bob, face identity, head position and size, clothing, ribbon, torso proportions, colors, linework and shading unchanged. Fix ONLY the arm/hand placement and lower framing: the lower hand's fingers are currently clipped by the bottom edge, which must be corrected. Raise BOTH relaxed hands together to the FRONT OF THE WAISTBAND at about 75-82 percent of canvas height. One relaxed hand lightly holds the other wrist. Show BOTH entire hands, all fingertips, thumbs and wrists, with at least 100px empty clearance below the lowest fingertip on a 1254px square (or proportional margin). Keep shoulder slump and quiet sadness, with loose fingers, no fists. Keep full head and hair inside. Do not crop or hide fingers behind the bottom edge. Preserve true transparent background. Single square PNG, same character and style, head through waist/top of skirt, no props or symbols."
+}

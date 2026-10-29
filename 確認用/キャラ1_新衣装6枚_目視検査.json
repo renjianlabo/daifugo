@@ -1,0 +1,38 @@
+{
+  "status": "ai_visual_review_passed_pending_human_acceptance",
+  "required_issues": 0,
+  "asset_sha256": {
+    "icon": "11d8fbbe0f1726e3c55819b112319b0d6f96e4ea59afd29d927e4484f0a11e42",
+    "special": "44c9ae1ac85d4affff246b170a5cfd1758e6b9020083a5840c16ae81ab485841",
+    "rank1": "7dcf846beac09c27f4d23dece31889e08261f0b8851e8c7a0d3f31a9d2aa0508",
+    "rank2": "aaa40fb3538e39623d80cb9eb1e72f186633532ec4fcb1f7dc91d1d7b3047a2a",
+    "rank3": "e1397e0add36d7b6df780e9b0c183b912ff0386bf572e4fce202d6df5bdb3186",
+    "rank4": "a886c8ddfe08d0439fef5d149fa62e524db136596cb5ef479c03bf45b07a7ec5"
+  },
+  "checks": {
+    "head_and_hands_in_frame": "pass",
+    "hand_anatomy_visible_parts": "pass",
+    "hair_and_eye_colors": "pass",
+    "new_outfit_and_no_bag": "pass",
+    "consistent_style": "pass",
+    "rank_expressions_at_256px": "pass",
+    "light_and_dark_edge_review": "pass",
+    "rank4_dejected_expression": "pass"
+  },
+  "notes": [
+    "iconは承認済みの顔から切り出した。手は描写範囲外。",
+    "rank1の目は閉じているため虹彩色の検査は対象外。",
+    "rank3の後頭部の手指は髪に隠れ、全指の本数を直接数えることはできない。見える手首・腕のつながりと体の前の手を確認。",
+    "姿勢や表情に合わせた自然な差はある。顔・体の完全な画素一致は要求していない。",
+    "髪の細い青系の縁は共通基準にもある。白い服の穴や目立つ白縁は確認されない。",
+    "ユーザーの意見を反映しrank4をしょんぼりへ修正。下向きの視線、下がった肩、こぶしをほどいた両手を確認。初回の手先切れは1回修正し、指先が収まった。"
+  ],
+  "review_images": [
+    "キャラ1一覧_v2.png",
+    "キャラ1_新衣装6枚_暗背景.png",
+    "キャラ1_順位256確認.png"
+  ],
+  "human_visual_acceptance": false,
+  "game_integration": false,
+  "user_requested_revision": "rank4 sad-01"
+}

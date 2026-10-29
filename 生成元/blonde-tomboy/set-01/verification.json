@@ -1,0 +1,310 @@
+{
+  "status": "production_and_ai_checks_complete_pending_human_acceptance",
+  "assets": [
+    {
+      "name": "icon",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 117663,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        0,
+        18,
+        256,
+        256
+      ],
+      "rgb_rounding_step": 1,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank2.png",
+      "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+      "sha256": "a807416807dfe46547ffaaf0135b46ff4492dca6defdbee57205689414ce48d8",
+      "alpha_preserved_after_resize": true,
+      "compression_method": "RGB rounding; resized alpha unchanged",
+      "alpha_mean_absolute_error": 0.0,
+      "alpha_max_absolute_error": 0,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "#f4f4f4": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "special",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 391624,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        45,
+        63,
+        985,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\special.png",
+      "source_sha256": "18ccc19d74f56c8c01fc93d454ffbd8f981c1308dbd95d8a28959f3930212356",
+      "sha256": "d5d638eb6b4c63135023c6d3671a15de5cb5b99378ae0e020a843752fdac5804",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.3624563217163086,
+      "alpha_max_absolute_error": 56,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.3039379119873047,
+          1.1714506149291992,
+          1.2977781295776367
+        ],
+        "#f4f4f4": [
+          1.2354679107666016,
+          1.1627388000488281,
+          1.335031509399414
+        ]
+      }
+    },
+    {
+      "name": "rank1",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 362725,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        43,
+        65,
+        983,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank1.png",
+      "source_sha256": "14441d2477cb68065d7fbbc204f10386d2ac2c3c965be1e289b46ea10940a5ef",
+      "sha256": "4b17604334dda610a75c434a03704c36bb7c2aa414c15bdeacc1d97806a33e1c",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.4741201400756836,
+      "alpha_max_absolute_error": 66,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.1701631546020508,
+          1.0401372909545898,
+          1.171966552734375
+        ],
+        "#f4f4f4": [
+          1.0955352783203125,
+          1.0199699401855469,
+          1.1868524551391602
+        ]
+      }
+    },
+    {
+      "name": "rank2",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 369781,
+      "alpha_range": [
+        0,
+        253
+      ],
+      "visible_bbox": [
+        69,
+        60,
+        959,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank2.png",
+      "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+      "sha256": "673739999050fac3171214f101277eb384f97e10cbbb24583e8beb70da21a3e5",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.43819427490234375,
+      "alpha_max_absolute_error": 44,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.3286991119384766,
+          1.2050094604492188,
+          1.3284482955932617
+        ],
+        "#f4f4f4": [
+          1.2665061950683594,
+          1.197035789489746,
+          1.3710746765136719
+        ]
+      }
+    },
+    {
+      "name": "rank3",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 376365,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        52,
+        63,
+        984,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank3.png",
+      "source_sha256": "2003f081a0b00d19333b0e0832094ca2bcb96c1b6000b49b6ccf94472f3c1670",
+      "sha256": "19e3fa5661904dbf85f0e74278b9ccece98b4194f9d4960228c5d910adc05f68",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.43325138092041016,
+      "alpha_max_absolute_error": 61,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.3291902542114258,
+          1.2008323669433594,
+          1.3117399215698242
+        ],
+        "#f4f4f4": [
+          1.2639265060424805,
+          1.1749544143676758,
+          1.3540353775024414
+        ]
+      }
+    },
+    {
+      "name": "rank4",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 370632,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bbox": [
+        60,
+        63,
+        976,
+        1024
+      ],
+      "rgb_rounding_step": null,
+      "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank4.png",
+      "source_sha256": "dfcda4b8c881074eed74cc95b20d4edd0e4f4278c72ea57d3ba55d4a45a2a468",
+      "sha256": "67e0c7358bba36b35a387a6e63ce3bdf081fa23689aa0a0fc00ad5154c9a4b11",
+      "alpha_preserved_after_resize": false,
+      "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+      "alpha_mean_absolute_error": 0.49316978454589844,
+      "alpha_max_absolute_error": 68,
+      "composite_mean_absolute_error": {
+        "#162438": [
+          1.2307558059692383,
+          1.1085872650146484,
+          1.197122573852539
+        ],
+        "#f4f4f4": [
+          1.1273279190063477,
+          1.0928373336791992,
+          1.2478466033935547
+        ]
+      }
+    }
+  ],
+  "protected_files_checked": 57,
+  "protected_changed": [],
+  "zip_verified": true,
+  "human_acceptance": false,
+  "game_integration": false,
+  "game_tests_run": false,
+  "generation_calls": 9,
+  "output_images": 9,
+  "quality_retries": 3,
+  "user_condition_revision_outputs": 1,
+  "generation_failures": 0,
+  "source_manifest": [
+    {
+      "source": "rank2-attempt1-visible-ribbons.png",
+      "prompt": "rank2-prompt.txt",
+      "source_sha256": "863dd2bb3a14ab81ce16e3d9b4d053532e7b171177f6334d5856ae60fc20497a",
+      "prompt_sha256": "b1c5090016b474e303438688e7800ae75f4b3e2eebdfe1be07b0416370c273ce"
+    },
+    {
+      "source": "rank2.png",
+      "prompt": "rank2-hidden-ribbons-prompt.txt",
+      "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+      "prompt_sha256": "4623b76a74193127a06c8216e7c7e121b73bd115b4c5b503236efcde651d5029"
+    },
+    {
+      "source": "special.png",
+      "prompt": "special-prompt.txt",
+      "source_sha256": "18ccc19d74f56c8c01fc93d454ffbd8f981c1308dbd95d8a28959f3930212356",
+      "prompt_sha256": "630f799b12a2a9137deb7f864c611ec57f23a44088b2b9733b03807289a86a53"
+    },
+    {
+      "source": "rank1-attempt1-cut-fingers.png",
+      "prompt": "rank1-prompt.txt",
+      "source_sha256": "bda39552d7850aaad5039567e078f8396c4a6310cef17ef2bd77fafb294d8376",
+      "prompt_sha256": "9b6fbb88849f0779b7feb7f46b47dab02b7976f8b94f47ac0bbf6e2c4f644543"
+    },
+    {
+      "source": "rank1-attempt2-no-earrings.png",
+      "prompt": "rank1-fix-prompt.txt",
+      "source_sha256": "afe54ca579b23cdf358c30fc4bb89dd5f204f21be90e62f8dcb4b101363759d2",
+      "prompt_sha256": "11ce111e8e2a8282e3c83c67e61e70c735c2e032ce797cf89389e02dfa75d2b0"
+    },
+    {
+      "source": "rank1.png",
+      "prompt": "rank1-earrings-fix-prompt.txt",
+      "source_sha256": "14441d2477cb68065d7fbbc204f10386d2ac2c3c965be1e289b46ea10940a5ef",
+      "prompt_sha256": "f88652605194871ddca24ddefec7e2ec203075f0f83de701ed15a01061822748"
+    },
+    {
+      "source": "rank3.png",
+      "prompt": "rank3-prompt.txt",
+      "source_sha256": "2003f081a0b00d19333b0e0832094ca2bcb96c1b6000b49b6ccf94472f3c1670",
+      "prompt_sha256": "466f36a47aac1bdc0f501d483fbe57b318031063abe69f7b719ed0ea3d109910"
+    },
+    {
+      "source": "rank4-attempt1-closed-hands.png",
+      "prompt": "rank4-prompt.txt",
+      "source_sha256": "d43c881b2e6cba7183969471cf7ae4a1393b330f0496891ff1ab187a2f4f2482",
+      "prompt_sha256": "dd94de678e8cdcfa0a5c11aedc16d9afe57fc6bd772ae9396af2361c379b5eba"
+    },
+    {
+      "source": "rank4.png",
+      "prompt": "rank4-hands-fix-prompt.txt",
+      "source_sha256": "dfcda4b8c881074eed74cc95b20d4edd0e4f4278c72ea57d3ba55d4a45a2a468",
+      "prompt_sha256": "99cdff41b69ed6c02d36186a6562bf1af16b88807a82efc4917316edd5031007"
+    }
+  ],
+  "visual_review": "pass with documented embroidery and scale differences",
+  "hair_tying_ribbons_visible": false,
+  "earring_blue_tassels_preserved": true,
+  "icon_derived_from": "rank2",
+  "unverified": [
+    "human acceptance",
+    "game display",
+    "existing character assignment",
+    "exact face/body/pattern pixel equality"
+  ]
+}

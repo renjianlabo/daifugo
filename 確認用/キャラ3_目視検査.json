@@ -1,0 +1,50 @@
+{
+  "status": "ai_visual_checks_passed_pending_human_acceptance",
+  "required_issues": 0,
+  "asset_sha256": {
+    "icon": "c106f8f180c8b1377811a70fd65023b4fc7591c42bee8f8f163882f771842ddf",
+    "special": "b5803e4d9e73853d86ba23c8f80e8c57dd04799bf6efd312636e1f47bf56d7e9",
+    "rank1": "7b93378c851106e144fcfcf670030e70f6c1738f51650e0e8b23d774f5857fa0",
+    "rank2": "069290de6957a06908e5c07a59f0eb9de321f8c3ff6d81169681732f16d74389",
+    "rank3": "5f3c7fc19a3d9de2559c9c1c391ef85b667de75282c95edb583cf40bda2b19f9",
+    "rank4": "5aa971f307284cf2ada477124435f2a0de51f35fcb534c1a522f56b347530238"
+  },
+  "inspected": [
+    "per-image light-dark composites",
+    "キャラ3一覧.png",
+    "キャラ3_暗背景一覧.png",
+    "キャラ3_順位256確認.png",
+    "キャラ3_基準比較.png",
+    "キャラ3_手の確認.png",
+    "キャラ1〜3_ポーズ比較.png"
+  ],
+  "checks": {
+    "hair_head_hands_elbows_inside": "pass",
+    "black_hair_blue_eyes_identity": "pass",
+    "black_suit_white_shirt_black_tie_belt": "pass",
+    "small_lapel_bar_no_new_accessories": "pass",
+    "visible_hand_anatomy_and_arm_connections": "pass",
+    "narcissistic_personality": "pass",
+    "rank4_dejection_no_anger_or_fists": "pass",
+    "style_consistency": "pass",
+    "light_dark_edges": "pass",
+    "expressions_at_256px": "pass",
+    "different_poses_from_chara1_and_chara2": "pass"
+  },
+  "pose_comparison": {
+    "special": "raised index finger and wink, rather than extended open palm",
+    "rank1": "both hands on hips and laughing rather than raised fists or clasped hands",
+    "rank2": "adjusting tie, rather than peace sign or cheek touch",
+    "rank3": "classic folded arms across chest, rather than hand behind head or low sleeve pinching",
+    "rank4": "palm on front forehead and other open hand by waist, rather than hands in front or sleeve self-hug"
+  },
+  "limitations": [
+    "User visual acceptance pending.",
+    "Different male physique is preserved; head size and shoulder locations are not numerically identical across poses.",
+    "Hands inside pocket or behind crossed sleeve are naturally occluded; unseen fingers cannot be individually counted.",
+    "The front forehead touch differs from chara1 back-of-head touch by contact and context.",
+    "icon face portrait purpose is shared across characters; expression is intentionally more self-satisfied."
+  ],
+  "human_acceptance": false,
+  "game_integration": false
+}

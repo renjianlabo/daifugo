@@ -1,0 +1,48 @@
+{
+  "reference": "base-approved.png",
+  "referenceOrigin": "../outfit-v2-trial-01.png",
+  "userDecision": "これで作って",
+  "scope": "one character, six assets; stop for visual review before game integration",
+  "tool": "built-in image_gen",
+  "icon": {
+    "method": "crop approved source without regeneration",
+    "crop": [
+      290,
+      -35,
+      930,
+      605
+    ],
+    "size": [
+      256,
+      256
+    ]
+  },
+  "assets": [
+    {
+      "name": "special",
+      "prompt": "Use case: illustration-story. Create ONE square 1024x1024 transparent PNG card-game character illustration. The attached image is the USER-APPROVED character design: match her face, tan skin, blue almond-shaped eyes, glossy black chin-length bob with straight bangs, head-to-body ratio, shoulder width and torso proportions. Match the same polished anime fine linework, smooth rich cel shading, hair highlights and soft gradients. Keep her exact outfit: opaque white short-sleeved button-front shirt with pointed collar, plain white sleeve hems, white buttons, a plain patch pocket on HER LEFT chest (viewer right), blue bow ribbon with dark blue and medium-blue shading, tucked into a dark navy high-waisted pleated skirt. Ordinary comfortable fit, faithful body proportions. No bag or strap, no new accessories, no props, no text, icons or effects. Eye-level camera, full head through waist/top of skirt, centered character. Entire hair, hands, fingertips and elbows inside canvas with generous clear transparent top/side margin. Preserve clean natural five-fingered hands and arm connections. True transparent background, no scenery, no shadow or border. Change ONLY pose and facial expression as follows: A dynamic confident flourish for a character who loves revolutions and surprise reversals. Torso turns slightly; one elbow bent outward with an open palm extending diagonally to the side, palm upward, fingers relaxed and separated naturally. Other hand forms a small confident fist near the shoulder. Both blue eyes open toward viewer, self-assured playful grin. Keep both arms within the frame, no extreme perspective.",
+      "reference": "base-approved.png"
+    },
+    {
+      "name": "rank1",
+      "prompt": "Use case: illustration-story. Create ONE square 1024x1024 transparent PNG card-game character illustration. The attached image is the USER-APPROVED character design: match her face, tan skin, blue almond-shaped eyes, glossy black chin-length bob with straight bangs, head-to-body ratio, shoulder width and torso proportions. Match the same polished anime fine linework, smooth rich cel shading, hair highlights and soft gradients. Keep her exact outfit: opaque white short-sleeved button-front shirt with pointed collar, plain white sleeve hems, white buttons, a plain patch pocket on HER LEFT chest (viewer right), blue bow ribbon with dark blue and medium-blue shading, tucked into a dark navy high-waisted pleated skirt. Ordinary comfortable fit, faithful body proportions. No bag or strap, no new accessories, no props, no text, icons or effects. Eye-level camera, full head through waist/top of skirt, centered character. Entire hair, hands, fingertips and elbows inside canvas with generous clear transparent top/side margin. Preserve clean natural five-fingered hands and arm connections. True transparent background, no scenery, no shadow or border. Change ONLY pose and facial expression as follows: First place: exuberant joy! Both elbows bent, two clenched celebratory fists lifted next to her shoulders. Eyes happily closed, eyebrows lifted, mouth open in delighted laughter. Upright lively shoulders. All hair, both fists, elbows fully visible with margin.",
+      "reference": "base-approved.png"
+    },
+    {
+      "name": "rank2",
+      "prompt": "Use case: illustration-story. Create ONE square 1024x1024 transparent PNG card-game character illustration. The attached image is the USER-APPROVED character design: match her face, tan skin, blue almond-shaped eyes, glossy black chin-length bob with straight bangs, head-to-body ratio, shoulder width and torso proportions. Match the same polished anime fine linework, smooth rich cel shading, hair highlights and soft gradients. Keep her exact outfit: opaque white short-sleeved button-front shirt with pointed collar, plain white sleeve hems, white buttons, a plain patch pocket on HER LEFT chest (viewer right), blue bow ribbon with dark blue and medium-blue shading, tucked into a dark navy high-waisted pleated skirt. Ordinary comfortable fit, faithful body proportions. No bag or strap, no new accessories, no props, no text, icons or effects. Eye-level camera, full head through waist/top of skirt, centered character. Entire hair, hands, fingertips and elbows inside canvas with generous clear transparent top/side margin. Preserve clean natural five-fingered hands and arm connections. True transparent background, no scenery, no shadow or border. Change ONLY pose and facial expression as follows: Second place: pleased friendly smile, both blue eyes open toward viewer. One hand makes a clear natural V peace sign beside her face; the other rests lightly at the waist with fingertips visible. Relaxed posture. Calm happiness, less exuberant than first place. Keep entire raised hand and elbow inside.",
+      "reference": "base-approved.png"
+    },
+    {
+      "name": "rank3",
+      "prompt": "Use case: illustration-story. Create ONE square 1024x1024 transparent PNG card-game character illustration. The attached image is the USER-APPROVED character design: match her face, tan skin, blue almond-shaped eyes, glossy black chin-length bob with straight bangs, head-to-body ratio, shoulder width and torso proportions. Match the same polished anime fine linework, smooth rich cel shading, hair highlights and soft gradients. Keep her exact outfit: opaque white short-sleeved button-front shirt with pointed collar, plain white sleeve hems, white buttons, a plain patch pocket on HER LEFT chest (viewer right), blue bow ribbon with dark blue and medium-blue shading, tucked into a dark navy high-waisted pleated skirt. Ordinary comfortable fit, faithful body proportions. No bag or strap, no new accessories, no props, no text, icons or effects. Eye-level camera, full head through waist/top of skirt, centered character. Entire hair, hands, fingertips and elbows inside canvas with generous clear transparent top/side margin. Preserve clean natural five-fingered hands and arm connections. True transparent background, no scenery, no shadow or border. Change ONLY pose and facial expression as follows: Third place: a clearly sheepish wry smile, asymmetrical worried eyebrows, blue eyes open with an embarrassed sideways glance, a small crooked closed-mouth smile. One hand touches back of her head and the other arm bends across the lower torso, its hand resting visibly near the opposite elbow. Friendly but awkward, not a broad happy grin. Both hands and elbows fully visible.",
+      "reference": "base-approved.png"
+    },
+    {
+      "name": "rank4",
+      "prompt": "Use case: illustration-story. Create ONE square 1024x1024 transparent PNG card-game character illustration. The attached image is the USER-APPROVED character design: match her face, tan skin, blue almond-shaped eyes, glossy black chin-length bob with straight bangs, head-to-body ratio, shoulder width and torso proportions. Match the same polished anime fine linework, smooth rich cel shading, hair highlights and soft gradients. Keep her exact outfit: opaque white short-sleeved button-front shirt with pointed collar, plain white sleeve hems, white buttons, a plain patch pocket on HER LEFT chest (viewer right), blue bow ribbon with dark blue and medium-blue shading, tucked into a dark navy high-waisted pleated skirt. Ordinary comfortable fit, faithful body proportions. No bag or strap, no new accessories, no props, no text, icons or effects. Eye-level camera, full head through waist/top of skirt, centered character. Entire hair, hands, fingertips and elbows inside canvas with generous clear transparent top/side margin. Preserve clean natural five-fingered hands and arm connections. True transparent background, no scenery, no shadow or border. Change ONLY pose and facial expression as follows: Fourth place: unmistakable competitive frustration and disappointment. Both blue eyes open, eyebrows drawn down and inward, lips pressed into a distinct small pout/frown, no smile. Slight tense forward tilt of torso. Both elbows bent, small clenched fists held low beside the waist. Both complete fists and all hair fully visible. No tears, no sweat symbols.",
+      "reference": "base-approved.png"
+    }
+  ],
+  "summary": "承認済み試作を共通基準に、アイコンは同じ顔から切り出し、決めポーズと順位4枚を1枚ずつ生成。白シャツ・青リボン・紺スカート・鞄なし。透過と規定寸法・容量、手と顔・衣装・表情を確認して一覧を提示。ゲーム組み込みはまだ行わない。"
+}

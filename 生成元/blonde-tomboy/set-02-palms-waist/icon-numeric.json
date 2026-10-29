@@ -1,0 +1,38 @@
+{
+  "name": "icon",
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 117663,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "visible_bbox": [
+    0,
+    18,
+    256,
+    256
+  ],
+  "rgb_rounding_step": 1,
+  "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\rank2.png",
+  "source_sha256": "e399848018ca6332d67c57f572df55b1baa82eaa14145d5027390ede7cd51a91",
+  "sha256": "a807416807dfe46547ffaaf0135b46ff4492dca6defdbee57205689414ce48d8",
+  "alpha_preserved_after_resize": true,
+  "compression_method": "RGB rounding; resized alpha unchanged",
+  "alpha_mean_absolute_error": 0.0,
+  "alpha_max_absolute_error": 0,
+  "composite_mean_absolute_error": {
+    "#162438": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "#f4f4f4": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}

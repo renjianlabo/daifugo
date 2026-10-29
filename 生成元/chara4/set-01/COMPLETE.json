@@ -1,0 +1,15 @@
+{
+  "status": "six_saved_ai_checks_passed_pending_human_acceptance",
+  "assets": {
+    "icon": "090c648d5bfe214d7817471c0c72da092c82c668ff60a6bf4c28ffba42accfba",
+    "special": "0c6c9414931fac406dd28d5c1e394e08b591222790ad24c8ac00d1348c4d209a",
+    "rank1": "36b89430987ed6517c928cc7d00457c42f27ae2f50f602229c43b10bbb3491d1",
+    "rank2": "ab47ab99ad761ea070c222f3f14bad402fc8173d5b5cce1f7aedf5cbdbce9890",
+    "rank3": "4778bed739bd5e49aad6b3759ae30eedb3542067a4187cc81aa386d038f7abe3",
+    "rank4": "7c5abf092272cdf4cfcaf044b72463caf3a669de07f8faa69e253cf4645bb3e8"
+  },
+  "protected_files_unchanged": 61,
+  "zip_sha256": "de8c788b1f2f0d6825bfd41725366d5c6f2754718aa02f8087e9c7986c56ce71",
+  "human_acceptance": false,
+  "game_integration": false
+}

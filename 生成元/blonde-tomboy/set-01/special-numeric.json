@@ -1,0 +1,38 @@
+{
+  "name": "special",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 391624,
+  "alpha_range": [
+    0,
+    254
+  ],
+  "visible_bbox": [
+    45,
+    63,
+    985,
+    1024
+  ],
+  "rgb_rounding_step": null,
+  "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-01\\special.png",
+  "source_sha256": "18ccc19d74f56c8c01fc93d454ffbd8f981c1308dbd95d8a28959f3930212356",
+  "sha256": "d5d638eb6b4c63135023c6d3671a15de5cb5b99378ae0e020a843752fdac5804",
+  "alpha_preserved_after_resize": false,
+  "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+  "alpha_mean_absolute_error": 0.3624563217163086,
+  "alpha_max_absolute_error": 56,
+  "composite_mean_absolute_error": {
+    "#162438": [
+      1.3039379119873047,
+      1.1714506149291992,
+      1.2977781295776367
+    ],
+    "#f4f4f4": [
+      1.2354679107666016,
+      1.1627388000488281,
+      1.335031509399414
+    ]
+  }
+}

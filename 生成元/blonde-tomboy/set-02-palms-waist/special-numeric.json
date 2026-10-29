@@ -1,0 +1,44 @@
+{
+  "layout": {
+    "scale": 0.8165869218500797,
+    "dx": 0,
+    "dy": 0,
+    "reason": "Uniform resize of full edited square, preserve composition"
+  },
+  "name": "special",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 394921,
+  "alpha_range": [
+    0,
+    254
+  ],
+  "visible_bbox": [
+    44,
+    63,
+    988,
+    1024
+  ],
+  "rgb_rounding_step": null,
+  "source": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\special.png",
+  "source_sha256": "841bdd929deba94bef8d4da14d1969c24f3ceb2db42bbfd3d564884d24930298",
+  "sha256": "580ddf3d76e2d96ef64c0e5db83b38e00ff70f2e600e3c848747594f58c5fdc4",
+  "alpha_preserved_after_resize": false,
+  "compression_method": "libimagequant 256 RGBA palette, no dithering; alpha approximated",
+  "alpha_mean_absolute_error": 0.42786216735839844,
+  "alpha_max_absolute_error": 81,
+  "composite_mean_absolute_error": {
+    "#162438": [
+      1.2655725479125977,
+      1.1251516342163086,
+      1.2408580780029297
+    ],
+    "#f4f4f4": [
+      1.1911582946777344,
+      1.11199951171875,
+      1.2792243957519531
+    ]
+  }
+}

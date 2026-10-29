@@ -1,0 +1,35 @@
+{
+  "status": "partial_stopped",
+  "generated_asset_count": 1,
+  "expected_asset_count": 6,
+  "icon": {
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 88930,
+    "png": true,
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "alpha_zero_pixels": 24861,
+    "alpha_partial_pixels": 40080,
+    "sha256": "70ff20be467c5e1dc960a223a6e325d002b5cdb8778a1b2a957e220dfbed43ef",
+    "crop_from_source": [
+      230,
+      130,
+      1030,
+      930
+    ]
+  },
+  "references_copy_hash_match": true,
+  "game_integration": false,
+  "missing": [
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "rank4"
+  ]
+}

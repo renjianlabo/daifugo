@@ -1,0 +1,77 @@
+{
+  "input": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bytes": 1553196,
+    "sha256": "9906faf194fa4defac2943076aa51a0334a5243d6ff596ebb0aa894cd021d168",
+    "alpha_zero": 763910,
+    "alpha_partial": 807931,
+    "alpha_opaque": 675,
+    "alpha_bbox": [
+      0,
+      0,
+      1154,
+      1254
+    ]
+  },
+  "candidate": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bytes": 1254186,
+    "sha256": "992986c0c742cff098e507eb7d305272bd316f0c70aae7fb233315ee2218e3b6",
+    "alpha_zero": 764243,
+    "alpha_partial": 807189,
+    "alpha_opaque": 1084,
+    "alpha_bbox": [
+      0,
+      0,
+      1250,
+      1254
+    ]
+  },
+  "generation_calls": 1,
+  "adopted": false,
+  "game_display_test": false,
+  "non_hair_region_checks": {
+    "face_interior": {
+      "box": [
+        540,
+        435,
+        710,
+        585
+      ],
+      "mean_abs_rgba": [
+        6.080470588235294,
+        3.4232549019607843,
+        2.4927058823529413,
+        0.1647450980392157
+      ],
+      "identical_pixels": 2,
+      "pixels": 25500
+    },
+    "top_interior": {
+      "box": [
+        400,
+        880,
+        920,
+        1120
+      ],
+      "mean_abs_rgba": [
+        2.5677483974358974,
+        2.270753205128205,
+        2.291650641025641,
+        0.46802083333333333
+      ],
+      "identical_pixels": 238,
+      "pixels": 124800
+    }
+  },
+  "existing_files_checked": 390,
+  "existing_files_changed_before_handoff_update": []
+}

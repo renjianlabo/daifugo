@@ -1,0 +1,35 @@
+{
+  "name": "icon",
+  "source": "生成元\\chara3\\set-01\\icon.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "source_sha256": "7b5ab40befaf0d622624c343b104e1e4923b44ff53ea57f0840dea4af1cc4c49",
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 73170,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    6,
+    18,
+    250,
+    256
+  ],
+  "rgb_rounding_step": 1,
+  "rgb_mean_abs_error": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "sha256": "c106f8f180c8b1377811a70fd65023b4fc7591c42bee8f8f163882f771842ddf",
+  "top_padding_pixels": 63,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "ai_passed_pending_human_acceptance"
+}

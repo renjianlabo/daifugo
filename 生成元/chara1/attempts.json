@@ -1,0 +1,69 @@
+{
+  "tool": "built-in image_gen",
+  "status": "partial_stopped",
+  "complete": [
+    "icon"
+  ],
+  "missing": [
+    "special",
+    "rank1",
+    "rank2",
+    "rank3",
+    "rank4"
+  ],
+  "calls": [
+    {
+      "name": "icon",
+      "attempt": 1,
+      "prompt": "Use case: illustration-story. Asset type: a single transparent PNG anime character asset for a Japanese card game, square 1024x1024. Input image 1 is the STRICT outfit AND primary character identity reference. Input images 2 and 3 are ONLY face/hair/rendering references; IGNORE their differing sleeve cuffs and neckline details. Depict the same one character: warm tan skin, vivid blue almond-shaped eyes, glossy chin-length straight black bob, straight slightly separated bangs, small nose, lightly flushed cheeks. Keep the reference face and body proportions, no new emphasis on the body. Polished detailed anime linework, restrained fine outlines, smooth rich cel shading and soft gradients consistent with the source. Outfit EXACTLY image 1: opaque white short-sleeved sailor blouse, PLAIN WHITE sleeve hems with NO navy bands or stripes on sleeves, dark navy broad sailor collar with exactly TWO fine white edge stripes, plain WHITE triangular chest insert with NO stripes, red neckerchief secured by a small navy loop, single plain white patch pocket on HER LEFT chest (viewer right), waist covered by blouse meeting a dark navy pleated skirt waistband. No bare midriff. NO BAG, NO shoulder strap, NO backpack or purse or remnant straps. No jewelry, hair accessory, hat, letters, hearts, sparkles, sweat symbols, numbers, cards or props. Natural hands attached correctly, five fingers per hand when visible. True transparent background, no white fill, no checkerboard drawing, no scenery, no ground shadow, no border or watermark. Head-and-shoulders portrait, face near front, relaxed self-assured very slight closed-mouth smile, both blue eyes open looking at viewer. Entire top and sides of hair inside frame with 7% margin. Face large and very clear in a small 256px icon; collar visible below. Hands outside portrait composition.",
+      "output": "icon-attempt1.png",
+      "status": "rejected_framing"
+    },
+    {
+      "name": "icon",
+      "attempt": 2,
+      "prompt": "Use case: illustration-story. Asset type: a single transparent PNG anime character asset for a Japanese card game, square 1024x1024. Input image 1 is the STRICT outfit AND primary character identity reference. Input images 2 and 3 are ONLY face/hair/rendering references; IGNORE their differing sleeve cuffs and neckline details. Depict the same one character: warm tan skin, vivid blue almond-shaped eyes, glossy chin-length straight black bob, straight slightly separated bangs, small nose, lightly flushed cheeks. Keep the reference face and body proportions, no new emphasis on the body. Polished detailed anime linework, restrained fine outlines, smooth rich cel shading and soft gradients consistent with the source. Outfit EXACTLY image 1: opaque white short-sleeved sailor blouse, PLAIN WHITE sleeve hems with NO navy bands or stripes on sleeves, dark navy broad sailor collar with exactly TWO fine white edge stripes, plain WHITE triangular chest insert with NO stripes, red neckerchief secured by a small navy loop, single plain white patch pocket on HER LEFT chest (viewer right), waist covered by blouse meeting a dark navy pleated skirt waistband. No bare midriff. NO BAG, NO shoulder strap, NO backpack or purse or remnant straps. No jewelry, hair accessory, hat, letters, hearts, sparkles, sweat symbols, numbers, cards or props. Natural hands attached correctly, five fingers per hand when visible. True transparent background, no white fill, no checkerboard drawing, no scenery, no ground shadow, no border or watermark. Head-and-shoulders portrait, face near front, relaxed self-assured very slight closed-mouth smile, both blue eyes open looking at viewer. Entire top and sides of hair inside frame with 7% margin. Face large and very clear in a small 256px icon; collar visible below. Hands outside portrait composition. Input image 4 is the previous icon and is the EDIT TARGET. Preserve its character face, hair, outfit, coloring and expression. Fix ONLY the framing: zoom out to make the head smaller, finish the very top of the hair which is clipped in image 4, leave at least 100 transparent pixels above the top of hair and 80px on either side on the square canvas. Include head and upper shoulders only; bottom can cut shoulders. Full rounded crown MUST be fully visible with generous transparent margin. Do not enlarge the subject to fill the canvas.",
+      "references": [
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装\\01.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\03.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\06.png",
+        "生成元/chara1/icon-attempt1.png"
+      ],
+      "output": "icon.png",
+      "status": "saved"
+    },
+    {
+      "name": "special",
+      "attempt": 1,
+      "prompt": "Use case: illustration-story. Asset type: a single transparent PNG anime character asset for a Japanese card game, square 1024x1024. Input image 1 is the STRICT outfit AND primary character identity reference. Input images 2 and 3 are ONLY face/hair/rendering references; IGNORE their differing sleeve cuffs and neckline details. Depict the same one character: warm tan skin, vivid blue almond-shaped eyes, glossy chin-length straight black bob, straight slightly separated bangs, small nose, lightly flushed cheeks. Keep the reference face and body proportions, no new emphasis on the body. Polished detailed anime linework, restrained fine outlines, smooth rich cel shading and soft gradients consistent with the source. Outfit EXACTLY image 1: opaque white short-sleeved sailor blouse, PLAIN WHITE sleeve hems with NO navy bands or stripes on sleeves, dark navy broad sailor collar with exactly TWO fine white edge stripes, plain WHITE triangular chest insert with NO stripes, red neckerchief secured by a small navy loop, single plain white patch pocket on HER LEFT chest (viewer right), waist covered by blouse meeting a dark navy pleated skirt waistband. No bare midriff. NO BAG, NO shoulder strap, NO backpack or purse or remnant straps. No jewelry, hair accessory, hat, letters, hearts, sparkles, sweat symbols, numbers, cards or props. Natural hands attached correctly, five fingers per hand when visible. True transparent background, no white fill, no checkerboard drawing, no scenery, no ground shadow, no border or watermark. Energetic confident decisive pose, three-quarter torso turn, one arm extended diagonally outward with an open palm in a bold flourish and the other bent with a small fist near shoulder. Both blue eyes open, confident playful broad grin. Game personality: loves revolutions and bold reversals. Frame from entire head to just below skirt waistband. Entire hands, fingertips, elbows and hair fully INSIDE square with at least 5% outer margin. Normal perspective, no extreme foreshortening. Make body substantial in the square. Input image 4 is an additional identity/rendering anchor, the finished icon of this same character; match that face and rendering, but use the new requested pose and wider framing. Keep ALL silhouette inside central 84% of canvas width, top of hair around 9% from top, bottom skirt waistband around 92% from top. Generous true transparent margin on all four sides.",
+      "references": [
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装\\01.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\03.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\06.png",
+        "C:\\github\\daifugo\\生成元\\chara1\\icon.png"
+      ],
+      "status": "moderation_blocked",
+      "stage": "output",
+      "category": "sexual",
+      "output": null,
+      "requestId": "f65da075-57cd-4c55-a93b-30d1f63099a5"
+    },
+    {
+      "name": "rank1",
+      "attempt": 1,
+      "prompt": "Use case: illustration-story. Asset type: a single transparent PNG anime character asset for a Japanese card game, square 1024x1024. Input image 1 is the STRICT outfit AND primary character identity reference. Input images 2 and 3 are ONLY face/hair/rendering references; IGNORE their differing sleeve cuffs and neckline details. Depict the same one character: warm tan skin, vivid blue almond-shaped eyes, glossy chin-length straight black bob, straight slightly separated bangs, small nose, lightly flushed cheeks. Keep the reference face and body proportions, no new emphasis on the body. Polished detailed anime linework, restrained fine outlines, smooth rich cel shading and soft gradients consistent with the source. Outfit EXACTLY image 1: opaque white short-sleeved sailor blouse, PLAIN WHITE sleeve hems with NO navy bands or stripes on sleeves, dark navy broad sailor collar with exactly TWO fine white edge stripes, plain WHITE triangular chest insert with NO stripes, red neckerchief secured by a small navy loop, single plain white patch pocket on HER LEFT chest (viewer right), waist covered by blouse meeting a dark navy pleated skirt waistband. No bare midriff. NO BAG, NO shoulder strap, NO backpack or purse or remnant straps. No jewelry, hair accessory, hat, letters, hearts, sparkles, sweat symbols, numbers, cards or props. Natural hands attached correctly, five fingers per hand when visible. True transparent background, no white fill, no checkerboard drawing, no scenery, no ground shadow, no border or watermark. First place: joyful celebration! Both elbows bent with two small clenched victory fists raised beside shoulders, exuberant open-mouth laughing smile, eyes joyfully closed. Torso upright slightly lively. Frame entire head to below skirt waistband, full hair and both fists/elbows inside with 5% margin. Mouth happy, not distressed. Input image 4 is the finished icon of this same character, an additional identity/rendering anchor. Match its face and rendering but use the new requested pose. Keep ALL silhouette inside central 84% canvas width, top of hair at 9% from top, bottom skirt waistband at 92% from top; true transparent margin on all four sides.",
+      "references": [
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装\\01.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\03.png",
+        "C:\\github\\daifugo\\参考イラスト\\キャラ1\\06.png",
+        "C:\\github\\daifugo\\生成元\\chara1\\icon.png"
+      ],
+      "status": "moderation_blocked",
+      "stage": "output",
+      "category": "sexual",
+      "output": null,
+      "requestId": "0952b898-f02e-4608-b6c5-2b91dfbcca84"
+    }
+  ],
+  "notes": "出力の具体的な判定箇所は不明。同じ失敗の繰り返しや判定回避は行わず停止。rank2/3/4は未実行。"
+}

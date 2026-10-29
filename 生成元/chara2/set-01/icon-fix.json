@@ -1,0 +1,7 @@
+{
+  "attempt": 2,
+  "reason": "hair crown touches top edge",
+  "prompt": "Edit image 1, the just-generated character icon. Image 2 is the original FIXED hairstyle/outfit/choker reference. Preserve the same pale pink bob, face, gentle timid closed-mouth smile, visible red LEFT eye (viewer RIGHT), skin, white thin-strap camisole, black jacket and exact black choker with front buckle and small D-ring. Fix framing: zoom out enough to COMPLETE the rounded hair crown currently clipped at the top, leaving at least 100 transparent pixels above the full crown on a roughly 1254px square, and generous transparent margin around the sides of hair. Full head must be entirely INSIDE the square, not touching top. Head and upper shoulders only. Keep her RIGHT eye (viewer LEFT) fully hidden behind OPAQUE thick pink bangs; no eye, eyebrow, eyelid or red iris should show through that covered area. No earrings, piercings, necklace or accessories other than this exact choker. Do not change design, expression, colors or rendering. True transparent background, one square PNG.",
+  "target": "icon-attempt1.png",
+  "reference": "参考イラスト/キャラ2/服装/01.png"
+}

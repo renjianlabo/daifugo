@@ -1,0 +1,92 @@
+{
+  "landmarks": {
+    "rank1_before": {
+      "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank1.png",
+      "method": "largest connected blue belt-gem region in fixed ROI",
+      "roi": [
+        400,
+        700,
+        600,
+        970
+      ],
+      "pixels": 307,
+      "bbox": [
+        468,
+        764,
+        491,
+        788
+      ],
+      "center": [
+        479.42,
+        776.18
+      ]
+    },
+    "rank2_ref": {
+      "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank2.png",
+      "method": "largest connected blue belt-gem region in fixed ROI",
+      "roi": [
+        400,
+        700,
+        600,
+        970
+      ],
+      "pixels": 280,
+      "bbox": [
+        456,
+        894,
+        480,
+        920
+      ],
+      "center": [
+        466.98,
+        907.79
+      ]
+    },
+    "rank3_ref": {
+      "file": "C:\\github\\daifugo\\生成元\\blonde-tomboy\\set-02-palms-waist\\before-rank3.png",
+      "method": "largest connected blue belt-gem region in fixed ROI",
+      "roi": [
+        400,
+        700,
+        600,
+        970
+      ],
+      "pixels": 321,
+      "bbox": [
+        459,
+        888,
+        484,
+        912
+      ],
+      "center": [
+        470.84,
+        900.64
+      ]
+    },
+    "rank1_after": {
+      "file": "C:\\github\\daifugo\\確認用\\金髪キャラ_男勝り6枚_修正版\\rank1.png",
+      "method": "largest connected blue belt-gem region in fixed ROI",
+      "roi": [
+        400,
+        700,
+        600,
+        970
+      ],
+      "pixels": 432,
+      "bbox": [
+        476,
+        890,
+        503,
+        919
+      ],
+      "center": [
+        489.3,
+        904.46
+      ]
+    }
+  },
+  "target_blue_gem_center_y": 904.21,
+  "tolerance_px": 15,
+  "after_delta_px": 0.25,
+  "alignment_pass": true
+}

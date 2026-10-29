@@ -1,0 +1,256 @@
+{
+  "status": "six_saved_ai_checks_passed_pending_human_review",
+  "reference_sha256": "356fa8678bf902ad13118bd3649cbdfe3ce7ec607adc9fe3f2e6805444e69cf7",
+  "generation_calls": 7,
+  "generation_failures": 0,
+  "generation_retries": 1,
+  "quality_rejected_outputs": 1,
+  "user_requested_revisions": [
+    "rank4"
+  ],
+  "icon_method": "crop from approved source, no regeneration",
+  "assets": [
+    {
+      "name": "icon",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\icon.png",
+      "source": "生成元\\chara1\\v2-set-01\\base-approved.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 90939,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        20,
+        18,
+        256,
+        256
+      ],
+      "rgb_rounding_step": null,
+      "rgb_mean_abs_error": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "placement": {
+        "crop": [
+          290,
+          -35,
+          930,
+          605
+        ]
+      },
+      "source_sha256": "356fa8678bf902ad13118bd3649cbdfe3ce7ec607adc9fe3f2e6805444e69cf7",
+      "sha256": "11d8fbbe0f1726e3c55819b112319b0d6f96e4ea59afd29d927e4484f0a11e42"
+    },
+    {
+      "name": "special",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\special.png",
+      "source": "生成元\\chara1\\v2-set-01\\special.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 463858,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        57,
+        83,
+        885,
+        1024
+      ],
+      "rgb_rounding_step": 5,
+      "rgb_mean_abs_error": [
+        1.1606688298067935,
+        1.164325278959621,
+        1.1480033249863402
+      ],
+      "placement": {
+        "top_pad": 98,
+        "bottom_pad": 0,
+        "square_canvas": 1352
+      },
+      "source_sha256": "a4dbceccc49f4b7bf279e0676476cc69470df6935e14e70c62a18a6ea7db1203",
+      "sha256": "44c9ae1ac85d4affff246b170a5cfd1758e6b9020083a5840c16ae81ab485841"
+    },
+    {
+      "name": "rank1",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\rank1.png",
+      "source": "生成元\\chara1\\v2-set-01\\rank1.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 484263,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        192,
+        82,
+        876,
+        1024
+      ],
+      "rgb_rounding_step": 4,
+      "rgb_mean_abs_error": [
+        0.9896679404469061,
+        0.999713786221514,
+        0.9540459282866882
+      ],
+      "placement": {
+        "top_pad": 98,
+        "bottom_pad": 0,
+        "square_canvas": 1352
+      },
+      "source_sha256": "1e71c202c555165c61365aa3c853840e7c97baad412779031c7164d10aec083e",
+      "sha256": "7dcf846beac09c27f4d23dece31889e08261f0b8851e8c7a0d3f31a9d2aa0508"
+    },
+    {
+      "name": "rank2",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\rank2.png",
+      "source": "生成元\\chara1\\v2-set-01\\rank2.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 460623,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        224,
+        82,
+        815,
+        1024
+      ],
+      "rgb_rounding_step": 4,
+      "rgb_mean_abs_error": [
+        0.9274237948448508,
+        0.9540379579505724,
+        0.9443682105657362
+      ],
+      "placement": {
+        "top_pad": 99,
+        "bottom_pad": 0,
+        "square_canvas": 1353
+      },
+      "source_sha256": "19b295486de707dc9ba641e2dd50ff3394a435618253c568f5a463473b9ad73a",
+      "sha256": "aaa40fb3538e39623d80cb9eb1e72f186633532ec4fcb1f7dc91d1d7b3047a2a"
+    },
+    {
+      "name": "rank3",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\rank3.png",
+      "source": "生成元\\chara1\\v2-set-01\\rank3.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 478367,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        215,
+        83,
+        823,
+        1024
+      ],
+      "rgb_rounding_step": 3,
+      "rgb_mean_abs_error": [
+        0.6481790043265592,
+        0.6658975633451193,
+        0.6473148221366198
+      ],
+      "placement": {
+        "top_pad": 99,
+        "bottom_pad": 0,
+        "square_canvas": 1353
+      },
+      "source_sha256": "2d2f2524c7c7b66390ed37ebfb067e912d8702e348c26a09d9ceba86719107a0",
+      "sha256": "e1397e0add36d7b6df780e9b0c183b912ff0386bf572e4fce202d6df5bdb3186"
+    },
+    {
+      "name": "rank4",
+      "file": "生成元\\chara1\\v2-set-01\\書き出し\\rank4.png",
+      "source": "生成元\\chara1\\v2-rank4-sad-01\\rank4.png",
+      "source_size": [
+        1254,
+        1254
+      ],
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 457146,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "alpha_preserved": true,
+      "visible_bbox": [
+        263,
+        82,
+        810,
+        1001
+      ],
+      "rgb_rounding_step": 4,
+      "rgb_mean_abs_error": [
+        0.9320768864727682,
+        0.9684436689786442,
+        0.9619057232260018
+      ],
+      "placement": {
+        "top_pad": 98,
+        "bottom_pad": 32,
+        "square_canvas": 1384
+      },
+      "source_sha256": "415822ece6cb1c4a3195264910f605d91ecc09d6d511a4546fadae12171173c0",
+      "sha256": "a886c8ddfe08d0439fef5d149fa62e524db136596cb5ef479c03bf45b07a7ec5"
+    }
+  ],
+  "game_integration": false,
+  "protected_five_unchanged": true,
+  "final_files": {
+    "icon": "assets\\characters\\chara1\\icon.png",
+    "special": "assets\\characters\\chara1\\special.png",
+    "rank1": "assets\\characters\\chara1\\rank1.png",
+    "rank2": "assets\\characters\\chara1\\rank2.png",
+    "rank3": "assets\\characters\\chara1\\rank3.png",
+    "rank4": "assets\\characters\\chara1\\rank4.png"
+  },
+  "human_visual_acceptance": false
+}

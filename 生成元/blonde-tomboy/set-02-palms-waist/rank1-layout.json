@@ -1,0 +1,11 @@
+{
+  "scale": 0.8206304467420856,
+  "dx": -3,
+  "dy": 6,
+  "normalized_crown_y": 58,
+  "normalized_gem_center_y": 894.07,
+  "target_crown_y": 64,
+  "target_gem_center_y": 904.21,
+  "uniform_scale_ratio": 1.0049517384907962,
+  "reason": "Uniform scale and translation to match crown and measured blue waist jewel; no local stretching"
+}

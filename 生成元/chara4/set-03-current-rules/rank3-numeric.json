@@ -1,0 +1,23 @@
+{
+  "name": "rank3",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 483999,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "visible_bbox": [
+    275,
+    63,
+    790,
+    1024
+  ],
+  "rgb_rounding_step": 3,
+  "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank3.png",
+  "source_sha256": "6fc9bd5d376ae5527d63e99af269d816b7166f528a33e33898b338f81a9dff8f",
+  "sha256": "38c75ca40e413e1439e000ce84381c1c8b3fdcad0ccf96201e6d3c397fad5f81",
+  "alpha_preserved_after_resize": true
+}

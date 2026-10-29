@@ -1,0 +1,7 @@
+{
+  "status": "resolved_after_inspection",
+  "error": "AssertionError: 頭頂が上端に触れる",
+  "cause": "raw top edge contains alpha=1 feathering; complete crown confirmed visually",
+  "fix": "hash-bound source review and unchanged source/alpha with transparent padding; permit resuming same raw source",
+  "generation_retry": false
+}

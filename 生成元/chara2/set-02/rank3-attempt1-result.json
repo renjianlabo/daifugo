@@ -1,0 +1,9 @@
+{
+  "asset": "rank3",
+  "attempt": 1,
+  "status": "quality_rejected",
+  "reason": "hair crown touches top edge",
+  "output": "rank3-attempt1.png",
+  "callWallSeconds": 67.822,
+  "promptSource": "prompts.json"
+}

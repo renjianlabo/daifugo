@@ -1,0 +1,43 @@
+{
+  "status": "ai_visual_checks_passed_pending_human_acceptance",
+  "required_issues": 0,
+  "asset_sha256": {
+    "icon": "7e47cb656098faff2f807d942f96f002b8a7a203516beefe6f3dd53b67c626df",
+    "special": "b39e972507ce55d750e0389712013d19f4d1709161a8014b8591c6d394cff10c",
+    "rank1": "4e1153cde8126372733791ed936ebdb00249965fbc76ea297198297a3a10d68f",
+    "rank2": "d063a6de302f7f8052c451930e48ca3197d164f766219382567945753dbe2c55",
+    "rank3": "14199ebc15da35e7d36942a731b7130562760174e9320887c4a82a0e039530f0",
+    "rank4": "543ae3cb62d5b543635a8af305faddce130fe0a7d37cd9b3df665c66c1d8f500"
+  },
+  "inspected": [
+    "per-image light-dark composites",
+    "キャラ2一覧.png",
+    "キャラ2_暗背景一覧.png",
+    "キャラ2_順位256確認.png",
+    "キャラ2_基準比較.png",
+    "キャラ2_手の確認.png"
+  ],
+  "checks": {
+    "full_hair_hands_elbows_inside": "pass",
+    "right_eye_covered_left_eye_red": "pass",
+    "short_pink_bob": "pass",
+    "white_camisole_black_jacket_blue_jeans": "pass",
+    "black_buckle_small_D_ring_choker": "pass",
+    "no_other_accessories": "pass",
+    "hands_anatomy_and_sleeve_contact": "pass",
+    "shy_personality_poses": "pass",
+    "rank4_downcast_and_no_clenched_fist": "pass",
+    "style_consistency": "pass",
+    "light_dark_edges": "pass",
+    "expressions_at_256px": "pass"
+  },
+  "limitations": [
+    "AI visual judgment; user acceptance pending.",
+    "rank2 vs rank3 mouth difference is subtle at 256px; eyebrows and hand poses also distinguish them.",
+    "Body position and proportions are compared visually, not pixel-identical.",
+    "icon only shows the face and shoulders; full outfit is checked on the five new images.",
+    "Occluded fingers are judged by visible anatomy, not claimed to be all individually visible."
+  ],
+  "human_acceptance": false,
+  "game_integration": false
+}

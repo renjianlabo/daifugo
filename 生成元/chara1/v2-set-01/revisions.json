@@ -1,0 +1,21 @@
+{
+  "rank4": {
+    "revision": "sad-01",
+    "source": "../v2-rank4-sad-01/rank4.png",
+    "backup": "../v2-rank4-sad-01/before/rank4.png",
+    "stage_backup": "../v2-rank4-sad-01/before/stage-rank4.png",
+    "old_sha256": "3618f8461056252b44c0bfe14912e72229c639c78c5767ee478df9254602b0f7",
+    "bottom_pad": 32,
+    "generation_calls": 2,
+    "quality_retries": 1,
+    "quality_rejected_outputs": 1,
+    "reason": "ユーザー指定で4位をしょんぼりへ。初回の手先切れを1回修正。",
+    "protected_asset_hashes": {
+      "icon": "11d8fbbe0f1726e3c55819b112319b0d6f96e4ea59afd29d927e4484f0a11e42",
+      "special": "44c9ae1ac85d4affff246b170a5cfd1758e6b9020083a5840c16ae81ab485841",
+      "rank1": "7dcf846beac09c27f4d23dece31889e08261f0b8851e8c7a0d3f31a9d2aa0508",
+      "rank2": "aaa40fb3538e39623d80cb9eb1e72f186633532ec4fcb1f7dc91d1d7b3047a2a",
+      "rank3": "e1397e0add36d7b6df780e9b0c183b912ff0386bf572e4fce202d6df5bdb3186"
+    }
+  }
+}

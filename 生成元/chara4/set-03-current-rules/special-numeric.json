@@ -1,0 +1,23 @@
+{
+  "name": "special",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 451890,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "visible_bbox": [
+    236,
+    63,
+    791,
+    1024
+  ],
+  "rgb_rounding_step": 4,
+  "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\special.png",
+  "source_sha256": "8956a212a90950cac85cad1b9f713e73173613c2c050def468e12370d84c822f",
+  "sha256": "8938f30b267cfd94bdd9ca30fabd072c465c1b0d6b1cb8260840e3ccd4675cb5",
+  "alpha_preserved_after_resize": true
+}

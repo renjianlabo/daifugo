@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "asset": "outfit-v2-trial-01",
+  "status": "trial_saved_pending_visual_acceptance",
+  "attempts": 1,
+  "source_output": "生成元/chara1/outfit-v2-trial-01.png",
+  "review_output": "確認用/キャラ1_新衣装試作01.png",
+  "verification": "確認用/キャラ1_新衣装試作01_数値検査.json",
+  "adopted": false,
+  "game_integration": false,
+  "scope": "one standing head-to-waist outfit trial; not adopted final asset",
+  "referenceImages": [
+    "参考イラスト/キャラ1/服装_v2/01.png",
+    "参考イラスト/キャラ1/服装_v2/02.png"
+  ],
+  "prompt": "Use case: illustration-story. Asset type: one square transparent PNG game character illustration, 1024x1024. Use both attached images as CHARACTER DESIGN AND NEW OUTFIT references. Draw this same character in a new ordinary relaxed STANDING pose, at eye-level, head through waist and top of skirt, facing near front with a slight three-quarter turn. Same glossy black chin-length bob and straight bangs, blue eyes, warm tan skin, facial features and natural body proportions. Small calm closed-mouth smile. NEW OUTFIT: white opaque short-sleeved button-front shirt with a pointed shirt collar, plain white sleeve hems, single plain patch pocket on the character's left chest, dark blue bow ribbon at the collar, white buttons fastened along the front; shirt tucked into a dark navy high-waisted pleated skirt. Shirt should be comfortably fitted and fully cover the torso. Keep the ribbon shape and blue shades consistent with the references. Both arms relaxed, elbows gently bent, both hands visible beside the waistband with relaxed natural fingers. Balanced natural anatomy without exaggerated body emphasis. Match the reference polished anime fine linework, rich cel shading, soft gradients and glossy black hair. Full head, hair, elbows and hands must fit with at least 8% transparent margin on top and sides. The bottom of the composition is around the waist and top of the skirt. No bag, shoulder strap, jewelry, accessory, scenery, bed, props, text, symbols, borders, shadow or watermark. True transparent background; preserve clean hair and shirt edges. One single character, one image.",
+  "summary": "最新添付の白い前開き半袖シャツ・青リボン・紺プリーツスカートへ服装を変更。顔・髪・体格と鞄なしを維持し、通常立ち姿を1枚試作。過去のアイコンや正式6枚は置換しない。"
+}

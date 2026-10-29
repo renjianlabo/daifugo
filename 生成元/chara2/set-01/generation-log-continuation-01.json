@@ -1,0 +1,27 @@
+{
+  "userRequest": "続けてやって",
+  "status": "stopped_after_output_moderation",
+  "calls": [
+    {
+      "asset": "rank2",
+      "attempt": 1,
+      "status": "failed",
+      "code": "moderation_blocked",
+      "category": "sexual",
+      "stage": "output",
+      "requestId": "7843a0b8-1157-4c12-8ab1-f0f1356a95b9",
+      "output": null,
+      "retry": false,
+      "specificCause": "unknown",
+      "callWallSeconds": 111.7,
+      "promptSource": "prompts.json",
+      "userRequest": "続けてやって"
+    }
+  ],
+  "newImages": 0,
+  "remainingUnattempted": [
+    "rank3",
+    "rank4"
+  ],
+  "conditionsChanged": false
+}

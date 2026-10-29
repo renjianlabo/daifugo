@@ -1,0 +1,23 @@
+{
+  "name": "rank4",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 492715,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "visible_bbox": [
+    56,
+    63,
+    979,
+    1024
+  ],
+  "rgb_rounding_step": 4,
+  "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank4.png",
+  "source_sha256": "1442a553208566669387e7bccda6b7311613c252f8eac4444e786621529b8621",
+  "sha256": "b060df2ee83903c3419300c7947f9572b7b29208aa1a6214cbe2ce05365156df",
+  "alpha_preserved_after_resize": true
+}

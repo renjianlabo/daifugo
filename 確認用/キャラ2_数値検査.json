@@ -1,0 +1,385 @@
+{
+  "status": "six_saved_ai_checks_passed_pending_human_acceptance",
+  "expected_assets": 6,
+  "saved_assets": 6,
+  "missing": [],
+  "assets": [
+    {
+      "name": "icon",
+      "file": "assets\\characters\\chara2\\icon.png",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 88332,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 26895,
+      "opaque_pixels": 750,
+      "semi_transparent_pixels": 37891,
+      "visible_bbox": [
+        26,
+        20,
+        245,
+        256
+      ],
+      "sha256": "7e47cb656098faff2f807d942f96f002b8a7a203516beefe6f3dd53b67c626df"
+    },
+    {
+      "name": "special",
+      "file": "assets\\characters\\chara2\\special.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 498485,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 622193,
+      "opaque_pixels": 1125,
+      "semi_transparent_pixels": 425258,
+      "visible_bbox": [
+        210,
+        72,
+        874,
+        1024
+      ],
+      "sha256": "b39e972507ce55d750e0389712013d19f4d1709161a8014b8591c6d394cff10c",
+      "export": {
+        "name": "special",
+        "source": "生成元\\chara2\\set-02\\special.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "50b89d0e5391e8913b0cf0083670cdc554dbac05dc2cdcec910b00730cba913f",
+        "size": [
+          1024,
+          1024
+        ],
+        "bytes": 498485,
+        "alpha_range": [
+          0,
+          255
+        ],
+        "alpha_preserved_after_resize": true,
+        "visible_bbox": [
+          210,
+          72,
+          874,
+          1024
+        ],
+        "rgb_rounding_step": 6,
+        "rgb_mean_abs_error": [
+          1.3532117945155895,
+          1.4708536740463916,
+          1.4682293551953198
+        ],
+        "sha256": "b39e972507ce55d750e0389712013d19f4d1709161a8014b8591c6d394cff10c",
+        "top_padding_pixels": 70,
+        "transformation": "transparent top padding if needed, uniform resize to 1024, RGB rounding only; alpha unchanged after resize",
+        "visual_review": "ai_passed_pending_human_acceptance"
+      }
+    },
+    {
+      "name": "rank1",
+      "file": "assets\\characters\\chara2\\rank1.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 493730,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 604074,
+      "opaque_pixels": 926,
+      "semi_transparent_pixels": 443576,
+      "visible_bbox": [
+        158,
+        72,
+        865,
+        1024
+      ],
+      "sha256": "4e1153cde8126372733791ed936ebdb00249965fbc76ea297198297a3a10d68f",
+      "export": {
+        "name": "rank1",
+        "source": "生成元\\chara2\\set-02\\rank1.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "094a58b8858cda6f4e3706da6a8b9e66a9e304847a345ffdb72c5c3cd405ffd1",
+        "size": [
+          1024,
+          1024
+        ],
+        "bytes": 493730,
+        "alpha_range": [
+          0,
+          255
+        ],
+        "alpha_preserved_after_resize": true,
+        "visible_bbox": [
+          158,
+          72,
+          865,
+          1024
+        ],
+        "rgb_rounding_step": 8,
+        "rgb_mean_abs_error": [
+          2.0501106363050985,
+          1.9976912720248199,
+          2.0223707779663993
+        ],
+        "sha256": "4e1153cde8126372733791ed936ebdb00249965fbc76ea297198297a3a10d68f",
+        "top_padding_pixels": 53,
+        "transformation": "transparent top padding if needed, uniform resize to 1024, RGB rounding only; alpha unchanged after resize",
+        "visual_review": "ai_passed_pending_human_acceptance"
+      }
+    },
+    {
+      "name": "rank2",
+      "file": "assets\\characters\\chara2\\rank2.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 479431,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 597758,
+      "opaque_pixels": 654,
+      "semi_transparent_pixels": 450164,
+      "visible_bbox": [
+        182,
+        73,
+        879,
+        1024
+      ],
+      "sha256": "d063a6de302f7f8052c451930e48ca3197d164f766219382567945753dbe2c55",
+      "export": {
+        "name": "rank2",
+        "source": "生成元\\chara2\\set-02\\rank2.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "b702a005edd8a624f7d72ead3fe157adbd2fc5b15465708bd8d72f61951c111e",
+        "size": [
+          1024,
+          1024
+        ],
+        "bytes": 479431,
+        "alpha_range": [
+          0,
+          255
+        ],
+        "alpha_preserved_after_resize": true,
+        "visible_bbox": [
+          182,
+          73,
+          879,
+          1024
+        ],
+        "rgb_rounding_step": 8,
+        "rgb_mean_abs_error": [
+          2.0687212930013232,
+          1.9995543126600606,
+          2.0210442939319555
+        ],
+        "sha256": "d063a6de302f7f8052c451930e48ca3197d164f766219382567945753dbe2c55",
+        "top_padding_pixels": 62,
+        "transformation": "transparent top padding if needed, uniform resize to 1024, RGB rounding only; alpha unchanged after resize",
+        "visual_review": "ai_passed_pending_human_acceptance"
+      }
+    },
+    {
+      "name": "rank3",
+      "file": "assets\\characters\\chara2\\rank3.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 497663,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 642566,
+      "opaque_pixels": 855,
+      "semi_transparent_pixels": 405155,
+      "visible_bbox": [
+        196,
+        72,
+        846,
+        1024
+      ],
+      "sha256": "14199ebc15da35e7d36942a731b7130562760174e9320887c4a82a0e039530f0",
+      "export": {
+        "name": "rank3",
+        "source": "生成元\\chara2\\set-02\\rank3.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "b250d18ca4123aeeddd8d7a55fa048b6c6e4fb81657dd83ad84d158f7753361a",
+        "size": [
+          1024,
+          1024
+        ],
+        "bytes": 497663,
+        "alpha_range": [
+          0,
+          255
+        ],
+        "alpha_preserved_after_resize": true,
+        "visible_bbox": [
+          196,
+          72,
+          846,
+          1024
+        ],
+        "rgb_rounding_step": 5,
+        "rgb_mean_abs_error": [
+          1.182635662839711,
+          1.1790483664763738,
+          1.190822900975937
+        ],
+        "sha256": "14199ebc15da35e7d36942a731b7130562760174e9320887c4a82a0e039530f0",
+        "top_padding_pixels": 1,
+        "transformation": "transparent top padding if needed, uniform resize to 1024, RGB rounding only; alpha unchanged after resize",
+        "visual_review": "ai_passed_pending_human_acceptance"
+      }
+    },
+    {
+      "name": "rank4",
+      "file": "assets\\characters\\chara2\\rank4.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 475797,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "transparent_pixels": 644139,
+      "opaque_pixels": 676,
+      "semi_transparent_pixels": 403761,
+      "visible_bbox": [
+        230,
+        72,
+        831,
+        1024
+      ],
+      "sha256": "543ae3cb62d5b543635a8af305faddce130fe0a7d37cd9b3df665c66c1d8f500",
+      "export": {
+        "name": "rank4",
+        "source": "生成元\\chara2\\set-02\\rank4.png",
+        "source_size": [
+          1254,
+          1254
+        ],
+        "source_sha256": "86f65f111fccc9a7e26b63242ebace734ae4ae9db4a6320a892741bdcb29da87",
+        "size": [
+          1024,
+          1024
+        ],
+        "bytes": 475797,
+        "alpha_range": [
+          0,
+          255
+        ],
+        "alpha_preserved_after_resize": true,
+        "visible_bbox": [
+          230,
+          72,
+          831,
+          1024
+        ],
+        "rgb_rounding_step": 6,
+        "rgb_mean_abs_error": [
+          1.3365610321143684,
+          1.4917179003185128,
+          1.4774167511692
+        ],
+        "sha256": "543ae3cb62d5b543635a8af305faddce130fe0a7d37cd9b3df665c66c1d8f500",
+        "top_padding_pixels": 50,
+        "transformation": "transparent top padding if needed, uniform resize to 1024, RGB rounding only; alpha unchanged after resize",
+        "visual_review": "ai_passed_pending_human_acceptance"
+      }
+    }
+  ],
+  "protected_files_unchanged": {
+    "src\\characters.ts": true,
+    "src\\main.ts": true,
+    "src\\vite-env.d.ts": true,
+    "src\\cpu\\cpu.ts": true,
+    "src\\engine\\cards.ts": true,
+    "src\\engine\\game.ts": true,
+    "src\\engine\\plays.ts": true,
+    "src\\ui\\app.ts": true,
+    "src\\ui\\avatar.ts": true,
+    "src\\ui\\storage.ts": true,
+    "src\\ui\\style.css": true,
+    "tests\\cpu.test.ts": true,
+    "tests\\helpers.ts": true,
+    "tests\\random.test.ts": true,
+    "tests\\referee.ts": true,
+    "tests\\rules.test.ts": true,
+    "tests\\sim.ts": true,
+    "assets\\characters\\chara1\\icon.png": true,
+    "assets\\characters\\chara1\\rank1.png": true,
+    "assets\\characters\\chara1\\rank2.png": true,
+    "assets\\characters\\chara1\\rank3.png": true,
+    "assets\\characters\\chara1\\rank4.png": true,
+    "assets\\characters\\chara1\\special.png": true,
+    "参考イラスト\\キャラ2\\01.png": true,
+    "参考イラスト\\キャラ2\\02.png": true,
+    "参考イラスト\\キャラ2\\03.png": true,
+    "参考イラスト\\キャラ2\\04.png": true,
+    "参考イラスト\\キャラ2\\05.png": true,
+    "参考イラスト\\キャラ2\\06.png": true,
+    "参考イラスト\\キャラ2\\07.png": true,
+    "参考イラスト\\キャラ2\\服装\\01.png": true,
+    "assets\\characters\\chara2\\icon.png": true,
+    "package.json": true,
+    "package-lock.json": true,
+    "tsconfig.json": true,
+    "vite.config.ts": true,
+    "index.html": true
+  },
+  "this_run_generation_calls": 8,
+  "this_run_output_images": 8,
+  "this_run_quality_retries": 3,
+  "this_run_moderation_failures": 0,
+  "historical_moderation_failures": 3,
+  "historical_moderation_cause": "unknown",
+  "zip": "確認用\\キャラ2_完成候補6枚.zip",
+  "zip_entries": [
+    "icon.png",
+    "special.png",
+    "rank1.png",
+    "rank2.png",
+    "rank3.png",
+    "rank4.png"
+  ],
+  "zip_verified": true,
+  "zip_sha256": "adeed4e97657c4cb1924749d155036a1cec6fab4c16a6a81f1f00b43b62cf837",
+  "game_integration": false,
+  "game_tests_run": false,
+  "human_acceptance": false,
+  "notes": [
+    "Alpha equality is against padded and resized image, not against raw dimensions.",
+    "Numerical equality of face geometry or body proportions is not asserted."
+  ],
+  "visual_report": "確認用/キャラ2_目視検査.json"
+}

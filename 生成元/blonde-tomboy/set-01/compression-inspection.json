@@ -1,0 +1,63 @@
+[
+  {
+    "method": "rgb_round",
+    "step": 4,
+    "bytes": 1224090
+  },
+  {
+    "method": "rgb_round",
+    "step": 6,
+    "bytes": 1096631
+  },
+  {
+    "method": "rgb_round",
+    "step": 8,
+    "bytes": 1032510
+  },
+  {
+    "method": "rgb_round",
+    "step": 10,
+    "bytes": 940107
+  },
+  {
+    "method": "rgb_round",
+    "step": 12,
+    "bytes": 866237
+  },
+  {
+    "method": "rgb_round",
+    "step": 16,
+    "bytes": 822992
+  },
+  {
+    "method": "rgb_round",
+    "step": 20,
+    "bytes": 792613
+  },
+  {
+    "method": "palette_rgb_alpha_unchanged",
+    "colors": 256,
+    "bytes": 1398004
+  },
+  {
+    "method": "rgba_indexed",
+    "colors": 256,
+    "bytes": 324445,
+    "alpha_mae": 1.0853195190429688,
+    "alpha_max": 59
+  },
+  {
+    "method": "rgba_indexed",
+    "colors": 224,
+    "bytes": 318781,
+    "alpha_mae": 1.125274658203125,
+    "alpha_max": 59
+  },
+  {
+    "method": "rgba_indexed",
+    "colors": 192,
+    "bytes": 311060,
+    "alpha_mae": 1.2089366912841797,
+    "alpha_max": 60
+  }
+]

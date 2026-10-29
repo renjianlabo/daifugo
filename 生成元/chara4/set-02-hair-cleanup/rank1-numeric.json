@@ -1,0 +1,36 @@
+{
+  "name": "rank1",
+  "source": "生成元\\chara4\\set-02-hair-cleanup\\rank1.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "crop_box": null,
+  "source_sha256": "103163276b9d92dcaa487392421d212157924a1adc678a6840d54ef9b8e1625b",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 487729,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    234,
+    72,
+    922,
+    1024
+  ],
+  "rgb_rounding_step": 3,
+  "rgb_mean_abs_error": [
+    0.6478418655325069,
+    0.6632097982399382,
+    0.6560513952364267
+  ],
+  "sha256": "e93cb0cf6fd1ffccfe5a295acb4472afc7f58dcb237b4030e9bd3cf5fe46abce",
+  "top_padding_pixels": 91,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "pending"
+}

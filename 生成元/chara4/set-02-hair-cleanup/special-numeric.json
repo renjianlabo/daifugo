@@ -1,0 +1,36 @@
+{
+  "name": "special",
+  "source": "生成元\\chara4\\set-02-hair-cleanup\\special.png",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "crop_box": null,
+  "source_sha256": "034dec496b45006fe29a78438a97749a6ffbbbe248805f30982db50b40bd00b4",
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 459335,
+  "alpha_range": [
+    0,
+    255
+  ],
+  "alpha_preserved_after_resize": true,
+  "visible_bbox": [
+    254,
+    72,
+    793,
+    1024
+  ],
+  "rgb_rounding_step": 3,
+  "rgb_mean_abs_error": [
+    0.655352987349426,
+    0.6674710223915992,
+    0.6609834774239537
+  ],
+  "sha256": "ff86d13b4ad1d91e904f5b8a486f20ca710fb9018a3a1a61261991c1e6a397f7",
+  "top_padding_pixels": 78,
+  "transformation": "transparent top padding if needed, uniform resize to target size, RGB rounding only; alpha unchanged after resize",
+  "visual_review": "pending"
+}

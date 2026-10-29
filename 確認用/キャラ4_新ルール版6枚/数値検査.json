@@ -1,0 +1,160 @@
+{
+  "status": "production_and_ai_checks_complete_pending_human_acceptance",
+  "assets": [
+    {
+      "name": "icon",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 83224,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        0,
+        23,
+        253,
+        256
+      ],
+      "rgb_rounding_step": 1,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\special.png",
+      "source_sha256": "8956a212a90950cac85cad1b9f713e73173613c2c050def468e12370d84c822f",
+      "sha256": "74ec1fee7f25f79c85d57505bd5c9bb66134df8e2e85590d00c471c22a94eaad",
+      "alpha_preserved_after_resize": true
+    },
+    {
+      "name": "special",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 451890,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        236,
+        63,
+        791,
+        1024
+      ],
+      "rgb_rounding_step": 4,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\special.png",
+      "source_sha256": "8956a212a90950cac85cad1b9f713e73173613c2c050def468e12370d84c822f",
+      "sha256": "8938f30b267cfd94bdd9ca30fabd072c465c1b0d6b1cb8260840e3ccd4675cb5",
+      "alpha_preserved_after_resize": true
+    },
+    {
+      "name": "rank1",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 468725,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        245,
+        63,
+        929,
+        1024
+      ],
+      "rgb_rounding_step": 4,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank1.png",
+      "source_sha256": "0b1cbeccb9ee9e90925d35ab4e1421a5d18a426892664e60d8ef1cec65a0a9a3",
+      "sha256": "6f030c7f53f042d7031f6796165d645c0be078dbd3d70de9a7601cbea7bb57fe",
+      "alpha_preserved_after_resize": true
+    },
+    {
+      "name": "rank2",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 490099,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        235,
+        63,
+        971,
+        1024
+      ],
+      "rgb_rounding_step": 3,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank2.png",
+      "source_sha256": "e6c9b0a48409f6331c6fc74be5ac4143735b88d3c52e8d3f65496024617742a2",
+      "sha256": "5b6e6b4dfe26a037ed33fa61f4c0cef8baa4f6c4f1bba639ef2517a16326a7aa",
+      "alpha_preserved_after_resize": true
+    },
+    {
+      "name": "rank3",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 483999,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        275,
+        63,
+        790,
+        1024
+      ],
+      "rgb_rounding_step": 3,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank3.png",
+      "source_sha256": "6fc9bd5d376ae5527d63e99af269d816b7166f528a33e33898b338f81a9dff8f",
+      "sha256": "38c75ca40e413e1439e000ce84381c1c8b3fdcad0ccf96201e6d3c397fad5f81",
+      "alpha_preserved_after_resize": true
+    },
+    {
+      "name": "rank4",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 492715,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bbox": [
+        56,
+        63,
+        979,
+        1024
+      ],
+      "rgb_rounding_step": 4,
+      "source": "C:\\github\\daifugo\\生成元\\chara4\\set-03-current-rules\\rank4.png",
+      "source_sha256": "1442a553208566669387e7bccda6b7311613c252f8eac4444e786621529b8621",
+      "sha256": "b060df2ee83903c3419300c7947f9572b7b29208aa1a6214cbe2ce05365156df",
+      "alpha_preserved_after_resize": true
+    }
+  ],
+  "protected_files_checked": 56,
+  "protected_changed": [],
+  "zip_verified": true,
+  "human_acceptance": false,
+  "game_integration": false,
+  "game_tests_run": false,
+  "generation_calls": 5,
+  "output_images": 5,
+  "icon_derived_from": "special",
+  "quality_retries": 0,
+  "generation_failures": 0,
+  "visual_review": "pass within visible regions; see review report",
+  "unverified": [
+    "human acceptance",
+    "game display",
+    "pixel-perfect face/body equality"
+  ]
+}
