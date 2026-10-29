@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>設定 改善案</title>
+<!-- 改善案（アプリには入れていない）。中身（CPUの強さ・ルール12個・初期設定に戻す・次へ）は今の設定画面と同じ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 14px 18px; display: grid; gap: 18px; align-content: start; }
+/* CPUの強さ：3つから1つ */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.seg .btn { min-height: 48px; padding: 6px 4px; font-size: 17px; }
+/* ルール：名前（明朝）と説明（読みやすい書体）、右にオン・オフ */
+.rules { list-style: none; margin: 0 0 14px; padding: 0; }
+.rule { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(214, 176, 92, 0.25); }
+.rule:last-child { border-bottom: 0; }
+.rule-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rule-name { font-family: var(--font-deco); font-weight: 800; font-size: 18px; letter-spacing: 0.08em; line-height: 1.35; color: var(--gold-hi); }
+.rule-help { color: var(--ink-dim); font-size: 16px; line-height: 1.45; word-break: keep-all; overflow-wrap: anywhere; }
+.toggle { flex: none; width: 76px; min-height: 44px; padding: 4px; font-size: 16px; letter-spacing: 0.1em; }
+.toggle.ghost { color: var(--ink-dim); }
+.reset { width: 100%; }
+</style>
+</head>
+<body>
+<main class="screen" id="screen">
+  <header class="gbar sub">
+    <button class="btn ghost small" data-act="back">戻る</button>
+    <h1 class="round gold-text">設定</h1>
+    <span></span>
+  </header>
+  <div class="scroll" id="scroll">
+    <section class="panel frame">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <h2 class="panel-title gold-text">CPUの強さ</h2>
+      <div class="seg" role="group" aria-label="CPUの強さ" id="seg"></div>
+    </section>
+    <section class="panel frame">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <h2 class="panel-title gold-text">ルール</h2>
+      <ul class="rules" id="rules"></ul>
+      <button class="btn ghost reset" data-act="reset">初期設定に戻す</button>
+    </section>
+  </div>
+  <footer class="foot-bar"><button class="btn primary" data-act="next">次へ（キャラ選択）</button></footer>
+</main>
+<script>
+// 名前・説明・並びは今のアプリ（src/ui/app.ts・src/engine/game.ts）と同じ。「|」は折り返してよい場所
+const LEVELS = [['easy', 'やさしい'], ['normal', 'ふつう'], ['strong', 'つよい']];
+const RULES = [
+  ['fiveSkip', '5スキップ', '5の枚数分、|次の人を|とばす'],
+  ['sevenPass', '7渡し', '7の枚数分、|次の人に|カードを渡す'],
+  ['eightCut', '8切り', '8を出すと|場が流れる'],
+  ['tenDiscard', '10捨て', '10の枚数分、|手札を|捨てる'],
+  ['elevenBack', '11バック', 'Jを出すと、|場が流れるまで|強さが逆'],
+  ['twelveBomber', '12ボンバー', 'Qの枚数分、|数字を選んで|全員から捨てる'],
+  ['revolution', '革命', '同じ数字4枚か|階段4枚以上で|強さが逆'],
+  ['markLock', 'マークしばり', '同じマークが|2回続くと、|そのマークだけ'],
+  ['numLock', '数しば', '数字が1つずつ|2回続くと、|次の数字だけ'],
+  ['gekiLock', '激しば', 'マークと数字が|同時にそろうと|両方しばる'],
+  ['exchange', 'カード交換', '2回戦目から、|順位で|カードを交換'],
+  ['miyakoOchi', '都落ち', '前の大富豪が|1位でないと|大貧民'],
+];
+const KEY = 'daifugo-mock-settings';
+const initial = () => ({ level: 'normal', rules: Object.fromEntries(RULES.map(([k]) => [k, k !== 'miyakoOchi'])) });
+// 設定はブラウザに保存する（今のアプリと同じ）。読めないときは初期設定
+let st;
+try { st = JSON.parse(localStorage.getItem(KEY)) ?? initial(); } catch { st = initial(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} };
+const wb = (t) => t.split('|').join('<wbr>');
+
+function render() {
+  document.getElementById('seg').innerHTML = LEVELS.map(([k, n]) => `<button class="btn ${st.level === k ? 'primary' : 'ghost'}" aria-pressed="${st.level === k}" data-act="level" data-arg="${k}">${n}</button>`).join('');
+  document.getElementById('rules').innerHTML = RULES.map(([k, name, help]) => `
+    <li class="rule">
+      <div class="rule-text"><span class="rule-name">${name}</span><span class="rule-help">${wb(help)}</span></div>
+      <button class="btn toggle ${st.rules[k] ? 'primary' : 'ghost'}" aria-pressed="${st.rules[k]}" aria-label="${name}" data-act="rule" data-arg="${k}">${st.rules[k] ? 'オン' : 'オフ'}</button>
+    </li>`).join('');
+}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const { act, arg } = el.dataset;
+  if (act === 'level') st.level = arg;
+  if (act === 'rule') st.rules[arg] = !st.rules[arg];
+  if (act === 'reset') st = initial();
+  if (act === 'back' || act === 'next') {
+    // 見本なので、押したことが分かるように画面を一瞬暗くするだけ
+    document.getElementById('screen').animate([{ filter: 'brightness(1)' }, { filter: 'brightness(0.6)' }, { filter: 'brightness(1)' }], { duration: 250 });
+    document.body.dataset.last = act;
+  }
+  save();
+  render();
+});
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+render();
+</script>
+</body>
+</html>

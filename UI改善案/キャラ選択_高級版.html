@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>キャラ選択 改善案</title>
+<!-- 改善案（アプリには入れていない）。1人ずつ大きく見せ、左右スワイプ（または左右のボタン）で切り替える -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="共通.css">
+<style>
+
+/* ---------- 名前の札 ---------- */
+.top { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 16px 0; }
+.nameplate { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: center; }
+/* 名前の左右に金の線と菱 */
+.nameplate::before, .nameplate::after {
+  content: ""; flex: 1 1 0; max-width: 90px; height: 5px;
+  border-top: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line-2);
+}
+.char-name { font-family: var(--font-deco); font-weight: 800; font-size: 32px; letter-spacing: 0.16em; line-height: 1.3; white-space: nowrap; padding-left: 0.16em; }
+.note { color: var(--ink-dim); font-size: 16px; text-align: center; }
+
+/* ---------- 絵の舞台：名前の下から画面の下端まで ---------- */
+.stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; touch-action: pan-y; cursor: grab; }
+.stage.dragging { cursor: grabbing; }
+.track { position: absolute; inset: 0; display: flex; transition: transform 0.25s ease-out; }
+.stage.dragging .track { transition: none; }
+/* 1人分の枠の外は見せない（横に大きい絵が隣のキャラの所にはみ出さないように） */
+.slide { position: relative; flex: 0 0 100%; height: 100%; overflow: hidden; }
+/* 頭の後ろにうっすら光 */
+.slide::before {
+  content: ""; position: absolute; left: 50%; top: 0; width: 120%; height: 60%; translate: -50% 0; pointer-events: none;
+  background: radial-gradient(ellipse 45% 50% at 50% 35%, rgba(255, 214, 140, 0.2), rgba(255, 214, 140, 0) 70%);
+}
+/* 絵は下が切れているので画面の下端につける。位置と大きさは layout() で決める（頭をまん中に） */
+.char-art {
+  position: absolute; bottom: 0; display: block; user-select: none; pointer-events: none; -webkit-user-drag: none;
+  filter: drop-shadow(0 0 1px rgba(255, 240, 200, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+
+/* 左右のボタン（スワイプできない環境や、気づかない人のため） */
+.nav {
+  position: absolute; top: 46%; z-index: 2; width: 44px; height: 64px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(23, 10, 20, 0.7); border: 1px solid var(--gold-line); border-radius: 4px;
+  transition: filter 0.1s ease;
+}
+.nav::before { content: ""; position: absolute; inset: 3px; border: 1px solid var(--gold-line-2); border-radius: 2px; pointer-events: none; }
+.nav svg { width: 16px; height: 24px; }
+.nav.prev { left: 10px; }
+.nav.next { right: 10px; }
+.nav:disabled { cursor: default; filter: brightness(0.45) grayscale(0.6); }
+
+/* ---------- 下：何人目かの印と決定 ---------- */
+.foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: grid; gap: 12px; justify-items: center;
+  padding: 28px 16px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(23, 10, 20, 0) 0%, rgba(23, 10, 20, 0.85) 45%);
+}
+.dots { display: flex; gap: 12px; }
+.dot { width: 10px; height: 10px; rotate: 45deg; border: 1px solid var(--gold); background: rgba(23, 10, 20, 0.8); transition: background 0.2s ease; }
+.dot.on { background: var(--gold-fill); box-shadow: 0 0 8px rgba(255, 214, 120, 0.7); }
+.foot .btn { width: 100%; min-height: 56px; font-size: 22px; letter-spacing: 0.24em; }
+</style>
+</head>
+<body>
+<main class="screen" id="screen">
+  <header class="gbar sub">
+    <button class="btn ghost small" data-act="back">戻る</button>
+    <h1 class="round gold-text">キャラ選択</h1>
+    <span></span>
+  </header>
+
+  <section class="top">
+    <p class="nameplate"><span class="char-name gold-text" id="name"></span></p>
+    <p class="note">残りの3人がCPUになります。</p>
+  </section>
+
+  <section class="stage" id="stage" aria-roledescription="カルーセル">
+    <div class="track" id="track"></div>
+    <button class="nav prev" data-act="prev" aria-label="前のキャラ"><svg viewBox="0 0 16 24"><path d="M13 2 3 12l10 10" fill="none" stroke="#f0d184" stroke-width="2.4"/></svg></button>
+    <button class="nav next" data-act="next" aria-label="次のキャラ"><svg viewBox="0 0 16 24"><path d="M3 2l10 10L3 22" fill="none" stroke="#f0d184" stroke-width="2.4"/></svg></button>
+  </section>
+
+  <footer class="foot">
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <button class="btn primary" data-act="decide">このキャラに決定</button>
+  </footer>
+</main>
+
+<script>
+// 見本の仕掛けだけ（決定したキャラは画面の下に一瞬出すだけで、どこにも保存しない）
+// 絵はお試し。head は絵の中の頭（髪のてっぺん〜あごの下の髪）の範囲：左,上,右,下（絵の幅・高さに対する割合）
+const CHARS = [
+  { name: 'キャラ1', src: '素材/お試し_キャラ1.webp', head: [0.18, 0, 0.74, 0.33] },
+  { name: 'キャラ2', src: '../assets/characters/chara2/special.png', head: [0.29, 0.07, 0.69, 0.42] },
+  { name: 'キャラ3', src: '../assets/characters/chara3/special.png', head: [0.30, 0.07, 0.68, 0.37] },
+  { name: 'キャラ4', src: '../assets/characters/blonde-tomboy/special.png', head: [0.33, 0.07, 0.69, 0.40] },
+];
+let index = Number(new URLSearchParams(location.search).get('c') ?? 1) - 1;
+const stage = document.getElementById('stage');
+const track = document.getElementById('track');
+
+track.innerHTML = CHARS.map((c, i) => `<div class="slide" aria-hidden="${i !== index}"><img class="char-art" src="${c.src}" alt="${c.name}" draggable="false" data-head="${c.head.join(',')}"></div>`).join('');
+document.getElementById('dots').innerHTML = CHARS.map(() => '<i class="dot"></i>').join('');
+
+// 絵の大きさ：舞台の高さいっぱい（下端は画面の下端）。頭が名前の下に収まり、頭の横のまん中を画面のまん中に置く
+function layout() {
+  const h = stage.clientHeight;
+  for (const img of track.querySelectorAll('.char-art')) {
+    if (!img.naturalWidth) continue;
+    const [hx1, hy1, hx2] = img.dataset.head.split(',').map(Number);
+    // 絵の上端（頭のてっぺんより上の透明な所）は名前に少し重なってよい。頭のてっぺんは舞台の上端から8px下
+    const H = (h - 8) / (1 - hy1);
+    const W = H * img.naturalWidth / img.naturalHeight;
+    img.style.height = `${H}px`;
+    img.style.width = `${W}px`;
+    img.style.left = `${stage.clientWidth / 2 - ((hx1 + hx2) / 2) * W}px`;
+  }
+}
+
+function show() {
+  track.style.transform = `translateX(${-index * 100}%)`;
+  document.getElementById('name').textContent = CHARS[index].name;
+  [...track.children].forEach((s, i) => s.setAttribute('aria-hidden', String(i !== index)));
+  [...document.getElementById('dots').children].forEach((d, i) => d.classList.toggle('on', i === index));
+  document.querySelector('.nav.prev').disabled = index === 0;
+  document.querySelector('.nav.next').disabled = index === CHARS.length - 1;
+}
+const go = (i) => { index = Math.max(0, Math.min(CHARS.length - 1, i)); show(); };
+
+// 左右スワイプ：指（マウス）について絵が動き、幅の2割以上（または素早く）動かしたら次のキャラへ
+let drag = null;
+stage.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('button')) return;
+  drag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, horizontal: null };
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  drag.dx = e.clientX - drag.x;
+  if (drag.horizontal === null && Math.hypot(drag.dx, e.clientY - drag.y) > 8) drag.horizontal = Math.abs(drag.dx) > Math.abs(e.clientY - drag.y);
+  if (!drag.horizontal) return;
+  stage.classList.add('dragging');
+  // 端のキャラでは引っぱりを弱くする
+  const edge = (index === 0 && drag.dx > 0) || (index === CHARS.length - 1 && drag.dx < 0);
+  track.style.transform = `translateX(calc(${-index * 100}% + ${edge ? drag.dx / 3 : drag.dx}px))`;
+});
+const end = () => {
+  if (!drag) return;
+  const fast = Math.abs(drag.dx) / (performance.now() - drag.t) > 0.5;
+  if (drag.horizontal && (Math.abs(drag.dx) > stage.clientWidth * 0.2 || (fast && Math.abs(drag.dx) > 30))) go(index + (drag.dx < 0 ? 1 : -1));
+  else show();
+  stage.classList.remove('dragging');
+  drag = null;
+};
+stage.addEventListener('pointerup', end);
+stage.addEventListener('pointercancel', end);
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const act = el.dataset.act;
+  if (act === 'prev') go(index - 1);
+  if (act === 'next') go(index + 1);
+  if (act === 'back' || act === 'decide') {
+    // 見本なので、押したことが分かるように画面を一瞬暗くするだけ
+    document.getElementById('screen').animate([{ filter: 'brightness(1)' }, { filter: 'brightness(0.6)' }, { filter: 'brightness(1)' }], { duration: 250 });
+    document.body.dataset.last = act === 'decide' ? `決定:${CHARS[index].name}` : '戻る';
+  }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') go(index - 1); if (e.key === 'ArrowRight') go(index + 1); });
+
+for (const img of track.querySelectorAll('img')) img.addEventListener('load', layout);
+addEventListener('resize', layout);
+// iPhone の2本指の拡大を止める
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+show();
+layout();
+</script>
+</body>
+</html>

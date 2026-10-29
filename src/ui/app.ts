@@ -7,17 +7,21 @@ import {
   isActive, isReversed, listMoves, lockKind, newGame, nextRound, pass, play, topEntry,
 } from '../engine/game';
 import { CpuOptions, LEVEL_NAMES, Level, PERSONALITY_WEIGHTS, cpuAct } from '../cpu/cpu';
-import { FxPose, artImg, avatarBig, avatarSmall, preloadArt } from './avatar';
+import { bigArt, layoutArts } from './art';
+import { FxPose, artImg, avatarSmall, preloadArt } from './avatar';
 import { Settings, defaultSettings, loadSettings, saveSettings } from './storage';
 
 type Screen = 'title' | 'settings' | 'select' | 'game' | 'final';
 
 const HUMAN = 0;
+/** 絵を出す演出（革命・ジョーカー・順位）の長さ */
 const FX_MS = 1200;
+/** 帯だけの演出（8切りなど）の長さ */
+const BAND_MS = 1000;
 /** 出せる手がないとき、自動でパスするまでの間（パスしたことが分かるように少し待つ） */
 const AUTO_PASS_MS = 700;
-/** 出来事のカードを一瞬見せて消す時間 */
-const FLASH_MS = 1100;
+/** 出来事のカードを一瞬見せて、捨てる・渡す動きをする時間 */
+const FLASH_MS = 1300;
 // 「|」は折り返してよい場所（言葉の途中で折り返さないようにする）
 const RULE_HELP: Record<keyof Rules, string> = {
   eightCut: '8を出すと|場が流れる',
@@ -45,10 +49,19 @@ const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 // ---------------- 対戦の進行役 ----------------
 
-interface Fx { char: Character; text: string; pose: FxPose }
+/** 帯の種類（色を決める） */
+type BandKind = 'revolution' | 'joker' | 'eight' | 'five' | 'eleven' | 'bomber' | 'ten' | 'seven' | 'mark' | 'num' | 'geki'
+  | 'rank1' | 'rank2' | 'rank3' | 'rank4';
 
-/** 出来事のカード（12ボンバー・10捨てで捨てられたカード、交換・7渡しで自分が渡した・受け取ったカード）を一瞬見せる */
-interface Flash { cards: number[]; start: number }
+/** 演出：帯に効果の名前。pose があるときはキャラの絵の上に帯を重ねる。ないときは帯だけで、帯に発動したキャラのアイコンを出す */
+interface Fx { band: BandKind; name: string; char: Character; pose: FxPose | null }
+
+/**
+ * 出来事のカードを一瞬見せる。move は、そのあとの動き：
+ * discard＝捨てられる（12ボンバー・10捨て）、give＝表のまま受け取る人へ（7渡しで自分が渡す・受け取る）、
+ * pass＝裏向きのまま渡す人から受け取る人へ（CPUどうしの7渡し）、none＝消えるだけ（カード交換）
+ */
+interface Flash { cards: number[]; start: number; move: 'discard' | 'give' | 'pass' | 'none'; from: number | null; to: number | null }
 
 /** 人間がカードを選んで手放す作業（カード交換・7渡し・10捨て）。count はちょうど選ぶ枚数 */
 interface HandTask { kind: 'exchange' | 'sevenPass' | 'tenDiscard'; to: number | null; count: number }
@@ -103,13 +116,23 @@ class GameController {
 
   private consumeEvents() {
     const s = this.s;
-    const shown: number[] = [];
-    for (; this.eventIdx < s.events.length; this.eventIdx++) shown.push(...this.describe(s.events[this.eventIdx]));
-    if (shown.length) this.showFlash(shown);
+    const shown: Omit<Flash, 'start'>[] = [];
+    const queued = this.fxQueue.length;
+    for (; this.eventIdx < s.events.length; this.eventIdx++) {
+      const f = this.describe(s.events[this.eventIdx]);
+      if (f) shown.push(f);
+    }
+    // ジョーカーで革命したときは、絵の演出を1回にする（革命を出す）
+    const added = this.fxQueue.slice(queued);
+    const rev = added.find((f) => f.band === 'revolution');
+    if (rev) this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !(f.band === 'joker' && f.char === rev.char))];
+    if (!shown.length) return;
+    // 1回に2つ以上（カード交換）のときは、まとめて見せて消すだけにする
+    this.showFlash(shown.length === 1 ? shown[0] : { cards: shown.flatMap((f) => f.cards), move: 'none', from: null, to: null });
   }
 
-  private showFlash(cards: number[]) {
-    const flash = { cards, start: performance.now() };
+  private showFlash(f: Omit<Flash, 'start'>) {
+    const flash = { ...f, start: performance.now() };
     this.flash = flash;
     this.later(() => {
       if (this.flash !== flash) return;
@@ -118,21 +141,40 @@ class GameController {
     }, this.fast ? 30 : FLASH_MS);
   }
 
-  /** 出来事を演出に変える。文字では説明せず、一瞬見せるカードを返す */
-  private describe(e: GameEvent): number[] {
+  /** 最後にカードを出した人（5スキップの帯に出す人） */
+  private actor = 0;
+  /** 今のカードの5スキップの帯を出したか（とばされる人ごとに知らせが来るので、帯は1回だけ） */
+  private skipShown = false;
+
+  private band(band: BandKind, player: number, pose: FxPose | null = null, name = BAND_NAMES[band]) {
+    this.fxQueue.push({ band, name, char: this.seats[player], pose });
+  }
+
+  /**
+   * 出来事を演出に変える。文字では説明しない。帯は起きた順（＝ルール処理の順：しばり → 12ボンバー → 7渡し → 10捨て → 革命 → 11バック → 8切り → 5スキップ）に積む。
+   * 一瞬見せるカードがあれば返す
+   */
+  private describe(e: GameEvent): Omit<Flash, 'start'> | null {
     switch (e.type) {
-      case 'exchange': return e.from === HUMAN || e.to === HUMAN ? e.cards : [];
-      case 'bomber': return e.removed.flat();
-      case 'sevenPass': return e.from === HUMAN || e.to === HUMAN ? e.cards : [];
-      case 'tenDiscard': return e.cards;
-      case 'joker': this.fxQueue.push({ char: this.seats[e.player], text: 'ジョーカー！', pose: 'special' }); break;
-      case 'revolution': this.fxQueue.push({ char: this.seats[e.player], text: '革命！', pose: 'special' }); break;
-      case 'finish': this.fxQueue.push({ char: this.seats[e.player], text: `${e.rank}位！`, pose: e.rank as FxPose }); break;
-      // 都落ちした人は、その時点で4位に決まる
-      case 'fall': this.fxQueue.push({ char: this.seats[e.player], text: '4位！', pose: 4 }); break;
+      case 'play': this.actor = e.player; this.skipShown = false; break;
+      case 'exchange': return e.from === HUMAN || e.to === HUMAN ? { cards: e.cards, move: 'none', from: e.from, to: e.to } : null;
+      case 'bomber': return { cards: e.removed.flat(), move: 'discard', from: e.player, to: null };
+      // 自分が関わる7渡しは表のまま、CPUどうしは裏向きのまま動かす
+      case 'sevenPass': return { cards: e.cards, move: e.from === HUMAN || e.to === HUMAN ? 'give' : 'pass', from: e.from, to: e.to };
+      case 'tenDiscard': return { cards: e.cards, move: 'discard', from: e.player, to: null };
+      case 'joker': this.band('joker', e.player, 'special'); break;
+      case 'revolution': this.band('revolution', e.player, 'special'); break;
+      case 'lock': this.band(e.kind, e.player, null, BAND_NAMES[e.kind] + (e.kind !== 'num' && e.suits ? `<small>${marksOf(e.suits)}</small>` : '')); break;
+      case 'effectStart': this.band(({ bomber: 'bomber', sevenPass: 'seven', tenDiscard: 'ten' } as const)[e.kind], e.player); break;
+      case 'elevenBack': this.band('eleven', e.player); break;
+      case 'eightCut': this.band('eight', e.player); break;
+      case 'skip': if (!this.skipShown) { this.skipShown = true; this.band('five', this.actor); } break;
+      case 'finish': this.band(`rank${e.rank}` as BandKind, e.player, e.rank as FxPose); break;
+      // 都落ちした人は、その時点で大貧民（4位）に決まる
+      case 'fall': this.band('rank4', e.player, 4); break;
       default: break;
     }
-    return [];
+    return null;
   }
 
   /** 状態が変わるたびに呼ぶ。演出・CPUの番・人間の入力待ちを振り分ける */
@@ -141,9 +183,10 @@ class GameController {
     this.consumeEvents();
     if (this.frozen || this.fx) return this.onChange();
     if (this.fxQueue.length) {
-      this.fx = this.fxQueue.shift()!;
+      const fx = this.fxQueue.shift()!;
+      this.fx = fx;
       this.onChange();
-      this.later(() => this.skipFx(), this.fast ? 30 : FX_MS);
+      this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : fx.pose !== null ? FX_MS : BAND_MS);
       return;
     }
     const s = this.s;
@@ -292,6 +335,14 @@ class GameController {
 }
 
 const LOCK_NAMES = { mark: 'マークしばり', num: '数しば', geki: '激しば' } as const;
+/** 帯に出す名前。効果は設定の名前と同じ、順位は大富豪〜大貧民 */
+const BAND_NAMES: Record<BandKind, string> = {
+  revolution: RULE_NAMES.revolution, joker: 'ジョーカー', eight: RULE_NAMES.eightCut, five: RULE_NAMES.fiveSkip, eleven: RULE_NAMES.elevenBack,
+  bomber: RULE_NAMES.twelveBomber, ten: RULE_NAMES.tenDiscard, seven: RULE_NAMES.sevenPass, ...LOCK_NAMES,
+  rank1: RANK_NAMES[0], rank2: RANK_NAMES[1], rank3: RANK_NAMES[2], rank4: RANK_NAMES[3],
+};
+/** しばったマーク（例 "HS"）を記号に */
+const marksOf = (suits: string) => suits.split('').map((x) => ({ S: '♠', H: '♥', D: '♦', C: '♣' })[x]).join('');
 const NO_EFFECTS = { bomber: 0, sevenPass: 0, tenDiscard: 0, revolution: false, elevenBack: false, eightCut: false, skip: 0 };
 
 // ---------------- 画面を作る ----------------
@@ -345,7 +396,8 @@ export function startApp(root: HTMLElement) {
         break;
       }
       case 'resetRules': update({ ...settings, rules: defaultSettings().rules }); break;
-      case 'pickChar': pickChar = Number(arg); render(); break;
+      case 'selPrev': selectMove(-1); break;
+      case 'selNext': selectMove(1); break;
       case 'start': update({ ...settings, character: pickChar }); startGame(); break;
       case 'again': startGame(); break;
       case 'card': game?.toggleCard(Number(arg)); break;
@@ -372,8 +424,14 @@ export function startApp(root: HTMLElement) {
     };
   }
 
-  function scenario(name: string) {
-    settings = { ...loadSettings(), character: 1 };
+  /** 検査用：その席のキャラの絵の演出（決めポーズは革命、1〜4位は大富豪〜大貧民） */
+  const cut = (seat: number, pose: FxPose): Fx => {
+    const band: BandKind = pose === 'special' ? 'revolution' : `rank${pose}`;
+    return { band, name: BAND_NAMES[band], char: game!.seats[seat], pose };
+  };
+
+  function scenario(name: string, character = 1) {
+    settings = { ...loadSettings(), character };
     startGame();
     const g = game!;
     g.frozen = true;
@@ -427,23 +485,23 @@ export function startApp(root: HTMLElement) {
         s.lastPlayer = 2;
         const gone = s.hands.flatMap((h) => h.filter((c) => !isJoker(c) && rankOf(c) === 4));
         s.hands = s.hands.map((h) => h.filter((c) => !gone.includes(c)));
-        g.flash = { cards: gone, start: performance.now() - 400 };
+        g.flash = { cards: gone, start: performance.now() - 400, move: 'discard', from: 2, to: null };
         break;
       }
       case 'fx':
-        g.fx = { char: g.seats[0], text: '革命！', pose: 'special' };
+        g.fx = cut(0, 'special');
         break;
       case 'fxRank':
-        g.fx = { char: g.seats[0], text: '4位！', pose: 4 };
+        g.fx = cut(0, 4);
         break;
       case 'fxC4':
-        g.fx = { char: g.seats[3], text: 'ジョーカー！', pose: 'special' };
+        g.fx = { ...cut(3, 'special'), band: 'joker', name: BAND_NAMES.joker };
         break;
       case 'fxC2':
-        g.fx = { char: g.seats[1], text: '革命！', pose: 'special' };
+        g.fx = cut(1, 'special');
         break;
       case 'fxC3':
-        g.fx = { char: g.seats[2], text: '1位！', pose: 1 };
+        g.fx = cut(2, 1);
         break;
       default: {
         // 「rankFx:席:順位」：本物のルール処理で、その席の人をその順位で上がらせる（4位は最後に残る）
@@ -469,10 +527,21 @@ export function startApp(root: HTMLElement) {
         }
         // 「fx:席:絵」（例 fx:2:4）で、その席のキャラのその絵の演出を出す
         const m = /^fx:(\d):(special|[1-4])$/.exec(name);
-        if (m) {
-          const pose = (m[2] === 'special' ? 'special' : Number(m[2])) as FxPose;
-          g.fx = { char: g.seats[Number(m[1])], text: pose === 'special' ? '革命！' : `${pose}位！`, pose };
+        if (m) g.fx = cut(Number(m[1]), (m[2] === 'special' ? 'special' : Number(m[2])) as FxPose);
+        // 「band:種類:席」（例 band:eight:2）で、帯だけの演出を出す
+        const b = /^band:(\w+):(\d)$/.exec(name);
+        if (b) {
+          const kind = b[1] as BandKind;
+          const label = BAND_NAMES[kind] + (kind === 'mark' || kind === 'geki' ? '<small>♥</small>' : '');
+          g.fx = { band: kind, name: label, char: g.seats[Number(b[2])], pose: null };
         }
+        // 「move:動き:渡す人:受け取る人」（例 move:pass:1:3）で、一瞬見せるカードが動いている途中を出す
+        const mv = /^move:(discard|give|pass):(\d):(\d)$/.exec(name);
+        if (mv) {
+          const cards = s.hands[Number(mv[2])].slice(0, mv[1] === 'discard' ? 2 : 1);
+          g.flash = { cards, start: performance.now() - 450, move: mv[1] as Flash['move'], from: Number(mv[2]), to: Number(mv[3]) };
+        }
+        break;
       }
       case 'roundEnd':
         Object.assign(s, { phase: 'roundEnd', round: 2, roundRanks: [[2, 1, 3, 4], [1, 3, 4, 2]], scores: [5, 4, 1, 2] });
@@ -506,30 +575,90 @@ export function startApp(root: HTMLElement) {
     else if (screen === 'game' && game) root.innerHTML = gameView(game);
     else if (screen === 'final' && finalState) root.innerHTML = finalView(finalState.s, finalState.seats);
     else root.innerHTML = titleView(settings.character);
+    layoutArts(root);
   }
+
+  // ---- キャラ選択：左右スワイプ・左右のボタンで切り替える。画面を描き直さず、動く部分だけ変える（切り替えの動きを見せるため） ----
+  function selectShow() {
+    const index = CHARACTERS.findIndex((c) => c.id === pickChar);
+    const track = root.querySelector<HTMLElement>('#selTrack');
+    if (!track) return;
+    track.style.transform = `translateX(${-index * 100}%)`;
+    [...track.children].forEach((el, i) => el.setAttribute('aria-hidden', String(i !== index)));
+    root.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === index));
+    root.querySelector('#selName')!.textContent = CHARACTERS[index].name;
+    root.querySelector<HTMLButtonElement>('.nav.prev')!.disabled = index === 0;
+    root.querySelector<HTMLButtonElement>('.nav.next')!.disabled = index === CHARACTERS.length - 1;
+  }
+  function selectMove(d: number) {
+    const index = CHARACTERS.findIndex((c) => c.id === pickChar);
+    pickChar = CHARACTERS[Math.max(0, Math.min(CHARACTERS.length - 1, index + d))].id;
+    selectShow();
+  }
+  // 指（マウス）について絵が動き、幅の2割以上（または素早く）動かしたら次のキャラへ。縦の動きでは切り替えない
+  let drag: { id: number; x: number; y: number; t: number; dx: number; horizontal: boolean | null } | null = null;
+  root.addEventListener('pointerdown', (e) => {
+    const stage = (e.target as HTMLElement).closest<HTMLElement>('#selStage');
+    if (screen !== 'select' || !stage || (e.target as HTMLElement).closest('button')) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, horizontal: null };
+    stage.setPointerCapture(e.pointerId);
+  });
+  root.addEventListener('pointermove', (e) => {
+    const stage = root.querySelector<HTMLElement>('#selStage');
+    if (!drag || !stage || e.pointerId !== drag.id) return;
+    drag.dx = e.clientX - drag.x;
+    if (drag.horizontal === null && Math.hypot(drag.dx, e.clientY - drag.y) > 8) drag.horizontal = Math.abs(drag.dx) > Math.abs(e.clientY - drag.y);
+    if (!drag.horizontal) return;
+    stage.classList.add('dragging');
+    const index = CHARACTERS.findIndex((c) => c.id === pickChar);
+    // 端のキャラでは引っぱりを弱くする
+    const edge = (index === 0 && drag.dx > 0) || (index === CHARACTERS.length - 1 && drag.dx < 0);
+    root.querySelector<HTMLElement>('#selTrack')!.style.transform = `translateX(calc(${-index * 100}% + ${edge ? drag.dx / 3 : drag.dx}px))`;
+  });
+  const dragEnd = (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const stage = root.querySelector<HTMLElement>('#selStage');
+    const fast = Math.abs(drag.dx) / (performance.now() - drag.t) > 0.5;
+    stage?.classList.remove('dragging');
+    if (stage && drag.horizontal && (Math.abs(drag.dx) > stage.clientWidth * 0.2 || (fast && Math.abs(drag.dx) > 30))) selectMove(drag.dx < 0 ? 1 : -1);
+    else selectShow();
+    drag = null;
+  };
+  root.addEventListener('pointerup', dragEnd);
+  root.addEventListener('pointercancel', dragEnd);
+  document.addEventListener('keydown', (e) => {
+    if (screen !== 'select') return;
+    if (e.key === 'ArrowLeft') selectMove(-1);
+    if (e.key === 'ArrowRight') selectMove(1);
+  });
+  // 画面の大きさが変わったら描き直す（手札の列・段の数と、絵の位置が変わるため）。キャラ選択は動かしている途中を消さないよう絵だけ
+  window.addEventListener('resize', () => (screen === 'select' ? layoutArts(root) : render()));
 
   render();
 }
+
+// 角の小さな飾り（枠の4隅）
+const CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>';
 
 function titleView(pick: number): string {
   // 最後に選んだキャラに絵があればその絵、なければ絵のあるキャラ。絵は下が切れているので画面の下端につける
   const c = [characterById(pick), ...CHARACTERS].find((x) => x.images);
   return `
   <main class="screen title-screen">
-    <div class="title-logo">
-      <div class="title-suits"><span>♠</span><span class="red">♥</span><span class="red">♦</span><span>♣</span></div>
-      <h1>大富豪</h1>
+    <section class="logo">
+      <div class="suits" aria-hidden="true"><span>♠</span><span class="r">♥</span><span class="r">♦</span><span>♣</span></div>
+      <h1 class="gold-text">大富豪</h1>
       <p class="lead">CPU 3人と 3回戦。<br>合計ポイントで 1位を めざそう。</p>
-    </div>
-    ${c ? artImg(c, 'special', 'title-art') : ''}
-    <div class="title-start">
-      <button class="btn primary big" data-act="toSettings">はじめる</button>
-    </div>
+    </section>
+    <section class="title-stage">${c ? bigArt(c, 'title-art', 'special') : ''}</section>
+    <div class="title-start"><button class="btn primary" data-act="toSettings">はじめる</button></div>
   </main>`;
 }
 
-function headerBar(title: string, backAct: string): string {
-  return `<header class="bar"><button class="btn ghost" data-act="${backAct}">戻る</button><h2>${title}</h2><span class="bar-space"></span></header>`;
+/** 見出し：戻るを左、見出しをまん中（戻るがない画面は左を空ける） */
+function headerBar(title: string, backAct: string | null): string {
+  const back = backAct ? `<button class="btn ghost small" data-act="${backAct}">戻る</button>` : '<span></span>';
+  return `<header class="gbar sub">${back}<h1 class="round gold-text">${title}</h1><span></span></header>`;
 }
 
 function settingsView(st: Settings): string {
@@ -538,70 +667,87 @@ function settingsView(st: Settings): string {
   <main class="screen settings-screen">
     ${headerBar('設定', 'toTitle')}
     <div class="scroll">
-      <section class="panel">
-        <h3>CPUの強さ</h3>
+      <section class="panel frame">
+        ${CORNERS}
+        <h2 class="panel-title gold-text">CPUの強さ</h2>
         <div class="seg" role="group" aria-label="CPUの強さ">
-          ${levels.map((l) => `<button class="seg-btn ${st.level === l ? 'on' : ''}" aria-pressed="${st.level === l}" data-act="level" data-arg="${l}">${LEVEL_NAMES[l]}</button>`).join('')}
+          ${levels.map((l) => `<button class="btn ${st.level === l ? 'primary' : 'ghost'}" aria-pressed="${st.level === l}" data-act="level" data-arg="${l}">${LEVEL_NAMES[l]}</button>`).join('')}
         </div>
       </section>
-      <section class="panel">
-        <h3>ルール</h3>
+      <section class="panel frame">
+        ${CORNERS}
+        <h2 class="panel-title gold-text">ルール</h2>
         <ul class="rules">
           ${RULE_ORDER.map((k) => `
-            <li class="rule-row">
+            <li class="rule">
               <div class="rule-text"><span class="rule-name">${RULE_NAMES[k]}</span><span class="rule-help">${wb(RULE_HELP[k])}</span></div>
-              <button class="toggle ${st.rules[k] ? 'on' : ''}" aria-pressed="${st.rules[k]}" aria-label="${RULE_NAMES[k]}" data-act="rule" data-arg="${k}">${st.rules[k] ? 'オン' : 'オフ'}</button>
+              <button class="btn toggle ${st.rules[k] ? 'primary' : 'ghost'}" aria-pressed="${st.rules[k]}" aria-label="${RULE_NAMES[k]}" data-act="rule" data-arg="${k}">${st.rules[k] ? 'オン' : 'オフ'}</button>
             </li>`).join('')}
         </ul>
         <button class="btn ghost wide" data-act="resetRules">初期設定に戻す</button>
       </section>
     </div>
-    <footer class="foot"><button class="btn primary wide" data-act="toSelect">次へ（キャラ選択）</button></footer>
+    <footer class="foot-bar"><button class="btn primary" data-act="toSelect">次へ（キャラ選択）</button></footer>
   </main>`;
 }
 
+const ARROW_PREV = '<svg viewBox="0 0 16 24" aria-hidden="true"><path d="M13 2 3 12l10 10" fill="none" stroke="#f0d184" stroke-width="2.4"/></svg>';
+const ARROW_NEXT = '<svg viewBox="0 0 16 24" aria-hidden="true"><path d="M3 2l10 10L3 22" fill="none" stroke="#f0d184" stroke-width="2.4"/></svg>';
+
+/** キャラ選択：1人ずつ大きく出し、左右スワイプ（または左右のボタン）で切り替える。決定で対戦を始める */
 function selectView(pick: number): string {
+  const index = Math.max(0, CHARACTERS.findIndex((c) => c.id === pick));
   return `
   <main class="screen select-screen">
     ${headerBar('キャラ選択', 'toSettings')}
-    <div class="scroll">
-      <p class="note">${wb('あなたが使う|キャラを|選んでください。|残りの3人が|CPUになります。')}</p>
-      <div class="char-grid">
-        ${CHARACTERS.map((c) => `
-          <button class="char-card ${c.id === pick ? 'on' : ''}" aria-pressed="${c.id === pick}" data-act="pickChar" data-arg="${c.id}">
-            ${avatarSmall(c, 'avatar-mid')}
-            <span class="char-name">${c.name}</span>
-          </button>`).join('')}
+    <section class="sel-top">
+      <p class="nameplate"><span class="char-name gold-text" id="selName">${CHARACTERS[index].name}</span></p>
+      <p class="note">残りの3人がCPUになります。</p>
+    </section>
+    <section class="sel-stage" id="selStage" aria-roledescription="カルーセル">
+      <div class="track" id="selTrack" style="transform: translateX(${-index * 100}%)">
+        ${CHARACTERS.map((c, i) => `<div class="slide" aria-hidden="${i !== index}">${c.images ? bigArt(c, 'char-art', 'cards') : `<span class="avatar avatar-big" style="--avatar:${c.color}; position:absolute; left:50%; top:30%; translate:-50% 0" aria-label="${c.name}">${c.badge}</span>`}</div>`).join('')}
       </div>
-    </div>
-    <footer class="foot"><button class="btn primary wide" data-act="start">このキャラではじめる</button></footer>
+      <button class="nav prev" data-act="selPrev" aria-label="前のキャラ" ${index === 0 ? 'disabled' : ''}>${ARROW_PREV}</button>
+      <button class="nav next" data-act="selNext" aria-label="次のキャラ" ${index === CHARACTERS.length - 1 ? 'disabled' : ''}>${ARROW_NEXT}</button>
+    </section>
+    <footer class="sel-foot">
+      <div class="dots" aria-hidden="true">${CHARACTERS.map((_, i) => `<i class="dot ${i === index ? 'on' : ''}"></i>`).join('')}</div>
+      <button class="btn primary" data-act="start">このキャラに決定</button>
+    </footer>
   </main>`;
 }
 
-function cardFace(id: number, opts: { act?: boolean; sel?: boolean; style?: string; disabled?: boolean } = {}): string {
+/** カードの裏 */
+const CARD_BACK = '<div class="card big back"></div>';
+
+function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: boolean; big?: boolean } = {}): string {
   const joker = isJoker(id);
   const suit = suitOf(id);
   const red = suit === 'H' || suit === 'D';
   const rank = joker ? 'JK' : RANK_LABEL[rankOf(id)];
   const mark = joker ? '★' : { S: '♠', H: '♥', D: '♦', C: '♣' }[suit!];
-  const cls = `card ${red ? 'red' : ''} ${joker ? 'joker' : ''} ${opts.sel ? 'sel' : ''}`;
+  const cls = `card ${red ? 'red' : ''} ${joker ? 'joker' : ''} ${opts.sel ? 'sel' : ''} ${opts.big ? 'big' : ''}`;
   const inner = `<span class="c-rank">${rank}</span><span class="c-suit">${mark}</span><span class="c-center">${mark}</span>`;
   if (opts.act) {
-    return `<button class="${cls}" style="${opts.style ?? ''}" data-act="card" data-arg="${id}" aria-label="${cardLabel(id)}" aria-pressed="${!!opts.sel}" ${opts.disabled ? 'disabled' : ''}>${inner}</button>`;
+    return `<button class="${cls}" data-act="card" data-arg="${id}" aria-label="${cardLabel(id)}" aria-pressed="${!!opts.sel}" ${opts.disabled ? 'disabled' : ''}>${inner}</button>`;
   }
-  return `<div class="${cls}" style="${opts.style ?? ''}" aria-label="${cardLabel(id)}">${inner}</div>`;
+  return `<div class="${cls}" aria-label="${cardLabel(id)}">${inner}</div>`;
 }
 
+/**
+ * 手札：右の列に並べ、上の段から詰める（空きは下の段に出る）。場所の高さは配られる最大の14枚ぶんで固定するので、
+ * 14枚までは「あなたの番」と上の段の位置が枚数で動かない。ふだんは4列×4段、背の低い画面は5列×3段。
+ * それより多いとき（交換・7渡しで受け取った）は段を増やし、カードを小さくして画面に収める。背の低い画面で16枚以上は6列
+ */
 function handView(g: GameController, selectable: boolean): string {
   const hand = g.s.hands[HUMAN];
-  const n = hand.length;
-  if (n === 0) return `<div class="hand empty"><span>手札はありません</span></div>`;
-  const cards = hand.map((id, i) => {
-    const f = n === 1 ? 0 : i / (n - 1);
-    const style = `left: calc((100% - var(--card-w)) * ${f.toFixed(4)})`;
-    return cardFace(id, { act: true, sel: g.selected.has(id), style, disabled: !selectable });
-  });
-  return `<div class="hand" style="--n:${n}">${cards.join('')}</div>`;
+  const short = window.matchMedia('(max-height: 760px)').matches;
+  const cols = short ? (hand.length > 15 ? 6 : 5) : 4;
+  const rows = Math.max(short ? 3 : 4, Math.ceil(hand.length / cols));
+  const style = `style="--cols:${cols}; --rows:${rows}"`;
+  if (hand.length === 0) return `<div class="hand empty" ${style}><span>手札はありません</span></div>`;
+  return `<div class="hand ${cols === 6 ? 'wide' : ''}" ${style}>${hand.map((id) => cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable })).join('')}</div>`;
 }
 
 function flagsView(s: State): string {
@@ -610,7 +756,7 @@ function flagsView(s: State): string {
   if (s.elevenBack) flags.push('<span class="flag back">11バック中</span>');
   const lk = lockKind(s);
   if (lk) {
-    const marks = s.lockSuit ? ' ' + s.lockSuit.split('').map((x) => ({ S: '♠', H: '♥', D: '♦', C: '♣' })[x]).join('') : '';
+    const marks = s.lockSuit ? ' ' + marksOf(s.lockSuit) : '';
     flags.push(`<span class="flag lock">${LOCK_NAMES[lk]}${lk !== 'num' ? marks : ''}</span>`);
   }
   return flags.join('');
@@ -621,65 +767,72 @@ function gameView(g: GameController): string {
   const ranks = currentRanks(s);
   const task = g.humanTask();
   const myTurn = s.phase === 'play' && s.turn === HUMAN && !g.fx;
-  const status = (i: number) => {
-    if (!isActive(s, i) || ranks[i]) return `<span class="opp-status done">${RANK_NAMES[ranks[i] - 1] ?? ''}</span>`;
-    if (g.thinking === i || (s.phase === 'play' && s.turn === i)) return `<span class="opp-status think">考え中…</span>`;
-    if (s.phase === 'play' && s.passed[i]) return `<span class="opp-status pass">パス</span>`;
-    return `<span class="opp-status"></span>`;
-  };
   const isTurn = (i: number) => (s.phase === 'play' && s.turn === i) || (s.phase === 'bomber' && s.pendingBomber?.player === i)
     || ((s.phase === 'sevenPass' || s.phase === 'tenDiscard') && s.pendingCards?.player === i);
-
-  const opps = [1, 2, 3].map((i) => `
-    <div class="opp ${isTurn(i) ? 'turn' : ''}">
+  // CPUの状態：上がった人は順位、パスした人は朱色の枠の札（アイコンを暗く）。手番はアイコンを金色に光らせる（文字は出さない）
+  const opp = (i: number) => {
+    const done = !isActive(s, i) || !!ranks[i];
+    const passed = !done && s.phase === 'play' && s.passed[i] && !isTurn(i);
+    const status = done ? `<span class="rank-tag">${RANK_NAMES[ranks[i] - 1] ?? ''}</span>` : passed ? '<span class="pass-tag">パス</span>' : '';
+    return `
+    <div class="opp ${!done && isTurn(i) ? 'turn' : ''} ${passed ? 'passed' : ''}" data-seat="${i}">
       ${avatarSmall(g.seats[i])}
       <span class="opp-name">${g.seats[i].name}</span>
       <span class="opp-count">${s.hands[i].length}枚</span>
-      ${status(i)}
-    </div>`).join('');
+      <span class="opp-status">${status}</span>
+    </div>`;
+  };
 
+  // 場：出したカードだけ（出した人の名前は出さない）
   const top = topEntry(s);
-  const center = top
-    ? `<div class="table-who">${avatarSmall(g.seats[top.player])}<span>${g.name(top.player)}</span></div>
-      <div class="table-cards">${top.play.cards.map((c) => cardFace(c)).join('')}</div>`
-    : '';
-  const flash = g.flash
-    ? `<div class="flash" style="animation-delay: -${Math.round(performance.now() - g.flash.start)}ms" aria-hidden="true"><div class="table-cards">${g.flash.cards.map((c) => cardFace(c)).join('')}</div></div>`
+  const center = top ? `<div class="table-cards">${top.play.cards.map((c) => cardFace(c, { big: true })).join('')}</div>` : '';
+  // 一瞬見せるカード：表を見せてから捨てる・渡す動き。CPUどうしの7渡しは裏向きのまま動かす（動く先は art.ts の layoutFlash() が決める）
+  const fl = g.flash;
+  const flash = fl
+    ? `<div class="flash ${fl.move}" style="--delay: -${Math.round(performance.now() - fl.start)}ms" data-from="${fl.from ?? ''}" data-to="${fl.to ?? ''}" aria-hidden="true"><div class="table-cards">${fl.cards.map((c) => (fl.move === 'pass' ? CARD_BACK : cardFace(c, { big: true }))).join('')}</div></div>`
     : '';
 
   let actions: string;
   if (task) {
     const verb = task.kind === 'tenDiscard' ? '捨てる' : `${g.name(task.to!)}に渡す`;
-    actions = `<button class="btn primary wide" data-act="give" ${g.selected.size === task.count ? '' : 'disabled'}>${verb}（${g.selected.size}/${task.count}枚）</button>`;
+    actions = `<button class="btn primary give" data-act="give" ${g.selected.size === task.count ? '' : 'disabled'}>${verb}（${g.selected.size}/${task.count}枚）</button>`;
   } else {
     actions = `
-      <button class="btn secondary" data-act="pass" ${myTurn && canPass(s, HUMAN) ? '' : 'disabled'}>パス</button>
+      <button class="btn ghost" data-act="pass" ${myTurn && canPass(s, HUMAN) ? '' : 'disabled'}>パス</button>
       <button class="btn primary" data-act="play" ${g.canPlaySelected() ? '' : 'disabled'}>出す</button>`;
   }
 
-  const meStatus = ranks[HUMAN]
-    ? `<span class="me-turn done">${RANK_NAMES[ranks[HUMAN] - 1]}</span>`
-    : myTurn ? `<span class="me-turn on">あなたの番</span>`
-    : s.phase === 'bomber' && s.pendingBomber?.player === HUMAN ? `<span class="me-turn on">数字を選ぶ</span>`
-    : task && task.kind !== 'exchange' ? `<span class="me-turn on">カードを選ぶ</span>`
-    : s.phase === 'play' && s.passed[HUMAN] ? `<span class="me-turn pass">パス</span>` : '';
+  // 手札の上の表示。何も出さないときも場所は残す（手札の位置が動かないように）
+  const meStatus = ranks[HUMAN] ? `<span class="rank-tag">${RANK_NAMES[ranks[HUMAN] - 1]}</span>`
+    : myTurn ? '<span class="gold-text">あなたの番</span>'
+    : s.phase === 'bomber' && s.pendingBomber?.player === HUMAN ? '<span class="gold-text">数字を選ぶ</span>'
+    : task && task.kind !== 'exchange' ? '<span class="gold-text">カードを選ぶ</span>'
+    : s.phase === 'play' && s.passed[HUMAN] ? '<span class="pass-tag">パス</span>' : '';
 
+  const flags = flagsView(s);
   return `
-  <main class="screen game-screen ${isReversed(s) ? 'reversed' : ''}">
+  <main class="screen game-screen ${isReversed(s) ? 'reversed' : ''} ${flags ? 'has-flags' : ''}">
     <header class="gbar">
-      <span class="round">第${s.round}回戦</span>
-      <div class="flags">${flagsView(s)}</div>
+      <h1 class="round gold-text">第${s.round}回戦</h1>
       <button class="btn ghost small" data-act="quit">やめる</button>
     </header>
-    <section class="opps">${opps}</section>
-    <section class="table">
-      ${center}
-      ${flash}
+    ${flags ? `<div class="flags">${flags}</div>` : ''}
+    <section class="board frame">
+      ${CORNERS}
+      <div class="opps">${[1, 2, 3].map(opp).join('')}</div>
+      <div class="table">
+        <i class="table-gem"></i>
+        ${center}
+        ${flash}
+      </div>
     </section>
-    <section class="me ${isTurn(HUMAN) ? 'turn' : ''}">
-      <div class="me-info">${avatarSmall(g.seats[HUMAN])}<span class="me-name">あなた</span><span class="me-count">${s.hands[HUMAN].length}枚</span>${meStatus}</div>
-      ${handView(g, (myTurn || !!task) && !g.fx)}
-      <div class="actions">${actions}</div>
+    <section class="lower">
+      <div class="me-art-box">${bigArt(g.seats[HUMAN], 'me-art', 'cards')}</div>
+      <div class="mine">
+        <p class="me-label ${meStatus ? '' : 'off'}">${meStatus || '<span class="gold-text">あなたの番</span>'}</p>
+        ${handView(g, (myTurn || !!task) && !g.fx)}
+      </div>
+      <footer class="actions">${actions}</footer>
     </section>
     ${s.phase === 'bomber' && s.pendingBomber?.player === HUMAN && !g.fx ? bomberView(g) : ''}
     ${s.phase === 'roundEnd' && !g.fx ? roundEndView(g) : ''}
@@ -693,12 +846,13 @@ function bomberView(g: GameController): string {
   const ranks = Array.from({ length: 13 }, (_, i) => i + 3);
   return `
   <div class="modal-back">
-    <div class="modal" role="dialog" aria-label="12ボンバー">
-      <h3>12ボンバー</h3>
+    <div class="modal frame" role="dialog" aria-label="12ボンバー">
+      ${CORNERS}
+      <h2 class="modal-title gold-text">12ボンバー</h2>
       <div class="rank-grid">
         ${ranks.map((r) => `<button class="rank-btn ${g.bomberPick.has(r) ? 'on' : ''}" aria-pressed="${g.bomberPick.has(r)}" data-act="bomberRank" data-arg="${r}">${RANK_LABEL[r]}</button>`).join('')}
       </div>
-      <button class="btn primary wide" data-act="bomberOk" ${g.bomberPick.size === pb.count ? '' : 'disabled'}>決定（${g.bomberPick.size}/${pb.count}）</button>
+      <button class="btn primary" data-act="bomberOk" ${g.bomberPick.size === pb.count ? '' : 'disabled'}>決定（${g.bomberPick.size}/${pb.count}）</button>
     </div>
   </div>`;
 }
@@ -710,20 +864,21 @@ function roundEndView(g: GameController): string {
   const last = s.round >= 3;
   return `
   <div class="modal-back">
-    <div class="modal" role="dialog" aria-label="第${s.round}回戦の結果">
-      <h3>結果</h3>
+    <div class="modal frame" role="dialog" aria-label="第${s.round}回戦の結果">
+      ${CORNERS}
+      <h2 class="modal-title gold-text">結果</h2>
       <table class="result">
-        <thead><tr><th>順位</th><th>キャラ</th><th>今回</th><th>合計</th></tr></thead>
+        <thead><tr><th>順位</th><th>キャラ</th><th class="num">今回</th><th class="num">合計</th></tr></thead>
         <tbody>
-          ${order.map((p) => `<tr class="${p === HUMAN ? 'me-row' : ''}">
-            <td>${RANK_NAMES[ranks[p] - 1]}</td>
+          ${order.map((p) => `<tr class="${p === HUMAN ? 'me' : ''}">
+            <td class="place">${RANK_NAMES[ranks[p] - 1]}</td>
             <td class="who">${avatarSmall(g.seats[p])}${g.name(p)}</td>
-            <td>+${POINTS[ranks[p] - 1]}</td>
-            <td>${s.scores[p]}点</td>
+            <td class="num">+${POINTS[ranks[p] - 1]}</td>
+            <td class="num">${s.scores[p]}点</td>
           </tr>`).join('')}
         </tbody>
       </table>
-      <button class="btn primary wide" data-act="nextRound">${last ? '最終結果へ' : `第${s.round + 1}回戦へ`}</button>
+      <button class="btn primary" data-act="nextRound">${last ? '最終結果へ' : `第${s.round + 1}回戦へ`}</button>
     </div>
   </div>`;
 }
@@ -731,24 +886,34 @@ function roundEndView(g: GameController): string {
 function quitView(): string {
   return `
   <div class="modal-back">
-    <div class="modal" role="dialog" aria-label="確認">
-      <h3>対戦をやめますか？</h3>
+    <div class="modal frame" role="dialog" aria-label="対戦をやめる確認">
+      ${CORNERS}
       <p>${wb('この対戦の結果は|残りません。')}</p>
-      <div class="row2">
-        <button class="btn secondary" data-act="quitNo">続ける</button>
+      <div class="row">
+        <button class="btn ghost" data-act="quitNo">続ける</button>
         <button class="btn primary" data-act="quitYes">やめる</button>
       </div>
     </div>
   </div>`;
 }
 
+/** 絵の枠の角の菱の飾り */
+const PANEL_CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>';
+
+/**
+ * 演出：帯に効果の名前。キャラの絵を出す場面（革命・ジョーカー・順位）は、帯の下の枠に絵を出す（帯は頭より上で、絵と重ならない）。
+ * 帯だけの場面と、絵のないキャラは、帯に発動したキャラのアイコンを出す
+ */
 function fxView(fx: Fx): string {
-  // 絵は下が切れているので画面の下端につける。絵のないキャラは番号の丸を真ん中に出す
-  const art = fx.char.images ? 'art' : 'no-art';
+  const art = fx.pose !== null ? artImg(fx.char, fx.pose, 'fx-art') : '';
+  const icon = art ? '' : avatarSmall(fx.char);
   return `
-  <div class="fx ${art}" data-act="fxSkip" role="status">
+  <div class="fx ${art ? 'cutin' : 'band-only'}" data-act="fxSkip" role="status">
     <span class="fx-hint">タップでとばす</span>
-    <div class="fx-box"><span class="fx-text">${fx.text}</span>${avatarBig(fx.char, fx.pose)}</div>
+    <div class="fx-group">
+      <div class="fxband ${fx.band} ${icon ? 'has-icon' : ''}">${icon}<span class="fx-name">${fx.name}</span></div>
+      ${art ? `<div class="fx-panel"><div class="art-clip">${art}</div>${PANEL_CORNERS}</div>` : ''}
+    </div>
   </div>`;
 }
 
@@ -758,22 +923,23 @@ function finalView(s: State, seats: Character[]): string {
   const tie = new Set(s.scores).size < s.scores.length;
   return `
   <main class="screen final-screen">
-    <header class="bar"><span class="bar-space"></span><h2>最終結果</h2><span class="bar-space"></span></header>
+    ${headerBar('最終結果', null)}
     <div class="scroll">
       <ol class="final-list">
         ${order.map((p, i) => `
-          <li class="final-row ${p === HUMAN ? 'me-row' : ''}">
-            <span class="final-place">${i + 1}位</span>
+          <li class="final-row ${i === 0 ? 'first frame' : ''} ${p === HUMAN ? 'me' : ''}">
+            ${i === 0 ? CORNERS : ''}
+            <span class="final-place ${i === 0 ? 'gold-text' : ''}">${i + 1}位</span>
             ${avatarSmall(seats[p])}
             <span class="final-name">${name(p)}${p === HUMAN ? `<small>${seats[p].name}</small>` : ''}</span>
             <span class="final-score">${s.scores[p]}点</span>
             <span class="final-rounds">${s.roundRanks.map((r, k) => `<span>${k + 1}回戦 ${RANK_NAMES[r[p] - 1]}</span>`).join(' ／ ')}</span>
           </li>`).join('')}
       </ol>
-      ${tie ? `<p class="note">${wb('同点のときは、|3回戦目の順位が|上の人が上です。')}</p>` : ''}
+      ${tie ? `<p class="tie">${wb('同点のときは、|3回戦目の順位が|上の人が上です。')}</p>` : ''}
     </div>
-    <footer class="foot row2">
-      <button class="btn secondary" data-act="toTitle">タイトルへ</button>
+    <footer class="foot-bar two">
+      <button class="btn ghost" data-act="toTitle">タイトルへ</button>
       <button class="btn primary" data-act="again">もう一度あそぶ</button>
     </footer>
   </main>`;

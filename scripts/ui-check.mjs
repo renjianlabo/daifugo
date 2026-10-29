@@ -12,15 +12,21 @@ const SIZES = [
   [430, 932],
   [1280, 800],
 ];
-const SCENES = ['hand', 'table', 'exchange', 'bomber', 'sevenPass', 'tenDiscard', 'flash', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4', 'roundEnd', 'quit', 'final'];
+const SCENES = ['hand', 'table', 'exchange', 'bomber', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
+  'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1',
+  'roundEnd', 'quit', 'final'];
 const SCENE_NAMES = {
   title: 'タイトル', settings: '設定（上）', settings2: '設定（下）', select: 'キャラ選択',
   hand: '対戦（手札14枚・2枚選択）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
-  bomber: '12ボンバー', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（決めポーズ）', fxRank: '演出（4位）', fxC2: '演出（キャラ2・決めポーズ）', fxC3: '演出（キャラ3・1位）', fxC4: '演出（キャラ4・決めポーズ）', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
+  bomber: '12ボンバー', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
+  'move:give:0:1': '7渡し（自分→キャラ2。表のまま動く途中）', 'move:pass:1:3': '7渡し（キャラ2→キャラ4。裏向きのまま動く途中）',
+  'band:eight:1': '帯：8切り', 'band:five:2': '帯：5スキップ', 'band:eleven:3': '帯：11バック', 'band:bomber:0': '帯：12ボンバー', 'band:ten:1': '帯：10捨て',
+  'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
 };
 
 const problems = []; // { item, where, detail }
 const fxResults = []; // 4人×1〜4位の演出の絵
+const swipeLog = []; // キャラ選択のスワイプ
 const seen = new Set();
 const clicked = new Set();
 const shots = [];
@@ -80,22 +86,43 @@ async function audit(page, where) {
     // キャラの絵：読み込めているか。下が切れた絵（演出・タイトル）は、切れ目が画面の下端にぴったりついているか、左右が切れていないか
     for (const img of document.querySelectorAll('#app img')) {
       if (!img.complete || img.naturalWidth === 0) out.push(['7', `絵が表示されない：${img.getAttribute('src')}`]);
-      if (!img.matches('.fx-art, .title-art')) continue;
+      if (!img.matches('.fx-art, .title-art, .char-art, .me-art')) continue;
+      if (img.closest('.slide[aria-hidden="true"]')) continue; // キャラ選択で横に控えているキャラ
+      if (!img.matches('.fx-art') && document.querySelector('.fx, .modal-back')) continue; // 演出・小窓の下に隠れている
       const r = img.getBoundingClientRect();
       const screen = img.closest('.screen').getBoundingClientRect();
       const cut = r.bottom - Number(img.dataset.gap ?? 0) * r.height; // 絵が実際に切れている高さ
-      if (Math.abs(cut - Math.min(screen.bottom, H)) > 1) out.push(['10', `イラストの切れ目が画面の下端から ${Math.round(Math.min(screen.bottom, H) - cut)}px 浮いている：${img.className}`]);
-      if (r.left < screen.left - 1 || r.right > screen.right + 1) out.push(['10', `イラストの左右が画面の途中で切れている：${img.className}`]);
+      const panel = img.closest('.fx-panel');
+      if (panel) {
+        // 演出の絵（帯の下の枠の中。ユーザー承認の改善案）：切れ目は枠の下の縁より下に出して隠す。人物の頭は枠の中に見える。帯は絵に重ならない
+        const pr = panel.getBoundingClientRect();
+        const [, vt] = (img.dataset.vis ?? '0,0,1').split(',').map(Number);
+        if (cut < pr.bottom - 1) out.push(['10', `イラストの切れ目が枠の中に見えている（枠の下端から ${Math.round(pr.bottom - cut)}px 上）：${img.className}`]);
+        if (r.top + vt * r.height < pr.top - 1) out.push(['face', `人物の頭が枠の上で切れている：${img.className}`]);
+        const band = document.querySelector('.fxband')?.getBoundingClientRect();
+        if (band && band.bottom > pr.top + 0.5) out.push(['face', '帯が絵の枠に重なっている']);
+      } else if (Math.abs(cut - Math.min(screen.bottom, H)) > 1) out.push(['10', `イラストの切れ目が画面の下端から ${Math.round(Math.min(screen.bottom, H) - cut)}px 浮いている：${img.className}`]);
+      // 顔（data-head の頭の範囲）に、文字・カード・ボタンがかからない。頭が画面の左右で切れていない
+      if (img.dataset.head) {
+        const [hx1, hy1, hx2, hy2] = img.dataset.head.split(',').map(Number);
+        const head = { left: r.left + hx1 * r.width, right: r.left + hx2 * r.width, top: r.top + hy1 * r.height, bottom: r.top + hy2 * r.height };
+        for (const el of document.querySelectorAll('#app button, #app .card, .me-label, .board, .gbar, .flags, .sel-top, .logo, .dots')) {
+          const b = el.getBoundingClientRect();
+          if (b.width === 0 || getComputedStyle(el).visibility === 'hidden' && !el.matches('.me-label')) continue;
+          if (Math.min(b.right, head.right) - Math.max(b.left, head.left) > 0 && Math.min(b.bottom, head.bottom) - Math.max(b.top, head.top) > 0) out.push(['face', `顔に重なっている：${label(el)}（${img.className}）`]);
+        }
+        if (head.left < screen.left || head.right > screen.right) out.push(['face', `頭が画面の左右で切れている：${img.className}`]);
+      }
     }
     // 同じ情報を2か所に出さない：場の真ん中に説明文を出さない（出してよいのは、出した人の名前とカードだけ）。パスは人の表示の側だけ
     for (const el of document.querySelectorAll('.table *')) {
-      if (el.closest('.card') || el.closest('.table-who')) continue;
+      if (el.closest('.card')) continue;
       const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join('');
       if (own) out.push(['9', `場の真ん中に文章：「${own.slice(0, 20)}」`]);
     }
     for (const el of document.querySelectorAll('#app *')) {
       const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join('');
-      if (own === 'パス' && !el.closest('.opp, .me-info, .actions')) out.push(['9', 'パスが人の表示以外にも出ている']);
+      if (own === 'パス' && !el.closest('.opp, .me-label, .actions')) out.push(['9', 'パスが人の表示以外にも出ている']);
     }
     const layer = document.querySelector('.fx') || document.querySelector('.modal-back') || document.querySelector('.flash') || document.querySelector('#app');
     const all = [...document.querySelectorAll('#app *')].filter(visible);
@@ -139,7 +166,7 @@ async function audit(page, where) {
         const c = parse(getComputedStyle(p).backgroundColor);
         if (c && c[3] > 0) { layers.push(c); if (c[3] >= 1) break; }
       }
-      let col = [20, 83, 45];
+      let col = [36, 16, 32];
       for (let i = layers.length - 1; i >= 0; i--) { const [r, g, b, a] = layers[i]; col = [r * a + col[0] * (1 - a), g * a + col[1] * (1 - a), b * a + col[2] * (1 - a)]; }
       return col;
     };
@@ -147,12 +174,44 @@ async function audit(page, where) {
     for (const el of leaves) {
       if (el.closest(':disabled') || !layer.contains(el)) continue;
       const cs = getComputedStyle(el);
-      const fg = parse(cs.color);
-      if (!fg) continue;
-      const bg = bgOf(el);
-      const fc = [0, 1, 2].map((i) => fg[i] * fg[3] + bg[i] * (1 - fg[3]));
-      const [l1, l2] = [lum(fc), lum(bg)].sort((a, b) => b - a);
-      const ratio = (l1 + 0.05) / (l2 + 0.05);
+      const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).concat(1);
+      const goldEl = el.closest('.gold-text');
+      let fgs;
+      if (goldEl) {
+        const g = getComputedStyle(goldEl).backgroundImage;
+        fgs = [...g.matchAll(/rgba?\([^)]+\)/g)].map((m) => parse(m[0])).concat([...g.matchAll(/#[0-9a-f]{6}/gi)].map((m) => hex(m[0])));
+      } else {
+        const fg = parse(cs.color);
+        if (!fg) continue;
+        fgs = [fg];
+      }
+      const btn = [el.closest('button')].find((b) => b && /gradient/.test(getComputedStyle(b).backgroundImage));
+      let bgs = btn ? [...getComputedStyle(btn).backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((m) => parse(m[0]).slice(0, 3)) : [bgOf(el)];
+      // 帯の名前：帯の上下のグラデーションのうち、文字の高さにある色で測る。斜めの薄い光（白16%）が重なった色も測る
+      const band = el.closest('.fxband');
+      if (band) {
+        const g = getComputedStyle(band).backgroundImage.split('linear-gradient').pop();
+        const stops = [...g.matchAll(/(rgba?\([^)]+\))\s*([\d.]+)%/g)].map((m) => [parse(m[1]), Number(m[2]) / 100]);
+        const br = band.getBoundingClientRect(), tr = el.getBoundingClientRect();
+        const at = (f) => {
+          let i = 0;
+          while (i < stops.length - 2 && stops[i + 1][1] < f) i++;
+          const [[c0, p0], [c1, p1]] = [stops[i], stops[i + 1]];
+          const k = Math.min(1, Math.max(0, (f - p0) / (p1 - p0 || 1)));
+          return [0, 1, 2].map((j) => c0[j] + (c1[j] - c0[j]) * k);
+        };
+        bgs = [];
+        for (let k = 0; k <= 4; k++) {
+          const c = at((tr.top - br.top + (tr.height * k) / 4) / br.height);
+          bgs.push(c, c.map((v) => v * 0.84 + 255 * 0.16));
+        }
+      }
+      let ratio = 99;
+      for (const fg of fgs) for (const bg of bgs) {
+        const fc = [0, 1, 2].map((i) => fg[i] * fg[3] + bg[i] * (1 - fg[3]));
+        const [l1, l2] = [lum(fc), lum(bg)].sort((a, b) => b - a);
+        ratio = Math.min(ratio, (l1 + 0.05) / (l2 + 0.05));
+      }
       const fs = parseFloat(cs.fontSize);
       const need = fs >= 24 || (fs >= 18.66 && parseInt(cs.fontWeight) >= 700) ? 3 : 4.5;
       if (ratio < need - 0.01) out.push(['contrast', `コントラスト ${ratio.toFixed(2)}:1（必要 ${need}:1）：${label(el)}`]);
@@ -180,7 +239,7 @@ async function audit(page, where) {
 async function shot(page, w, name) {
   const dir = path.join(OUT, String(w));
   fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `${String(shots.filter((s) => s.w === w).length + 1).padStart(2, '0')}_${name}.png`);
+  const file = path.join(dir, `${String(shots.filter((s) => s.w === w).length + 1).padStart(2, '0')}_${name.replaceAll(':', '_')}.png`);
   await page.screenshot({ path: file });
   shots.push({ w, name, file: path.relative(process.cwd(), file).replaceAll('\\', '/') });
   await audit(page, `${w}px ${SCENE_NAMES[name] ?? name}`);
@@ -334,7 +393,22 @@ async function playThrough(browser) {
   await tap(page, page.locator('[data-act=toSelect]'), where);
   await tap(page, page.locator('[data-act=toSettings]'), where); // キャラ選択の「戻る」
   await tap(page, page.locator('[data-act=toSelect]'), where);
-  await tap(page, page.locator('[data-act=pickChar][data-arg="3"]'), where);
+  await tap(page, page.locator('[data-act=selNext]'), where);
+  await tap(page, page.locator('[data-act=selNext]'), where);
+  await tap(page, page.locator('[data-act=selPrev]'), where);
+  // マウスで左へドラッグ → 次のキャラ（キャラ3）
+  {
+    const box = await page.locator('#selStage').boundingBox();
+    const before = await page.locator('#selName').textContent();
+    await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.5);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(350);
+    const after = await page.locator('#selName').textContent();
+    swipeLog.push(`${before} → 左へドラッグ → ${after}`);
+    if (before !== 'キャラ2' || after !== 'キャラ3') problems.push({ item: '1', where, detail: `キャラ選択のスワイプで切り替わらない（${before} → ${after}）` });
+  }
   await tap(page, page.locator('[data-act=start]'), where);
 
   const t0 = Date.now();
@@ -453,6 +527,7 @@ for (const k of Object.keys(ITEMS)) {
 }
 md += `\n## 演出の絵（自分・CPUの4人×1〜4位の16通り）\n\n- 正しい絵：${fxResults.filter((x) => x.ok).length}/${fxResults.length}\n`;
 for (const p of uniq.filter((p) => p.item === 'fx')) md += `  - ${p.where}：${p.detail}\n`;
+md += `\n## キャラ選択のスワイプ\n\n${swipeLog.map((x) => `- ${x}`).join('\n')}\n`;
 md += `\n## ズーム（11）の数字\n\n- 確かめ方の試し（ズーム止めのない普通のページを2本指で広げる）：${zoom.control}倍\n- タイトル画面を2本指で広げる：${zoom.title}倍\n- 対戦画面でカードを40msおきに20回タップ：${zoom.taps}倍／ダブルタップ：${zoom.dbl}倍／2本指で広げる：${zoom.game}倍\n- viewport：${zoom.meta}\n- 注意：このブラウザ（Chrome系）はスマホ向けページでダブルタップ拡大をしないので、ダブルタップは「iPhoneで拡大を止める指定（touch-action: manipulation）がページ全体と押せるもの全部に付いているか」で判定した。本物のiPhoneでは確かめていない\n`;
 const NUMS = [
   ['ボタンの高さ44px以上', (p) => p.detail.startsWith('ボタンが44px未満')],
@@ -461,6 +536,7 @@ const NUMS = [
   ['アイコンの直径56px以上', (p) => p.item === 'icon'],
   ['普段の操作の動きは0.3秒以内', (p) => p.item === 'anim'],
   ['押せるものと押せないものを見た目で区別できる', (p) => p.item === 'press'],
+  ['（新しいUIの要件）大きく出すキャラの顔に、文字・カード・ボタンがかからない', (p) => p.item === 'face'],
 ];
 md += `\n## ゲーム用UI自動化ルールの守る数値（機械チェック）\n\n`;
 for (const [name, f] of NUMS) {
