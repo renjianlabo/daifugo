@@ -18,6 +18,8 @@ const HUMAN = 0;
 const FX_MS = 1200;
 /** 帯だけの演出（8切りなど）の長さ */
 const BAND_MS = 1000;
+/** 12ボンバーで捨てられるカードを見せる長さ（表に出てから消えるまで） */
+const BOMBER_MS = 2000;
 /** 出せる手がないとき、自動でパスするまでの間（パスしたことが分かるように少し待つ） */
 const AUTO_PASS_MS = 700;
 /** 出来事のカードを一瞬見せて、捨てる・渡す動きをする時間 */
@@ -37,10 +39,15 @@ const RULE_HELP: Record<keyof Rules, string> = {
   exchange: '2回戦目から、|順位で|カードを交換',
   miyakoOchi: '前の大富豪が|1位でないと|大貧民',
 };
-// 数字のカードのルールは数字の小さい順。そのあとに数字に関係しないルール
-const RULE_ORDER: (keyof Rules)[] = [
-  'fiveSkip', 'sevenPass', 'eightCut', 'tenDiscard', 'elevenBack', 'twelveBomber', 'revolution', 'markLock', 'numLock', 'gekiLock',
-  'exchange', 'miyakoOchi',
+/**
+ * 設定は3つのタブに分ける（スクロールなしで全部見えるようにするため。2026-10-30 ユーザー指示）。
+ * 数字のカードのルールは数字の小さい順。そのあとに数字に関係しないルール
+ */
+type SettingsTab = 'cards' | 'special' | 'other';
+const SETTINGS_TABS: { id: SettingsTab; name: string; rules: (keyof Rules)[] }[] = [
+  { id: 'cards', name: 'カード', rules: ['fiveSkip', 'sevenPass', 'eightCut', 'tenDiscard', 'elevenBack', 'twelveBomber'] },
+  { id: 'special', name: '革命・しばり', rules: ['revolution', 'markLock', 'numLock', 'gekiLock'] },
+  { id: 'other', name: 'そのほか', rules: ['exchange', 'miyakoOchi'] },
 ];
 
 /** 「|」を折り返し位置に変える */
@@ -54,7 +61,13 @@ type BandKind = 'revolution' | 'joker' | 'eight' | 'five' | 'eleven' | 'bomber' 
   | 'rank1' | 'rank2' | 'rank3' | 'rank4';
 
 /** 演出：帯に効果の名前。pose があるときはキャラの絵の上に帯を重ねる。ないときは帯だけで、帯に発動したキャラのアイコンを出す */
-interface Fx { band: BandKind; name: string; char: Character; pose: FxPose | null }
+interface BandFx { kind: 'band'; band: BandKind; name: string; char: Character; pose: FxPose | null }
+/**
+ * 捨てる・渡すカードを、ゲームを止めて見せる（12ボンバー・自分が関わるカード交換）。タップで先に進める。
+ * text は添える短い文（12ボンバーの「2を選択」）。hide は見せ終わるまで手札に出さないカード（受け取ったカード）
+ */
+interface RevealFx { kind: 'reveal'; cards: number[]; text: string; move: 'discard' | 'give'; to: number | null; ms: number; hide: number[]; start?: number }
+type Fx = BandFx | RevealFx;
 
 /**
  * 出来事のカードを一瞬見せる。move は、そのあとの動き：
@@ -79,6 +92,8 @@ class GameController {
   flash: Flash | null = null;
   thinking: number | null = null;
   quitConfirm = false;
+  /** 選択の小窓（12ボンバーの数字）を閉じて、盤面を見ている途中。見るだけで操作はできない。選んだ内容はそのまま残す */
+  peek = false;
   /** 自動パスを待っている途中 */
   private autoPassWaiting = false;
   alive = true;
@@ -124,8 +139,8 @@ class GameController {
     }
     // ジョーカーで革命したときは、絵の演出を1回にする（革命を出す）
     const added = this.fxQueue.slice(queued);
-    const rev = added.find((f) => f.band === 'revolution');
-    if (rev) this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !(f.band === 'joker' && f.char === rev.char))];
+    const rev = added.find((f): f is BandFx => f.kind === 'band' && f.band === 'revolution');
+    if (rev) this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !(f.kind === 'band' && f.band === 'joker' && f.char === rev.char))];
     if (!shown.length) return;
     // 1回に2つ以上（カード交換）のときは、まとめて見せて消すだけにする
     this.showFlash(shown.length === 1 ? shown[0] : { cards: shown.flatMap((f) => f.cards), move: 'none', from: null, to: null });
@@ -147,7 +162,7 @@ class GameController {
   private skipShown = false;
 
   private band(band: BandKind, player: number, pose: FxPose | null = null, name = BAND_NAMES[band]) {
-    this.fxQueue.push({ band, name, char: this.seats[player], pose });
+    this.fxQueue.push({ kind: 'band', band, name, char: this.seats[player], pose });
   }
 
   /**
@@ -157,8 +172,13 @@ class GameController {
   private describe(e: GameEvent): Omit<Flash, 'start'> | null {
     switch (e.type) {
       case 'play': this.actor = e.player; this.skipShown = false; break;
-      case 'exchange': return e.from === HUMAN || e.to === HUMAN ? { cards: e.cards, move: 'none', from: e.from, to: e.to } : null;
-      case 'bomber': return { cards: e.removed.flat(), move: 'discard', from: e.player, to: null };
+      // カード交換：自分が渡すカードは受け取る人へ、受け取ったカードは手札へ動かして見せる（起きた順。自分が大富豪・富豪なら渡すのが先）
+      case 'exchange':
+        if (e.from === HUMAN || e.to === HUMAN) this.fxQueue.push({ kind: 'reveal', cards: e.cards, text: '', move: 'give', to: e.to, ms: FLASH_MS, hide: e.to === HUMAN ? e.cards : [] });
+        break;
+      case 'bomber':
+        this.fxQueue.push({ kind: 'reveal', cards: e.removed.flat(), text: `${e.ranks.map((r) => RANK_LABEL[r]).join('と')}を選択`, move: 'discard', to: null, ms: BOMBER_MS, hide: [] });
+        break;
       // 自分が関わる7渡しは表のまま、CPUどうしは裏向きのまま動かす
       case 'sevenPass': return { cards: e.cards, move: e.from === HUMAN || e.to === HUMAN ? 'give' : 'pass', from: e.from, to: e.to };
       case 'tenDiscard': return { cards: e.cards, move: 'discard', from: e.player, to: null };
@@ -184,9 +204,11 @@ class GameController {
     if (this.frozen || this.fx) return this.onChange();
     if (this.fxQueue.length) {
       const fx = this.fxQueue.shift()!;
+      if (fx.kind === 'reveal') fx.start = performance.now();
       this.fx = fx;
       this.onChange();
-      this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : fx.pose !== null ? FX_MS : BAND_MS);
+      const ms = fx.kind === 'reveal' ? fx.ms : fx.pose !== null ? FX_MS : BAND_MS;
+      this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : ms);
       return;
     }
     const s = this.s;
@@ -260,6 +282,11 @@ class GameController {
     this.advance();
   }
 
+  /** 見せ終わるまで手札に出さないカード（カード交換で受け取ったカード） */
+  hiddenCards(): Set<number> {
+    return new Set([this.fx, ...this.fxQueue].flatMap((f) => (f?.kind === 'reveal' ? f.hide : [])));
+  }
+
   // --- 人間の操作 ---
   humanTask(): HandTask | null {
     const s = this.s;
@@ -323,6 +350,7 @@ class GameController {
     if (!pb || pb.player !== HUMAN || this.bomberPick.size !== pb.count) return;
     chooseBomber(this.s, HUMAN, [...this.bomberPick]);
     this.bomberPick.clear();
+    this.peek = false;
     this.advance();
   }
 
@@ -353,6 +381,7 @@ export function startApp(root: HTMLElement) {
   let game: GameController | null = null;
   let finalState: { s: State; seats: Character[] } | null = null;
   let pickChar = settings.character;
+  let settingsTab: SettingsTab = 'cards';
   let fastMode = false;
 
   const go = (sc: Screen) => {
@@ -388,6 +417,7 @@ export function startApp(root: HTMLElement) {
     switch (act) {
       case 'toTitle': game?.stop(); game = null; go('title'); break;
       case 'toSettings': go('settings'); break;
+      case 'settingsTab': settingsTab = arg as SettingsTab; render(); break;
       case 'toSelect': pickChar = settings.character; go('select'); break;
       case 'level': update({ ...settings, level: arg as Level }); break;
       case 'rule': {
@@ -407,6 +437,8 @@ export function startApp(root: HTMLElement) {
       case 'bomberRank': game?.toggleBomber(Number(arg)); break;
       case 'bomberOk': game?.confirmBomber(); break;
       case 'fxSkip': game?.skipFx(); break;
+      case 'peek': if (game) { game.peek = true; render(); } break;
+      case 'peekBack': if (game) { game.peek = false; render(); } break;
       case 'nextRound': game?.nextRound(); break;
       case 'quit': if (game) { game.quitConfirm = true; render(); } break;
       case 'quitNo': if (game) { game.quitConfirm = false; render(); } break;
@@ -419,15 +451,20 @@ export function startApp(root: HTMLElement) {
     fastMode = new URLSearchParams(location.search).has('fast');
     (window as unknown as { __daifugo: unknown }).__daifugo = {
       scenario,
+      // 場面を作ったあと、止めていた進行を動かす（演出の順番を確かめる検査用）
+      unfreeze: () => { if (game) { game.frozen = false; game.advance(); } },
+      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide } : { kind: 'band', band: game.fx.band }),
+      hand: () => game ? [...game.s.hands[0]] : [],
+      shownHand: () => [...document.querySelectorAll('.hand .card')].map((e) => Number((e as HTMLElement).dataset.arg)),
       legal: () => (game && game.s.phase === 'play' && game.s.turn === HUMAN ? listMoves(game.s, HUMAN).map((p) => p.cards) : []),
       state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, fx: !!game.fx, task: game.humanTask(), bomber: game.s.pendingBomber },
     };
   }
 
   /** 検査用：その席のキャラの絵の演出（決めポーズは革命、1〜4位は大富豪〜大貧民） */
-  const cut = (seat: number, pose: FxPose): Fx => {
+  const cut = (seat: number, pose: FxPose): BandFx => {
     const band: BandKind = pose === 'special' ? 'revolution' : `rank${pose}`;
-    return { band, name: BAND_NAMES[band], char: game!.seats[seat], pose };
+    return { kind: 'band', band, name: BAND_NAMES[band], char: game!.seats[seat], pose };
   };
 
   function scenario(name: string, character = 1) {
@@ -488,6 +525,24 @@ export function startApp(root: HTMLElement) {
         g.flash = { cards: gone, start: performance.now() - 400, move: 'discard', from: 2, to: null };
         break;
       }
+      case 'peek':
+        // 12ボンバーの数字を選んでいる途中で、盤面を見ている
+        s.phase = 'bomber';
+        s.pendingBomber = { player: 0, count: 2, eff: { ...NO_EFFECTS, bomber: 2 } };
+        g.bomberPick = new Set([3]);
+        g.peek = true;
+        break;
+      case 'bomberReveal': {
+        // 12ボンバーで捨てられるカードを見せている途中（2を選んだ）
+        const gone = s.hands.flatMap((h) => h.filter((c) => !isJoker(c) && rankOf(c) === 15));
+        s.hands = s.hands.map((h) => h.filter((c) => !gone.includes(c)));
+        g.fx = { kind: 'reveal', cards: gone, text: `${RANK_LABEL[15]}を選択`, move: 'discard', to: null, ms: 2000, hide: [], start: performance.now() - 500 };
+        break;
+      }
+      case 'exchangeReveal':
+        // カード交換で、自分（大富豪）が渡したカードを見せている途中
+        g.fx = { kind: 'reveal', cards: s.hands[0].slice(0, 2), text: '', move: 'give', to: 1, ms: FLASH_MS, hide: [], start: performance.now() - 300 };
+        break;
       case 'fx':
         g.fx = cut(0, 'special');
         break;
@@ -533,7 +588,7 @@ export function startApp(root: HTMLElement) {
         if (b) {
           const kind = b[1] as BandKind;
           const label = BAND_NAMES[kind] + (kind === 'mark' || kind === 'geki' ? '<small>♥</small>' : '');
-          g.fx = { band: kind, name: label, char: g.seats[Number(b[2])], pose: null };
+          g.fx = { kind: 'band', band: kind, name: label, char: g.seats[Number(b[2])], pose: null };
         }
         // 「move:動き:渡す人:受け取る人」（例 move:pass:1:3）で、一瞬見せるカードが動いている途中を出す
         const mv = /^move:(discard|give|pass):(\d):(\d)$/.exec(name);
@@ -562,7 +617,7 @@ export function startApp(root: HTMLElement) {
     const rf = /^rankFx:(\d):([1-4])$/.exec(name);
     if (rf) {
       const want = g.seats[Number(rf[1])];
-      g.fx = g.fxQueue.find((f) => f.char === want && f.pose === Number(rf[2])) ?? null;
+      g.fx = g.fxQueue.find((f) => f.kind === 'band' && f.char === want && f.pose === Number(rf[2])) ?? null;
       g.fxQueue = [];
       render();
     }
@@ -570,7 +625,7 @@ export function startApp(root: HTMLElement) {
 
   function render() {
     if (screen === 'title') root.innerHTML = titleView(settings.character);
-    else if (screen === 'settings') root.innerHTML = settingsView(settings);
+    else if (screen === 'settings') root.innerHTML = settingsView(settings, settingsTab);
     else if (screen === 'select') root.innerHTML = selectView(pickChar);
     else if (screen === 'game' && game) root.innerHTML = gameView(game);
     else if (screen === 'final' && finalState) root.innerHTML = finalView(finalState.s, finalState.seats);
@@ -661,30 +716,35 @@ function headerBar(title: string, backAct: string | null): string {
   return `<header class="gbar sub">${back}<h1 class="round gold-text">${title}</h1><span></span></header>`;
 }
 
-function settingsView(st: Settings): string {
+/** ルールが初期設定のままか（そのときは「初期設定に戻す」を押せなくする。ほかのタブのルールだけ変えたときも、押すと押せない見た目に変わって分かる） */
+const isDefaultRules = (r: Rules) => (Object.keys(r) as (keyof Rules)[]).every((k) => r[k] === defaultSettings().rules[k]);
+
+function settingsView(st: Settings, tabId: SettingsTab): string {
   const levels: Level[] = ['easy', 'normal', 'strong'];
+  const tab = SETTINGS_TABS.find((t) => t.id === tabId)!;
   return `
   <main class="screen settings-screen">
     ${headerBar('設定', 'toTitle')}
     <div class="scroll">
-      <section class="panel frame">
+      <div class="tabs" role="tablist" aria-label="設定の種類">
+        ${SETTINGS_TABS.map((t) => `<button class="tab ${t.id === tabId ? 'on' : ''}" role="tab" aria-selected="${t.id === tabId}" data-act="settingsTab" data-arg="${t.id}">${t.name}</button>`).join('')}
+      </div>
+      <section class="panel frame" role="tabpanel">
         ${CORNERS}
+        ${tabId === 'other' ? `
         <h2 class="panel-title gold-text">CPUの強さ</h2>
         <div class="seg" role="group" aria-label="CPUの強さ">
           ${levels.map((l) => `<button class="btn ${st.level === l ? 'primary' : 'ghost'}" aria-pressed="${st.level === l}" data-act="level" data-arg="${l}">${LEVEL_NAMES[l]}</button>`).join('')}
-        </div>
-      </section>
-      <section class="panel frame">
-        ${CORNERS}
-        <h2 class="panel-title gold-text">ルール</h2>
+        </div>` : ''}
         <ul class="rules">
-          ${RULE_ORDER.map((k) => `
+          ${tab.rules.map((k) => `
             <li class="rule">
-              <div class="rule-text"><span class="rule-name">${RULE_NAMES[k]}</span><span class="rule-help">${wb(RULE_HELP[k])}</span></div>
+              <span class="rule-name">${RULE_NAMES[k]}</span>
               <button class="btn toggle ${st.rules[k] ? 'primary' : 'ghost'}" aria-pressed="${st.rules[k]}" aria-label="${RULE_NAMES[k]}" data-act="rule" data-arg="${k}">${st.rules[k] ? 'オン' : 'オフ'}</button>
+              <span class="rule-help">${wb(RULE_HELP[k])}</span>
             </li>`).join('')}
         </ul>
-        <button class="btn ghost wide" data-act="resetRules">初期設定に戻す</button>
+        ${tabId === 'other' ? `<button class="btn ghost wide" data-act="resetRules" ${isDefaultRules(st.rules) ? 'disabled' : ''}>ルールを初期設定に戻す</button>` : ''}
       </section>
     </div>
     <footer class="foot-bar"><button class="btn primary" data-act="toSelect">次へ（キャラ選択）</button></footer>
@@ -741,7 +801,8 @@ function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: b
  * それより多いとき（交換・7渡しで受け取った）は段を増やし、カードを小さくして画面に収める。背の低い画面で16枚以上は6列
  */
 function handView(g: GameController, selectable: boolean): string {
-  const hand = g.s.hands[HUMAN];
+  const hidden = g.hiddenCards();
+  const hand = g.s.hands[HUMAN].filter((c) => !hidden.has(c));
   const short = window.matchMedia('(max-height: 760px)').matches;
   const cols = short ? (hand.length > 15 ? 6 : 5) : 4;
   const rows = Math.max(short ? 3 : 4, Math.ceil(hand.length / cols));
@@ -792,8 +853,12 @@ function gameView(g: GameController): string {
     ? `<div class="flash ${fl.move}" style="--delay: -${Math.round(performance.now() - fl.start)}ms" data-from="${fl.from ?? ''}" data-to="${fl.to ?? ''}" aria-hidden="true"><div class="table-cards">${fl.cards.map((c) => (fl.move === 'pass' ? CARD_BACK : cardFace(c, { big: true }))).join('')}</div></div>`
     : '';
 
+  // 盤面を見ている途中：選択に戻るボタンだけ（見るだけで操作はできない）
+  const peeking = g.peek && s.phase === 'bomber' && s.pendingBomber?.player === HUMAN;
   let actions: string;
-  if (task) {
+  if (peeking) {
+    actions = '<button class="btn primary give" data-act="peekBack">選択に戻る</button>';
+  } else if (task) {
     const verb = task.kind === 'tenDiscard' ? '捨てる' : `${g.name(task.to!)}に渡す`;
     actions = `<button class="btn primary give" data-act="give" ${g.selected.size === task.count ? '' : 'disabled'}>${verb}（${g.selected.size}/${task.count}枚）</button>`;
   } else {
@@ -811,17 +876,16 @@ function gameView(g: GameController): string {
 
   const flags = flagsView(s);
   return `
-  <main class="screen game-screen ${isReversed(s) ? 'reversed' : ''} ${flags ? 'has-flags' : ''}">
+  <main class="screen game-screen ${isReversed(s) ? 'reversed' : ''}">
     <header class="gbar">
       <h1 class="round gold-text">第${s.round}回戦</h1>
       <button class="btn ghost small" data-act="quit">やめる</button>
     </header>
-    ${flags ? `<div class="flags">${flags}</div>` : ''}
+    <div class="flags">${flags}</div>
     <section class="board frame">
       ${CORNERS}
       <div class="opps">${[1, 2, 3].map(opp).join('')}</div>
       <div class="table">
-        <i class="table-gem"></i>
         ${center}
         ${flash}
       </div>
@@ -830,11 +894,11 @@ function gameView(g: GameController): string {
       <div class="me-art-box">${bigArt(g.seats[HUMAN], 'me-art', 'cards')}</div>
       <div class="mine">
         <p class="me-label ${meStatus ? '' : 'off'}">${meStatus || '<span class="gold-text">あなたの番</span>'}</p>
-        ${handView(g, (myTurn || !!task) && !g.fx)}
+        ${handView(g, (myTurn || !!task) && !g.fx && !peeking)}
       </div>
       <footer class="actions">${actions}</footer>
     </section>
-    ${s.phase === 'bomber' && s.pendingBomber?.player === HUMAN && !g.fx ? bomberView(g) : ''}
+    ${s.phase === 'bomber' && s.pendingBomber?.player === HUMAN && !g.fx && !peeking ? bomberView(g) : ''}
     ${s.phase === 'roundEnd' && !g.fx ? roundEndView(g) : ''}
     ${g.quitConfirm ? quitView() : ''}
     ${g.fx ? fxView(g.fx) : ''}
@@ -852,7 +916,10 @@ function bomberView(g: GameController): string {
       <div class="rank-grid">
         ${ranks.map((r) => `<button class="rank-btn ${g.bomberPick.has(r) ? 'on' : ''}" aria-pressed="${g.bomberPick.has(r)}" data-act="bomberRank" data-arg="${r}">${RANK_LABEL[r]}</button>`).join('')}
       </div>
-      <button class="btn primary" data-act="bomberOk" ${g.bomberPick.size === pb.count ? '' : 'disabled'}>決定（${g.bomberPick.size}/${pb.count}）</button>
+      <div class="row">
+        <button class="btn ghost" data-act="peek">盤面を見る</button>
+        <button class="btn primary" data-act="bomberOk" ${g.bomberPick.size === pb.count ? '' : 'disabled'}>決定（${g.bomberPick.size}/${pb.count}）</button>
+      </div>
     </div>
   </div>`;
 }
@@ -905,6 +972,7 @@ const PANEL_CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i clas
  * 帯だけの場面と、絵のないキャラは、帯に発動したキャラのアイコンを出す
  */
 function fxView(fx: Fx): string {
+  if (fx.kind === 'reveal') return revealView(fx);
   const art = fx.pose !== null ? artImg(fx.char, fx.pose, 'fx-art') : '';
   const icon = art ? '' : avatarSmall(fx.char);
   return `
@@ -913,6 +981,22 @@ function fxView(fx: Fx): string {
     <div class="fx-group">
       <div class="fxband ${fx.band} ${icon ? 'has-icon' : ''}">${icon}<span class="fx-name">${fx.name}</span></div>
       ${art ? `<div class="fx-panel"><div class="art-clip">${art}</div>${PANEL_CORNERS}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+/**
+ * 捨てる・渡すカードを、場の上で表にして見せる（12ボンバーは「2を選択」の短い文も）。そのあと捨てる（下へ消える）・渡す（受け取る人へ動く）。
+ * 画面のどこをタップしても先に進む。場の上に置く位置と動く先は art.ts の layoutFlash() が決める
+ */
+function revealView(fx: RevealFx): string {
+  const elapsed = Math.round(performance.now() - (fx.start ?? performance.now()));
+  return `
+  <div class="fx reveal" data-act="fxSkip" role="status">
+    <span class="fx-hint">タップでとばす</span>
+    <div class="reveal-box ${fx.move}" style="--delay: -${elapsed}ms; --ms: ${fx.ms}ms" data-to="${fx.to ?? ''}" aria-hidden="true">
+      <div class="table-cards">${fx.cards.map((c) => cardFace(c, { big: true })).join('')}</div>
+      ${fx.text ? `<p class="reveal-text">${esc(fx.text)}</p>` : ''}
     </div>
   </div>`;
 }

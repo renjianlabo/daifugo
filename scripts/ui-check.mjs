@@ -12,13 +12,13 @@ const SIZES = [
   [430, 932],
   [1280, 800],
 ];
-const SCENES = ['hand', 'table', 'exchange', 'bomber', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
+const SCENES = ['hand', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
   'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1',
   'roundEnd', 'quit', 'final'];
 const SCENE_NAMES = {
-  title: 'タイトル', settings: '設定（上）', settings2: '設定（下）', select: 'キャラ選択',
+  title: 'タイトル', settings: '設定（カード）', settings2: '設定（革命・しばり）', settings3: '設定（そのほか）', select: 'キャラ選択',
   hand: '対戦（手札14枚・2枚選択）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
-  bomber: '12ボンバー', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
+  bomber: '12ボンバー', peek: '12ボンバー（盤面を見る）', bomberReveal: '12ボンバー（捨てられるカードと「2を選択」）', exchangeReveal: 'カード交換（自分が渡すカード）', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
   'move:give:0:1': '7渡し（自分→キャラ2。表のまま動く途中）', 'move:pass:1:3': '7渡し（キャラ2→キャラ4。裏向きのまま動く途中）',
   'band:eight:1': '帯：8切り', 'band:five:2': '帯：5スキップ', 'band:eleven:3': '帯：11バック', 'band:bomber:0': '帯：12ボンバー', 'band:ten:1': '帯：10捨て',
   'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
@@ -83,6 +83,13 @@ async function audit(page, where) {
       return false;
     };
     if (document.documentElement.scrollWidth > W + 1) out.push(['2', `横にはみ出し（ページ幅 ${document.documentElement.scrollWidth}px）`]);
+    // 12：スクロールできる場所（overflow が auto・scroll）で、中身がはみ出している（＝スクロールバーが出る）
+    for (const el of document.querySelectorAll('#app *')) {
+      const cs = getComputedStyle(el);
+      const y = /(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1;
+      const x = /(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1;
+      if (y || x) out.push(['12', `${y ? '縦' : '横'}のスクロールバー（中身 ${y ? el.scrollHeight : el.scrollWidth}px／枠 ${y ? el.clientHeight : el.clientWidth}px）：${label(el)}`]);
+    }
     // キャラの絵：読み込めているか。下が切れた絵（演出・タイトル）は、切れ目が画面の下端にぴったりついているか、左右が切れていないか
     for (const img of document.querySelectorAll('#app img')) {
       if (!img.complete || img.naturalWidth === 0) out.push(['7', `絵が表示されない：${img.getAttribute('src')}`]);
@@ -276,16 +283,18 @@ async function screensFor(browser, w, h) {
   await shot(page, w, 'title');
   await tap(page, page.locator('[data-act=toSettings]'), `${w}px タイトル`);
   await shot(page, w, 'settings');
-  await page.locator('.scroll').evaluate((e) => (e.scrollTop = e.scrollHeight));
+  await tap(page, page.locator('[data-act=settingsTab][data-arg=special]'), `${w}px 設定`);
   await shot(page, w, 'settings2');
+  await tap(page, page.locator('[data-act=settingsTab][data-arg=other]'), `${w}px 設定`);
+  await shot(page, w, 'settings3');
   await tap(page, page.locator('[data-act=toSelect]'), `${w}px 設定`);
   await shot(page, w, 'select');
   for (const sc of SCENES) {
     await page.evaluate((n) => window.__daifugo.scenario(n), sc);
     await page.waitForTimeout(150);
     await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {});
-    // 演出の絵・背景が出てくる動きが終わってから撮る（一瞬表示するカードは途中のまま）
-    await page.evaluate(() => Promise.all([...document.querySelectorAll('.fx, .fx *')].flatMap((e) => e.getAnimations().map((a) => a.finished)))).catch(() => {});
+    // 演出の絵・背景が出てくる動きが終わってから撮る（一瞬表示するカード・ゲームを止めて見せるカードは途中のまま）
+    await page.evaluate(() => Promise.all([...document.querySelectorAll('.fx:not(.reveal), .fx:not(.reveal) *')].flatMap((e) => e.getAnimations().map((a) => a.finished)))).catch(() => {});
     await shot(page, w, sc);
   }
   // 4人の絵すべて（決めポーズ・1〜4位）を演出に出し、切れ目が画面の下端にあるかを確かめる（撮影はしない）
@@ -380,13 +389,16 @@ async function playThrough(browser) {
   // 戻る・進む
   await tap(page, page.locator('[data-act=toTitle]'), where);
   await tap(page, page.locator('[data-act=toSettings]'), where);
-  await tap(page, page.locator('[data-act=level][data-arg=easy]'), where);
+  // 設定はタブに分かれている（カード／革命・しばり／そのほか）
   await tap(page, page.locator('[data-act=rule][data-arg=eightCut]'), where);
+  await tap(page, page.locator('[data-act=settingsTab][data-arg=other]'), where);
+  await tap(page, page.locator('[data-act=level][data-arg=easy]'), where);
   await tap(page, page.locator('[data-act=resetRules]'), where);
   await tap(page, page.locator('[data-act=rule][data-arg=miyakoOchi]'), where);
   // 6. 再読み込みしても設定が消えない
   await page.reload();
   await page.locator('[data-act=toSettings]').click();
+  await page.locator('[data-act=settingsTab][data-arg=other]').click();
   const kept = await page.locator('[data-act=rule][data-arg=miyakoOchi]').getAttribute('aria-pressed');
   const lvl = await page.locator('[data-act=level][data-arg=easy]').getAttribute('aria-pressed');
   if (kept !== 'true' || lvl !== 'true') problems.push({ item: '6', where, detail: '再読み込みで設定が消えた' });
@@ -491,6 +503,10 @@ async function playThrough(browser) {
   await page.evaluate(() => window.__daifugo.scenario('exchange'));
   for (const k of [0, 1]) await tap(page, page.locator('.hand .card').nth(k), where, { position: { x: 10, y: 40 } });
   await tap(page, page.locator('[data-act=give]'), where);
+  // 12ボンバーの「盤面を見る」→「選択に戻る」
+  await page.evaluate(() => window.__daifugo.scenario('bomber'));
+  await tap(page, page.locator('[data-act=peek]'), where);
+  await tap(page, page.locator('[data-act=peekBack]'), where);
   await page.evaluate(() => window.__daifugo.scenario('fx'));
   await tap(page, page.locator('.fx'), where);
   for (const e of errors) problems.push({ item: '7', where, detail: 'エラー：' + e });
@@ -515,13 +531,14 @@ const ITEMS = {
   7: 'エラー表示や真っ白な画面が出ない', 8: '戻れない・行き止まりの画面がない',
   9: '同じ情報を2か所に表示していない', 10: '途中で切れたイラストの切れ目が、画面の端についている（画面の中に浮いていない）',
   11: 'ダブルタップ・連続タップで画面が拡大しない',
+  12: '画面や枠（ダイアログ・表など）の中に、縦・横のスクロールバーが出ていない（中身がはみ出していない）',
 };
 let md = `# 画面の検査結果（機械チェック）\n\n- 撮影：${SIZES.map(([w, h]) => `${w}×${h}`).join('・')} で ${shots.length / SIZES.length} 画面ずつ（計${shots.length}枚）\n`;
 md += `- 通しプレイ（375px・ボタンを実際に押す）：最後まで${play.finished ? '進んだ' : '進まなかった'}／${play.rounds}回戦／自分が出した${play.humanPlays}回・パス${play.humanPasses}回・自動パス${play.autoPasses}回／${play.seconds}秒\n`;
 md += `- 押して確かめたボタンの種類：${[...clicked].sort().join('・')}\n\n## 項目ごと\n\n`;
 for (const k of Object.keys(ITEMS)) {
   const ps = uniq.filter((p) => p.item === k);
-  const auto = ['1', '2', '5', '6', '7', '8', '9', '10', '11'].includes(k);
+  const auto = ['1', '2', '5', '6', '7', '8', '9', '10', '11', '12'].includes(k);
   md += `- ${k}. ${ITEMS[k]}：${ps.length ? `不合格（${ps.length}件）` : auto ? '機械チェックでは問題なし' : '機械では判定できない（目で確認）'}\n`;
   for (const p of ps.slice(0, 30)) md += `  - ${p.where}：${p.detail}\n`;
 }

@@ -182,10 +182,7 @@ function startRound(s: State) {
 
   if (s.round >= 2 && s.prevRanks && s.rules.exchange) {
     const who = (r: number) => s.prevRanks!.indexOf(r);
-    // 貧しい側は一番強いカードを自動で渡す
-    autoGive(s, who(4), who(1), 2);
-    autoGive(s, who(3), who(2), 1);
-    // 豊かな側は好きなカードを選んで渡す
+    // 先に豊かな側が好きなカードを選んで渡す。渡し終わったら、貧しい側が一番強いカードを自動で渡す（giveExchange）
     s.pendingExchange = [
       { from: who(1), to: who(4), count: 2 },
       { from: who(2), to: who(3), count: 1 },
@@ -194,10 +191,8 @@ function startRound(s: State) {
   }
 }
 
-function autoGive(s: State, from: number, to: number, count: number) {
-  const give = [...s.hands[from]].sort((a, b) => strengthNormal(b) - strengthNormal(a)).slice(0, count);
-  moveCards(s, from, to, give);
-}
+/** 一番強いカード count 枚 */
+const strongest = (hand: number[], count: number) => [...hand].sort((a, b) => strengthNormal(b) - strengthNormal(a)).slice(0, count);
 
 function moveCards(s: State, from: number, to: number, cards: number[]) {
   s.hands[from] = s.hands[from].filter((c) => !cards.includes(c));
@@ -212,7 +207,10 @@ export function giveExchange(s: State, from: number, cards: number[]) {
   if (!task) throw new Error('この人は交換しない');
   if (cards.length !== task.count || new Set(cards).size !== cards.length) throw new Error('枚数が違う');
   if (cards.some((c) => !s.hands[from].includes(c))) throw new Error('持っていないカード');
+  // 貧しい側が渡すカードは、受け取る前の手札の一番強いカード（受け取ったカードを渡し返さない）
+  const back = strongest(s.hands[task.to], task.count);
   moveCards(s, from, task.to, cards);
+  moveCards(s, task.to, from, back);
   s.pendingExchange = s.pendingExchange.filter((t) => t !== task);
   if (s.pendingExchange.length === 0) s.phase = 'play';
 }

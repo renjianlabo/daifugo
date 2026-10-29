@@ -119,7 +119,15 @@ function fitBandName(root: HTMLElement) {
  * 場のまん中からのずれを --tx・--ty（動く先）と --sx・--sy（動き始め）に入れる
  */
 function layoutFlash(root: HTMLElement) {
-  const flash = root.querySelector<HTMLElement>('.flash');
+  // 12ボンバー・カード交換で、ゲームを止めて見せるカード（演出の層）は、場と同じ位置・大きさに置く
+  const reveal = root.querySelector<HTMLElement>('.reveal-box');
+  const table = root.querySelector('.table');
+  if (reveal && table) {
+    const t = table.getBoundingClientRect(), o = reveal.offsetParent!.getBoundingClientRect();
+    // 高さは場以上（12ボンバーの短い文が入るように）。上下のまん中を場のまん中にそろえる
+    Object.assign(reveal.style, { left: `${t.left - o.left}px`, top: `${t.top - o.top + t.height / 2}px`, width: `${t.width}px`, minHeight: `${t.height}px`, translate: '0 -50%' });
+  }
+  const flash = root.querySelector<HTMLElement>('.flash') ?? reveal;
   if (!flash) return;
   const box = flash.getBoundingClientRect();
   const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
