@@ -1,0 +1,107 @@
+{
+  "images": [
+    {
+      "name": "special",
+      "filename": "special.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1151042,
+      "sha256": "4839caeb7038f5ba1d2e6961ce3ed37f39daeea5d86efe2b79427247fe55ceb5",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-10bee4a8-b39e-4d06-afe8-7004fce0604e.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\special-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "rank1",
+      "filename": "rank1.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1168389,
+      "sha256": "0374dd8dce14a4f05ba8ff884dec56f650db1e02c685373a8bb0ada00b45cf9e",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-285210bc-6aa8-4e7c-a8ec-24a890c60587.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\rank1-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "rank2",
+      "filename": "rank2.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1219593,
+      "sha256": "ee07e01a32df61569f97478fb6d8caa1f4ccbd8d5290848063b9161672e4fea3",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-a92582f3-07d7-484e-8591-984510626478.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\rank2-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "rank3",
+      "filename": "rank3.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1121191,
+      "sha256": "74859984f416c9ed0a98999a24905c90607255d9bb7e03e9a46de937930adb99",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-c385cedd-4114-4035-8f6e-edba3710a187.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\rank3-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "rank4",
+      "filename": "rank4.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1099894,
+      "sha256": "beae1fabd9797f60043cc95896448f3d538904c0245d619acc306d801aaeb6ae",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-63c8a92f-76b1-42c2-9bc1-65bd3b5c994f.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\rank4-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "cards",
+      "filename": "cards.png",
+      "size": [
+        1038,
+        1515
+      ],
+      "mode": "RGBA",
+      "bytes": 1690474,
+      "sha256": "e339cc0ffeb613825f3e9c3e31136c0d4c16694135b33e0dd26d7e710761a1ab",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-c4eb6ac9-f000-4e11-af5a-23902c8121f6.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\cards-generated.png",
+      "byte_identical": true
+    },
+    {
+      "name": "icon",
+      "filename": "icon.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 1317865,
+      "sha256": "a03a5a7c0c4f4575aab1a384a82d9c07239ed9b5b70dd28e9921211a2d1a8293",
+      "chat_original": "C:\\Users\\81805\\.codex\\generated_images\\01a18727-e3cd-78c3-8c1d-d531e74b7769\\exec-91946814-4a47-45de-8e32-7dab16e9faa0.png",
+      "workspace_source": "C:\\github\\daifugo\\生成元\\chara2\\set-03-faithful-hair\\icon-highres-generated.png",
+      "byte_identical": true
+    }
+  ],
+  "zip_files": 7,
+  "no_resize": true,
+  "no_color_reduction": true,
+  "no_generation": true,
+  "all_identical_to_chat_originals": true
+}

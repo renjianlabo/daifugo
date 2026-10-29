@@ -1,0 +1,32 @@
+{
+  "name": "icon",
+  "generated_size": [
+    1254,
+    1254
+  ],
+  "size": [
+    256,
+    256
+  ],
+  "bytes": 92217,
+  "source": "C:/github/daifugo/assets/characters/chara2/icon.png",
+  "body_protected_rows": [
+    900,
+    1024
+  ],
+  "face_protected_rectangles": [
+    [
+      552,
+      472,
+      728,
+      600
+    ],
+    [
+      500,
+      688,
+      636,
+      744
+    ]
+  ],
+  "method": "RGBA PNG, original alpha retained"
+}

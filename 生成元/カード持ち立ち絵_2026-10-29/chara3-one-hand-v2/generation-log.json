@@ -1,0 +1,17 @@
+{
+  "tool": "built-in image_gen",
+  "generations": 1,
+  "retries": 0,
+  "seconds": 60.667,
+  "reference": "../chara3-raw.png",
+  "generated": "generated.png",
+  "export": "fullcolor.png",
+  "output": "確認用/カード持ち立ち絵_2026-10-29/chara3-cards-one-hand-v2.png",
+  "protected_source_rows": [
+    0,
+    660
+  ],
+  "purpose": "One-handed card pose only",
+  "human_acceptance": "pending",
+  "game_integration": "not performed"
+}

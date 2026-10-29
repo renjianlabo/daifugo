@@ -1,0 +1,15 @@
+{
+  "id": 2,
+  "source": "C:\\github\\daifugo\\生成元\\カード持ち立ち絵_2026-10-29\\chara2-raw.png",
+  "sourceSize": [
+    1038,
+    1515
+  ],
+  "output": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-cards.png",
+  "outputSize": [
+    1038,
+    1515
+  ],
+  "bytes": 397078,
+  "method": "libimagequant 256 color PNG, no dithering; source retained"
+}

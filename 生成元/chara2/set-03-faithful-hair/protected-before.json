@@ -1,0 +1,342 @@
+[
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\icon_game.png",
+    "sha256": "E12F8330C479ED8AED769C3920A798148697ADFEF299E291BEC05D947182D93D"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\icon.png",
+    "sha256": "A807416807DFE46547FFAAF0135B46FF4492DCA6DEFDBEE57205689414CE48D8"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\rank1.png",
+    "sha256": "6A9A42AA26259C03BA3D33BE3A933A87141EE122D8EDC59629D0D9600AEF77B9"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\rank2.png",
+    "sha256": "673739999050FAC3171214F101277EB384F97E10CBBB24583E8BEB70DA21A3E5"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\rank3.png",
+    "sha256": "19E3FA5661904DBF85F0E74278B9CCECE98B4194F9D4960228C5D910ADC05F68"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\rank4.png",
+    "sha256": "67E0C7358BBA36B35A387A6E63CE3BDF081FA23689AA0A0FC00AD5154C9A4B11"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\blonde-tomboy\\special.png",
+    "sha256": "580DDF3D76E2D96EF64C0E5DB83B38E00FF70F2E600E3C848747594F58C5FDC4"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\icon_game.png",
+    "sha256": "2284FED6A246E0135FED219049A969050BADF2D7931B07692A3673B024459CCE"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\icon.png",
+    "sha256": "11D8FBBE0F1726E3C55819B112319B0D6F96E4EA59AFD29D927E4484F0A11E42"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank1.png",
+    "sha256": "7DCF846BEAC09C27F4D23DECE31889E08261F0B8851E8C7A0D3F31A9D2AA0508"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank2.png",
+    "sha256": "AAA40FB3538E39623D80CB9EB1E72F186633532EC4FCB1F7DC91D1D7B3047A2A"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank3.png",
+    "sha256": "E1397E0ADD36D7B6DF780E9B0C183B912FF0386BF572E4FCE202D6DF5BDB3186"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\rank4.png",
+    "sha256": "A886C8DDFE08D0439FEF5D149FA62E524DB136596CB5EF479C03BF45B07A7EC5"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara1\\special.png",
+    "sha256": "44C9AE1AC85D4AFFFF246B170A5CFD1758E6B9020083A5840C16AE81AB485841"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\icon_game.png",
+    "sha256": "83F33F0513C5E24FD21D6D8B3039F11CEC375A24776937C5C193074E041C5D37"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\icon.png",
+    "sha256": "7E47CB656098FAFF2F807D942F96F002B8A7A203516BEEFE6F3DD53B67C626DF"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank1.png",
+    "sha256": "4E1153CDE8126372733791ED936EBDB00249965FBC76EA297198297A3A10D68F"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank2.png",
+    "sha256": "D063A6DE302F7F8052C451930E48CA3197D164F766219382567945753DBE2C55"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank3.png",
+    "sha256": "14199EBC15DA35E7D36942A731B7130562760174E9320887C4A82A0E039530F0"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\rank4.png",
+    "sha256": "543AE3CB62D5B543635A8AF305FADDCE130FE0A7D37CD9B3DF665C66C1D8F500"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara2\\special.png",
+    "sha256": "B39E972507CE55D750E0389712013D19F4D1709161A8014B8591C6D394CFF10C"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\icon_game.png",
+    "sha256": "A78B554A7DF81BF9FC42E3DE2F264581B7C7ED812F753810E3D2F5234E2A4621"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\icon.png",
+    "sha256": "C106F8F180C8B1377811A70FD65023B4FC7591C42BEE8F8F163882F771842DDF"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank1.png",
+    "sha256": "7B93378C851106E144FCFCF670030E70F6C1738F51650E0E8B23D774F5857FA0"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank2.png",
+    "sha256": "069290DE6957A06908E5C07A59F0EB9DE321F8C3FF6D81169681732F16D74389"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank3.png",
+    "sha256": "5F3C7FC19A3D9DE2559C9C1C391EF85B667DE75282C95EDB583CF40BDA2B19F9"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\rank4.png",
+    "sha256": "5AA971F307284CF2ADA477124435F2A0DE51F35FCB534C1A522F56B347530238"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara3\\special.png",
+    "sha256": "B5803E4D9E73853D86BA23C8F80E8C57DD04799BF6EFD312636E1F47BF56D7E9"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\icon.png",
+    "sha256": "090C648D5BFE214D7817471C0C72DA092C82C668FF60A6BF4C28FFBA42ACCFBA"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank1.png",
+    "sha256": "36B89430987ED6517C928CC7D00457C42F27AE2F50F602229C43B10BBB3491D1"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank2.png",
+    "sha256": "AB47AB99AD761EA070C222F3F14BAD402FC8173D5B5CCE1F7AEDF5CBDBCE9890"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank3.png",
+    "sha256": "4778BED739BD5E49AAD6B3759AE30EEDB3542067A4187CC81AA386D038F7ABE3"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\rank4.png",
+    "sha256": "7C5ABF092272CDF4CFCAF044B72463CAF3A669DE07F8FAA69E253CF4645BB3E8"
+  },
+  {
+    "path": "C:\\github\\daifugo\\assets\\characters\\chara4\\special.png",
+    "sha256": "0C6C9414931FAC406DD28D5C1E394E08B591222790AD24C8AC00D1348C4D209A"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\01.png",
+    "sha256": "3F00575F7E9D7E99479EA147D8BA94DA810BDB4E668CD13C53EF4504B979893C"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\02.png",
+    "sha256": "EA42C5F38C2C9F06D4B752A8F10B154A252EF1997B469446164C12B3B0996507"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\03.png",
+    "sha256": "C1C6E84E404F968ADB6D562D6F4928545EDFC054262D4C744AD501CE507F7728"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\04.png",
+    "sha256": "9B5083098F7B9EB08814C25C22293CCD01D15DC8711FC8F45BD407497ECDC135"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\05.png",
+    "sha256": "88BF4A20BF6061E10E516F21492968C7AE847726149D95C655554FFA18C9865B"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\06.png",
+    "sha256": "9F0DEE8E103BCACB90958C14094A11E4481D696FA606CF3B497B9A9EBFE49445"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\07.png",
+    "sha256": "D210D788CCF524CB18336EAB32021DA99F60C68DA59D4225E70885CF0BC1CF1E"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\体格\\01.png",
+    "sha256": "C664CE18C8DFDD1723301111D41F572DC4015B0057EF27463CA16BA798ACEA58"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装\\01.png",
+    "sha256": "3F00575F7E9D7E99479EA147D8BA94DA810BDB4E668CD13C53EF4504B979893C"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装_v2\\01.png",
+    "sha256": "8B8F9F4AFF8DEABF972F9590307A33F1E751A3633D8009953369845D7E941651"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ1\\服装_v2\\02.png",
+    "sha256": "0526CC4339A81B1618EE9ACE4F0087AEFA871DDD25D7C6E057AC545A4926B0A3"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\01.png",
+    "sha256": "9BE6B890A87D18C4736B9E453D0D85AD5A5229105CE30658F3D51E7C119D136B"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\02.png",
+    "sha256": "5778E1973A0294DB3F2D06CAE71D60E4F4A2B9F31B9DBAA92BB7D5DD5898452B"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\03.png",
+    "sha256": "9D3BA01F8B2ABA04B879BF42665189CEAF6AA24D10CC76D074F971F11A10CAA8"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\04.png",
+    "sha256": "887E121571C958423418B88BE90147744EE057EABF4FF99C32082ED0318CD643"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\05.png",
+    "sha256": "2E95CC51A68E8169A60DD40FE550F244F1E1869428D87F25654DA742DC5604E2"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\06.png",
+    "sha256": "5E1BFE562A4F210029BC4DCCD5B50F78B5DD49AA8F6DFA58C06C575B29D5FDA9"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\07.png",
+    "sha256": "B14668C2AEAFB96ACB13055131179E1675A0A20B4114A622D5CD33F4A6535ADB"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ2\\服装\\01.png",
+    "sha256": "9BE6B890A87D18C4736B9E453D0D85AD5A5229105CE30658F3D51E7C119D136B"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ3\\01.png",
+    "sha256": "2FBA37A4FC7AD1442CA324D736522DD9F19910B6253129E09DC2AFAF86AADDD5"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\キャラ4\\01.png",
+    "sha256": "5099E26D203631EDF257352B8C659D73F71AB59B144795658FCDFC7245FF29AC"
+  },
+  {
+    "path": "C:\\github\\daifugo\\参考イラスト\\金髪キャラ_男勝り\\01.png",
+    "sha256": "73CAF0EC5EA3F3F68FB5C25008595F4ED21EF017ED66066E7E166F950D5B8528"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\4人一覧_キャラ3片手版.jpg",
+    "sha256": "5048EF961DE2A298C064A0D06F90D3CFA91D235BA272F04187FEF3512E20EA06"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\4人一覧.jpg",
+    "sha256": "839670B128E703DD6D5C5C0C5D733C8718C74D663122E4CD42D83FB8D9C826FD"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara1-cards.png",
+    "sha256": "C08A157B9AD01E2E177F90109BA717854771CEA4AF945A5D7B6342A72FBD52C3"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara1-comparison.jpg",
+    "sha256": "87AB10AB5C93BB41C9455055F59D548E3DD556E7A35636D77CDFCA1882ADD00A"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara1-head-new.jpg",
+    "sha256": "DDAB0E8EB6CA62DC83605F8965D5A077F33112779D6A9081A824E4726E1FD06A"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara1-head-reference.jpg",
+    "sha256": "5130071DCFE3541FE960D59405F204F0F74D3A934981DD1802F455EDE388BDEA"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara1-light-dark.jpg",
+    "sha256": "B26A6EE65FEBC64A819BA1FAE94802EF645F936BBFEF87467EE5E58C05FA6FF1"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-cards.png",
+    "sha256": "92965BFCA444BA6C97D7FABA0679D42E877C79B166CD2D22E64292C51505B374"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-comparison.jpg",
+    "sha256": "3A458831C72AD9A8F08911340D0A7C2BAE6A5D8B86517E25DD1596CB0A43C9B6"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-head-new.jpg",
+    "sha256": "8A5E5FBA4BE20003DEB897E3123F8F93C17E6866ACDB6BD04071055DBE9EFB7E"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-head-reference.jpg",
+    "sha256": "333517A042408870A792381EA3502F62EA73BDDBFB144764D9503FCECF695AB3"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara2-light-dark.jpg",
+    "sha256": "71BD2BE8769950C314C606240B0074C857CA80C67AB73F90382D656B89528C27"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-cards-one-hand-v2.png",
+    "sha256": "65E45E2FC7B0D3B4DFA7055B6F5CADEEE99E2AF483F425E169EFC57C73FAE621"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-cards.png",
+    "sha256": "9BA0067C09513C4764CDC9B49BE0BB9874B94F64490810151E474D61B7858886"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-comparison.jpg",
+    "sha256": "63B307715FE2DA9FF04D6544C5D7BA43B1538FCFDAB1E041724AE28BB11584F1"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-head-new.jpg",
+    "sha256": "DA5769514FAB6A78318BE20202BDE98296E0329FE46931E0549A3B4F6558633C"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-head-reference.jpg",
+    "sha256": "C5907D6B4D4E0319A000FF8DECBAA381EFB48D69E85625357A6FA963005111DE"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-light-dark.jpg",
+    "sha256": "445646B354C7959A9E2548147DA8097A373D387B7C4A2C5B0CF3D161E18248B2"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-one-hand-comparison.jpg",
+    "sha256": "65C49882016E28D852E8CDD9D400DBD6CEF71CE8FB510A3E842D16FEA6D09903"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara3-one-hand-light-dark.jpg",
+    "sha256": "CA4B2DFCBFC1D1DFDE0D9CC5E1053F0BBE706C130AC6E1E238F4E869B8E7A942"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara4-cards.png",
+    "sha256": "1B8FD85D6E484EF4C6318224A00430844C866ED281E2644B6DE9A0442D089D66"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara4-comparison.jpg",
+    "sha256": "0FC6BB7B9F62D72BFB96C805FCF5E691C39A12451BF1AF370606A0B021F21EB0"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara4-head-new.jpg",
+    "sha256": "0772A5902B57380F024E00AD89D43926B4BC078CD40146205B9C74C3B06AFE36"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara4-head-reference.jpg",
+    "sha256": "00EFF0B91001BEA58DF30690C682DF7A06C50E71E3A8E6A83DD7E43AAF12E877"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\chara4-light-dark.jpg",
+    "sha256": "15B3DCAA52FEBBB124A387D6E5E160857564B925443911A055C794998DEEE8EE"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\カード持ち立ち絵4枚_キャラ3片手版.zip",
+    "sha256": "FD6802E5C0E2DACF0CE3F12FFE39EC0EC67010FFEFA228122B42475CF4D8B551"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\カード持ち立ち絵4枚.zip",
+    "sha256": "E451BB8C8F2AFD4E5FA1FFF9019EE1CF3FCA75B5F4196C4E52C9AD4D8DF241F1"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\キャラ3片手版_検査結果.md",
+    "sha256": "20578F44047976D66A3FF7CA0B477DF6EDB8F9B5CC989E5115B3E1A37A8B391C"
+  },
+  {
+    "path": "C:\\github\\daifugo\\確認用\\カード持ち立ち絵_2026-10-29\\検査結果.md",
+    "sha256": "44BA53A3CA265150A934DD0CC89443E1EAB30A17C7BDE3D93648B250EE74C217"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "name": "cards",
+  "size": [
+    1038,
+    1515
+  ],
+  "bytes": 389660,
+  "source": "C:/github/daifugo/生成元/カード持ち立ち絵_2026-10-29/chara2-raw.png",
+  "body_protected_rows": [
+    620,
+    1515
+  ],
+  "face_protected_rectangles": [
+    [
+      546,
+      310,
+      626,
+      390
+    ],
+    [
+      510,
+      454,
+      582,
+      491
+    ]
+  ],
+  "method": "256 color PNG, RGBA approximated; fullcolor retained"
+}

@@ -1,0 +1,46 @@
+{
+  "tool": "built-in image_gen",
+  "count": 5,
+  "deliverables": 4,
+  "regenerations": 1,
+  "failures": 0,
+  "generations": [
+    {
+      "id": 1,
+      "seconds": 42.472,
+      "output": "chara1-raw.png",
+      "status": "saved"
+    },
+    {
+      "id": 2,
+      "seconds": 39.989,
+      "output": "chara2-raw.png",
+      "status": "saved"
+    },
+    {
+      "id": 3,
+      "seconds": 41.989,
+      "output": "chara3-raw.png",
+      "status": "saved"
+    },
+    {
+      "id": 4,
+      "seconds": 59.084,
+      "output": "chara4-initial-hair-clipped.png",
+      "status": "rejected_hair_clipping"
+    },
+    {
+      "id": 4,
+      "seconds": 60.549,
+      "output": "chara4-raw.png",
+      "status": "saved_revision"
+    }
+  ],
+  "qa_issue": {
+    "type": "overstrict_alpha_assertion",
+    "description": "Quantized PNG maximum alpha was 254. This is expected palette approximation, not absent transparency. Checked alpha distribution and composite differences; adjusted assertion to require min=0 and max>=250. Original retained.",
+    "resolved": true
+  },
+  "human_acceptance": "pending",
+  "in_game_display": "not_performed"
+}

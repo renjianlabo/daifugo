@@ -1,0 +1,32 @@
+{
+  "name": "special",
+  "generated_size": [
+    1254,
+    1254
+  ],
+  "size": [
+    1024,
+    1024
+  ],
+  "bytes": 192490,
+  "source": "C:/github/daifugo/assets/characters/chara2/special.png",
+  "body_protected_rows": [
+    480,
+    1024
+  ],
+  "face_protected_rectangles": [
+    [
+      520,
+      250,
+      586,
+      318
+    ],
+    [
+      493,
+      351,
+      549,
+      392
+    ]
+  ],
+  "method": "256 color PNG, RGBA approximated; fullcolor retained"
+}

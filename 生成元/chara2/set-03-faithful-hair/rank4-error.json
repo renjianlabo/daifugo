@@ -1,0 +1,12 @@
+{
+  "name":"rank4",
+  "status":"moderation_blocked",
+  "stage":"output",
+  "categories":["sexual"],
+  "request_id":"ecbf3292-b026-4648-abb0-9c977c3f451a",
+  "image_returned":false,
+  "attempts":1,
+  "retries":0,
+  "specific_cause":"unknown",
+  "action":"Report to user, retain prior files, do not retry rank4 or modify its request to bypass the block. Proceed only with the separately planned icon asset."
+}
