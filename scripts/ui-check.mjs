@@ -12,16 +12,16 @@ const SIZES = [
   [430, 932],
   [1280, 800],
 ];
-const SCENES = ['hand', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
-  'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1',
+const SCENES = ['hand', 'dim', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
+  'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1', 'band:round:0',
   'roundEnd', 'quit', 'final'];
 const SCENE_NAMES = {
   title: 'タイトル', settings: '設定（カード）', settings2: '設定（革命・しばり）', settings3: '設定（そのほか）', select: 'キャラ選択',
-  hand: '対戦（手札14枚・2枚選択）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
+  hand: '対戦（手札14枚・2枚選択）', dim: '対戦（場に5が1枚。出せないカードは暗い）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
   bomber: '12ボンバー', peek: '12ボンバー（盤面を見る）', bomberReveal: '12ボンバー（捨てられるカードと「2を選択」）', exchangeReveal: 'カード交換（自分が渡すカード）', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
   'move:give:0:1': '7渡し（自分→キャラ2。表のまま動く途中）', 'move:pass:1:3': '7渡し（キャラ2→キャラ4。裏向きのまま動く途中）',
   'band:eight:1': '帯：8切り', 'band:five:2': '帯：5スキップ', 'band:eleven:3': '帯：11バック', 'band:bomber:0': '帯：12ボンバー', 'band:ten:1': '帯：10捨て',
-  'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
+  'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', 'band:round:0': '帯：第1回戦', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
 };
 
 const problems = []; // { item, where, detail }
@@ -232,7 +232,8 @@ async function audit(page, where) {
       if (t > 0.3001) out.push(['anim', `動きが${t}秒：${label(el)}`]);
     }
     // 守る数値：押せないものは見た目で区別できる（薄い・暗いなど）
-    for (const b of all.filter((el) => el.matches('button:disabled'))) {
+    // 自分の番でない手札は、押せないが見た目はそのまま（2026-10-30 ユーザー指示）なので除く
+    for (const b of all.filter((el) => el.matches('button:disabled') && !el.matches('.hand .card:not(.dim)'))) {
       const cs = getComputedStyle(b);
       if (parseFloat(cs.opacity) >= 1 && cs.filter === 'none') out.push(['press', `押せないのに押せるものと同じ見た目：${label(b)}`]);
     }
@@ -375,6 +376,61 @@ async function zoomCheck(browser) {
   return r;
 }
 
+/**
+ * 8切りの順番（2026-10-30 ユーザー指示）：①場に出したカードを見せる（約0.8秒）→ ②8切りの帯 → ③場を流す。
+ * 自分が出す場面とCPUが出す場面で、画面の場と演出を細かく記録して確かめる（待ち時間をなくさない普通の速さで動かす）
+ */
+async function eightOrder(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  const out = {};
+  for (const name of ['eight', 'eightCpu']) {
+    out[name] = await page.evaluate(async (name) => {
+      const w = (ms) => new Promise((r) => setTimeout(r, ms));
+      const snap = () => {
+        const table = [...document.querySelectorAll('.table > .table-cards .card')].map((e) => e.getAttribute('aria-label')).join('') || '空';
+        const band = document.querySelector('.fxband .fx-name')?.textContent || (window.__daifugo.fxNow()?.kind ?? '-');
+        return table + '|' + band;
+      };
+      window.__daifugo.scenario(name);
+      await w(50);
+      window.__daifugo.unfreeze();
+      if (name === 'eight') {
+        [...document.querySelectorAll('.hand .card')].find((e) => e.getAttribute('aria-label') === '♥8').click();
+        await w(20);
+        document.querySelector('[data-act=play]').click();
+      }
+      const t0 = performance.now();
+      const log = [];
+      let prev = '';
+      while (performance.now() - t0 < 4000) {
+        const s = snap();
+        if (s !== prev) { log.push([Math.round(performance.now() - t0), s]); prev = s; }
+        await w(10);
+      }
+      return log;
+    }, name);
+  }
+  await page.close();
+  const results = [];
+  for (const [name, log] of Object.entries(out)) {
+    const where = name === 'eight' ? '自分が♥8' : 'キャラ2が♥8';
+    const states = log.map(([, s]) => s);
+    const i1 = states.indexOf('♥8|table');
+    const i2 = states.indexOf('♥8|8切り');
+    const i3 = states.findIndex((s, i) => i > i2 && s.startsWith('空'));
+    const shown = i1 >= 0 && i2 > i1 ? log[i2][0] - log[i1][0] : 0;
+    const text = log.map(([ms, s]) => `${ms}ms ${s}`).join(' → ');
+    const ok = i1 >= 0 && i2 > i1 && i3 > i2 && shown >= 700 && !states.some((s) => s.includes('しば'));
+    if (!ok) problems.push({ item: '8', where: '8切りの順番', detail: `${where}：${text}` });
+    results.push(`${where}：${ok ? '合格' : '不合格'}（${text}）`);
+  }
+  return results;
+}
+
+/** 通しプレイで出したカードの数と、一度も場に出なかったもの */
+let tableSeen = { plays: 0, unseen: [] };
+
 /** 375px で、ボタンを実際に押して1試合（3回戦）を最後まで遊ぶ */
 async function playThrough(browser) {
   const where = '375px 通しプレイ';
@@ -485,6 +541,9 @@ async function playThrough(browser) {
     timing.wait += Date.now() - tw;
   }
   const finished = (await page.locator('.final-screen').count()) > 0;
+  // 出したカードは、どれも一度は場に出ている（8切り・5スキップで全員とばし・上がって回が終わるときも）
+  tableSeen = await page.evaluate(() => window.__daifugo.unseenPlays());
+  for (const k of tableSeen.unseen) problems.push({ item: '7', where, detail: `出したカードが一度も場に出なかった：${k}` });
   if (!finished) problems.push({ item: '8', where, detail: '時間内に最終結果まで進まなかった' });
   else {
     await tap(page, page.locator('[data-act=again]'), where);
@@ -517,6 +576,7 @@ async function playThrough(browser) {
 const browser = await chromium.launch({ executablePath: exe(), headless: true });
 fs.rmSync(OUT, { recursive: true, force: true });
 if (!process.env.ONLY_PLAY) for (const [w, h] of SIZES) await screensFor(browser, w, h);
+const eight = await eightOrder(browser);
 const play = await playThrough(browser);
 const zoom = await zoomCheck(browser);
 await browser.close();
@@ -544,6 +604,7 @@ for (const k of Object.keys(ITEMS)) {
 }
 md += `\n## 演出の絵（自分・CPUの4人×1〜4位の16通り）\n\n- 正しい絵：${fxResults.filter((x) => x.ok).length}/${fxResults.length}\n`;
 for (const p of uniq.filter((p) => p.item === 'fx')) md += `  - ${p.where}：${p.detail}\n`;
+md += `\n## 出したカードと8切りの順番（場に見せる → 8切りの帯 → 場を流す）\n\n${eight.map((x) => `- ${x}`).join('\n')}\n- 記号：場のカード｜演出（table＝出したカードを場に見せて待っている、-＝演出なし）\n- 通しプレイで出したカード ${tableSeen.plays} 回のうち、一度も場に出なかったもの：${tableSeen.unseen.length} 回\n`;
 md += `\n## キャラ選択のスワイプ\n\n${swipeLog.map((x) => `- ${x}`).join('\n')}\n`;
 md += `\n## ズーム（11）の数字\n\n- 確かめ方の試し（ズーム止めのない普通のページを2本指で広げる）：${zoom.control}倍\n- タイトル画面を2本指で広げる：${zoom.title}倍\n- 対戦画面でカードを40msおきに20回タップ：${zoom.taps}倍／ダブルタップ：${zoom.dbl}倍／2本指で広げる：${zoom.game}倍\n- viewport：${zoom.meta}\n- 注意：このブラウザ（Chrome系）はスマホ向けページでダブルタップ拡大をしないので、ダブルタップは「iPhoneで拡大を止める指定（touch-action: manipulation）がページ全体と押せるもの全部に付いているか」で判定した。本物のiPhoneでは確かめていない\n`;
 const NUMS = [

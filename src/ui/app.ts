@@ -4,7 +4,7 @@ import { RANK_LABEL, cardId, cardLabel, isJoker, rankOf, suitOf } from '../engin
 import { interpret } from '../engine/plays';
 import {
   GameEvent, POINTS, RANK_NAMES, RULE_NAMES, Rules, State, canPass, chooseBomber, chooseCards, currentRanks, findPlays, giveExchange,
-  isActive, isReversed, listMoves, lockKind, newGame, nextRound, pass, play, topEntry,
+  isActive, isReversed, listMoves, lockKind, newGame, nextRound, pass, play, playableCards, topEntry,
 } from '../engine/game';
 import { CpuOptions, LEVEL_NAMES, Level, PERSONALITY_WEIGHTS, cpuAct } from '../cpu/cpu';
 import { bigArt, layoutArts } from './art';
@@ -16,8 +16,12 @@ type Screen = 'title' | 'settings' | 'select' | 'game' | 'final';
 const HUMAN = 0;
 /** 絵を出す演出（革命・ジョーカー・順位）の長さ */
 const FX_MS = 1200;
+/** 出したカードがその場で流れるとき（8切り・5スキップで全員とばし・上がって回が終わる）、場に見せておく長さ */
+const TABLE_MS = 800;
 /** 帯だけの演出（8切りなど）の長さ */
 const BAND_MS = 1000;
+/** 回戦の始めの帯（「第1回戦」）の長さ。左から入って、止まって、右へ抜ける */
+const ROUND_MS = 1500;
 /** 12ボンバーで捨てられるカードを見せる長さ（表に出てから消えるまで） */
 const BOMBER_MS = 2000;
 /** 出せる手がないとき、自動でパスするまでの間（パスしたことが分かるように少し待つ） */
@@ -57,17 +61,26 @@ const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // ---------------- 対戦の進行役 ----------------
 
 /** 帯の種類（色を決める） */
-type BandKind = 'revolution' | 'joker' | 'eight' | 'five' | 'eleven' | 'bomber' | 'ten' | 'seven' | 'mark' | 'num' | 'geki'
+type BandKind = 'round' | 'revolution' | 'joker' | 'eight' | 'five' | 'eleven' | 'bomber' | 'ten' | 'seven' | 'mark' | 'num' | 'geki'
   | 'rank1' | 'rank2' | 'rank3' | 'rank4';
 
-/** 演出：帯に効果の名前。pose があるときはキャラの絵の上に帯を重ねる。ないときは帯だけで、帯に発動したキャラのアイコンを出す */
-interface BandFx { kind: 'band'; band: BandKind; name: string; char: Character; pose: FxPose | null }
+/**
+ * 演出：帯に効果の名前。pose があるときはキャラの絵の上に帯を重ねる。ないときは帯だけで、帯に発動したキャラのアイコンを出す。
+ * char が null（回戦の始め）はアイコンなし。start は帯を出した時刻（描き直しても動きが途中から続くように）。hold は検査用（動きを止めて撮る）
+ */
+interface BandFx { kind: 'band'; band: BandKind; name: string; char: Character | null; pose: FxPose | null; start?: number; hold?: boolean }
 /**
  * 捨てる・渡すカードを、ゲームを止めて見せる（12ボンバー・自分が関わるカード交換）。タップで先に進める。
  * text は添える短い文（12ボンバーの「2を選択」）。hide は見せ終わるまで手札に出さないカード（受け取ったカード）
  */
 interface RevealFx { kind: 'reveal'; cards: number[]; text: string; move: 'discard' | 'give'; to: number | null; ms: number; hide: number[]; start?: number }
-type Fx = BandFx | RevealFx;
+/**
+ * 出したカードを場に見せて待つ（演出の幕は出さない）。そのあとの帯が終わるまで、出したカードを場に残す（GameController.ghost）。
+ * unghost は、残しておいたカードを消す印（待たない）
+ */
+interface TableFx { kind: 'table'; ms: number; start?: number }
+interface UnghostFx { kind: 'unghost'; start?: number }
+type Fx = BandFx | RevealFx | TableFx | UnghostFx;
 
 /**
  * 出来事のカードを一瞬見せる。move は、そのあとの動き：
@@ -90,6 +103,11 @@ class GameController {
   fxQueue: Fx[] = [];
   fx: Fx | null = null;
   flash: Flash | null = null;
+  /**
+   * ルール処理ではもう流れたが、画面の場にはまだ残しておくカード（出したカードを必ず一度は場に見せるため）。
+   * 8切りの順番：①場に出したカードを見せる（TABLE_MS）→ ②8切りの帯 → ③場を流す（unghost）
+   */
+  ghost: number[] | null = null;
   thinking: number | null = null;
   quitConfirm = false;
   /** 選択の小窓（12ボンバーの数字）を閉じて、盤面を見ている途中。見るだけで操作はできない。選んだ内容はそのまま残す */
@@ -131,6 +149,8 @@ class GameController {
 
   private consumeEvents() {
     const s = this.s;
+    this.playInBatch = false;
+    this.eightInBatch = false;
     const shown: Omit<Flash, 'start'>[] = [];
     const queued = this.fxQueue.length;
     for (; this.eventIdx < s.events.length; this.eventIdx++) {
@@ -156,6 +176,24 @@ class GameController {
     }, this.fast ? 30 : FLASH_MS);
   }
 
+  /** 最後に出したカード（場に残しておくときに使う） */
+  private lastPlay: number[] | null = null;
+  /** 今回まとめて受け取った出来事の中に、カードを出したことがあるか。あれば、そのときの演出の列の位置 */
+  private playInBatch = false;
+  private playMark = 0;
+  private eightInBatch = false;
+
+  /**
+   * 場が流れた（または回が終わった）とき、出したカードをまだ画面に見せていなければ、場に残しておく。
+   * 同じ処理の中で出したカードなら、帯より先に TABLE_MS だけ場に見せる。8切りは、前に見せていても帯が終わるまで残す
+   */
+  private keepOnTable() {
+    if (this.ghost || !this.lastPlay || !(this.playInBatch || this.eightInBatch)) return;
+    if (this.playInBatch) this.fxQueue.splice(this.playMark, 0, { kind: 'table', ms: TABLE_MS });
+    this.ghost = this.lastPlay;
+    this.fxQueue.push({ kind: 'unghost' });
+  }
+
   /** 最後にカードを出した人（5スキップの帯に出す人） */
   private actor = 0;
   /** 今のカードの5スキップの帯を出したか（とばされる人ごとに知らせが来るので、帯は1回だけ） */
@@ -171,7 +209,16 @@ class GameController {
    */
   private describe(e: GameEvent): Omit<Flash, 'start'> | null {
     switch (e.type) {
-      case 'play': this.actor = e.player; this.skipShown = false; break;
+      case 'roundStart': this.fxQueue.push({ kind: 'band', band: 'round', name: `第${e.round}回戦`, char: null, pose: null }); break;
+      case 'play':
+        this.actor = e.player;
+        this.skipShown = false;
+        this.lastPlay = e.play.cards;
+        tableLog.played.push(cardsKey(e.play.cards));
+        this.playInBatch = true;
+        this.playMark = this.fxQueue.length;
+        break;
+      case 'flush': case 'roundEnd': this.keepOnTable(); break;
       // カード交換：自分が渡すカードは受け取る人へ、受け取ったカードは手札へ動かして見せる（起きた順。自分が大富豪・富豪なら渡すのが先）
       case 'exchange':
         if (e.from === HUMAN || e.to === HUMAN) this.fxQueue.push({ kind: 'reveal', cards: e.cards, text: '', move: 'give', to: e.to, ms: FLASH_MS, hide: e.to === HUMAN ? e.cards : [] });
@@ -187,7 +234,7 @@ class GameController {
       case 'lock': this.band(e.kind, e.player, null, BAND_NAMES[e.kind] + (e.kind !== 'num' && e.suits ? `<small>${marksOf(e.suits)}</small>` : '')); break;
       case 'effectStart': this.band(({ bomber: 'bomber', sevenPass: 'seven', tenDiscard: 'ten' } as const)[e.kind], e.player); break;
       case 'elevenBack': this.band('eleven', e.player); break;
-      case 'eightCut': this.band('eight', e.player); break;
+      case 'eightCut': this.band('eight', e.player); this.eightInBatch = true; break;
       case 'skip': if (!this.skipShown) { this.skipShown = true; this.band('five', this.actor); } break;
       case 'finish': this.band(`rank${e.rank}` as BandKind, e.player, e.rank as FxPose); break;
       // 都落ちした人は、その時点で大貧民（4位）に決まる
@@ -202,12 +249,17 @@ class GameController {
     if (!this.alive) return;
     this.consumeEvents();
     if (this.frozen || this.fx) return this.onChange();
+    // 場に残しておいたカードを消す（帯が終わった）
+    while (this.fxQueue[0]?.kind === 'unghost') {
+      this.fxQueue.shift();
+      this.ghost = null;
+    }
     if (this.fxQueue.length) {
       const fx = this.fxQueue.shift()!;
-      if (fx.kind === 'reveal') fx.start = performance.now();
+      fx.start = performance.now();
       this.fx = fx;
       this.onChange();
-      const ms = fx.kind === 'reveal' ? fx.ms : fx.pose !== null ? FX_MS : BAND_MS;
+      const ms = fx.kind === 'reveal' || fx.kind === 'table' ? fx.ms : fx.kind === 'unghost' ? 0 : fx.band === 'round' ? ROUND_MS : fx.pose !== null ? FX_MS : BAND_MS;
       this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : ms);
       return;
     }
@@ -304,9 +356,32 @@ class GameController {
     return findPlays(this.s, HUMAN, [...this.selected]).length > 0;
   }
 
+  /**
+   * 自分の番で押せるカード。何も選んでいないときは、出せる出し方のどれかに使えるカード。
+   * 選んでいるときは、選んだカードと一緒に出せるカード（同じ数字・階段の続き・ジョーカー）と選んだカード。
+   * 一緒に出せるカードがないとき（場が1枚など）は、選ぶ前と同じ（別のカードを押すと選び直しになる）。
+   * 自分の番でないときは null（全部押せない。見た目は暗くしない）
+   */
+  pressableCards(): Set<number> | null {
+    const s = this.s;
+    if (this.fx || s.phase !== 'play' || s.turn !== HUMAN) return null;
+    const sel = [...this.selected];
+    const base = playableCards(s, HUMAN).cards;
+    if (!sel.length) return base;
+    const withSel = playableCards(s, HUMAN, sel).cards;
+    return [...withSel].some((c) => !this.selected.has(c)) ? withSel : new Set([...base, ...sel]);
+  }
+
   toggleCard(id: number) {
     if (this.selected.has(id)) this.selected.delete(id);
-    else this.selected.add(id);
+    else if (this.humanTask()) this.selected.add(id);
+    else {
+      const ok = this.pressableCards();
+      if (!ok || !ok.has(id)) return;
+      // 選んだカードと一緒に出せないカード（一緒に出せるカードがないときだけ押せる）は、選び直しにする
+      if (!playableCards(this.s, HUMAN, [...this.selected, id]).plays.length) this.selected.clear();
+      this.selected.add(id);
+    }
     this.onChange();
   }
 
@@ -365,12 +440,15 @@ class GameController {
 const LOCK_NAMES = { mark: 'マークしばり', num: '数しば', geki: '激しば' } as const;
 /** 帯に出す名前。効果は設定の名前と同じ、順位は大富豪〜大貧民 */
 const BAND_NAMES: Record<BandKind, string> = {
-  revolution: RULE_NAMES.revolution, joker: 'ジョーカー', eight: RULE_NAMES.eightCut, five: RULE_NAMES.fiveSkip, eleven: RULE_NAMES.elevenBack,
+  round: '', revolution: RULE_NAMES.revolution, joker: 'ジョーカー', eight: RULE_NAMES.eightCut, five: RULE_NAMES.fiveSkip, eleven: RULE_NAMES.elevenBack,
   bomber: RULE_NAMES.twelveBomber, ten: RULE_NAMES.tenDiscard, seven: RULE_NAMES.sevenPass, ...LOCK_NAMES,
   rank1: RANK_NAMES[0], rank2: RANK_NAMES[1], rank3: RANK_NAMES[2], rank4: RANK_NAMES[3],
 };
 /** しばったマーク（例 "HS"）を記号に */
 const marksOf = (suits: string) => suits.split('').map((x) => ({ S: '♠', H: '♥', D: '♦', C: '♣' })[x]).join('');
+const cardsKey = (cards: number[]) => [...cards].sort((a, b) => a - b).join(',');
+/** 検査用：出したカードと、場に描いたことのあるカード（対戦をまたいで数える）。出したのに一度も場に出なかったものを探す */
+const tableLog = { played: [] as string[], drawn: new Set<string>() };
 const NO_EFFECTS = { bomber: 0, sevenPass: 0, tenDiscard: 0, revolution: false, elevenBack: false, eightCut: false, skip: 0 };
 
 // ---------------- 画面を作る ----------------
@@ -453,8 +531,10 @@ export function startApp(root: HTMLElement) {
       scenario,
       // 場面を作ったあと、止めていた進行を動かす（演出の順番を確かめる検査用）
       unfreeze: () => { if (game) { game.frozen = false; game.advance(); } },
-      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide } : { kind: 'band', band: game.fx.band }),
+      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band } : { kind: game.fx.kind }),
       hand: () => game ? [...game.s.hands[0]] : [],
+      // 出したのに一度も場に描かれなかったカード（あれば不具合）と、出した回数
+      unseenPlays: () => ({ plays: tableLog.played.length, unseen: tableLog.played.filter((k) => !tableLog.drawn.has(k)) }),
       shownHand: () => [...document.querySelectorAll('.hand .card')].map((e) => Number((e as HTMLElement).dataset.arg)),
       legal: () => (game && game.s.phase === 'play' && game.s.turn === HUMAN ? listMoves(game.s, HUMAN).map((p) => p.cards) : []),
       state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, fx: !!game.fx, task: game.humanTask(), bomber: game.s.pendingBomber },
@@ -473,6 +553,10 @@ export function startApp(root: HTMLElement) {
     const g = game!;
     g.frozen = true;
     g.thinking = null;
+    // 始めに出た「第1回戦」の帯は消して、場面だけを見せる
+    g.fx = null;
+    g.fxQueue = [];
+    g.ghost = null;
     const s = g.s;
     const i14 = s.hands.findIndex((h) => h.length === 14);
     [s.hands[0], s.hands[i14]] = [s.hands[i14], s.hands[0]];
@@ -481,6 +565,25 @@ export function startApp(root: HTMLElement) {
       case 'hand':
         g.selected = new Set(s.hands[0].slice(0, 2));
         break;
+      case 'dim': {
+        // 場に5が1枚。手札の3・4（と5）は出せないので暗い
+        const five = s.hands.flat().find((c) => !s.hands[0].includes(c) && !isJoker(c) && rankOf(c) === 5) ?? cardId('S', 5);
+        s.hands = s.hands.map((h) => h.filter((c) => c !== five));
+        s.table = [{ player: 2, play: interpret([five])[0], effRank: 5, effSuitKey: suitOf(five) }];
+        Object.assign(s, { lastPlayer: 2, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'eight': case 'eightCpu': {
+        // 8切りの順番を確かめる：場に♠7（キャラ4）、出す人は♥8と♣3だけを持つ。eightCpu はキャラ2が出す
+        const who = name === 'eight' ? 0 : 1;
+        const [s7, h8, c3] = [cardId('S', 7), cardId('H', 8), cardId('C', 3)];
+        s.hands = s.hands.map((h) => h.filter((c) => c !== s7 && c !== h8 && c !== c3));
+        s.discard.push(...s.hands[who]);
+        s.hands[who] = [c3, h8];
+        s.table = [{ player: 3, play: interpret([s7])[0], effRank: 7, effSuitKey: 'S' }];
+        Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
       case 'table': {
         const stair = [5, 6, 7, 8, 9].map((r) => cardId('H', r));
         s.hands = s.hands.map((h) => h.filter((c) => !stair.includes(c)));
@@ -587,8 +690,8 @@ export function startApp(root: HTMLElement) {
         const b = /^band:(\w+):(\d)$/.exec(name);
         if (b) {
           const kind = b[1] as BandKind;
-          const label = BAND_NAMES[kind] + (kind === 'mark' || kind === 'geki' ? '<small>♥</small>' : '');
-          g.fx = { kind: 'band', band: kind, name: label, char: g.seats[Number(b[2])], pose: null };
+          const label = kind === 'round' ? '第1回戦' : BAND_NAMES[kind] + (kind === 'mark' || kind === 'geki' ? '<small>♥</small>' : '');
+          g.fx = { kind: 'band', band: kind, name: label, char: kind === 'round' ? null : g.seats[Number(b[2])], pose: null, ...(kind === 'round' ? { start: performance.now() - 500, hold: true } : {}) };
         }
         // 「move:動き:渡す人:受け取る人」（例 move:pass:1:3）で、一瞬見せるカードが動いている途中を出す
         const mv = /^move:(discard|give|pass):(\d):(\d)$/.exec(name);
@@ -781,13 +884,13 @@ function selectView(pick: number): string {
 /** カードの裏 */
 const CARD_BACK = '<div class="card big back"></div>';
 
-function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: boolean; big?: boolean } = {}): string {
+function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: boolean; dim?: boolean; big?: boolean } = {}): string {
   const joker = isJoker(id);
   const suit = suitOf(id);
   const red = suit === 'H' || suit === 'D';
   const rank = joker ? 'JK' : RANK_LABEL[rankOf(id)];
   const mark = joker ? '★' : { S: '♠', H: '♥', D: '♦', C: '♣' }[suit!];
-  const cls = `card ${red ? 'red' : ''} ${joker ? 'joker' : ''} ${opts.sel ? 'sel' : ''} ${opts.big ? 'big' : ''}`;
+  const cls = `card ${red ? 'red' : ''} ${joker ? 'joker' : ''} ${opts.sel ? 'sel' : ''} ${opts.dim ? 'dim' : ''} ${opts.big ? 'big' : ''}`;
   const inner = `<span class="c-rank">${rank}</span><span class="c-suit">${mark}</span><span class="c-center">${mark}</span>`;
   if (opts.act) {
     return `<button class="${cls}" data-act="card" data-arg="${id}" aria-label="${cardLabel(id)}" aria-pressed="${!!opts.sel}" ${opts.disabled ? 'disabled' : ''}>${inner}</button>`;
@@ -808,7 +911,12 @@ function handView(g: GameController, selectable: boolean): string {
   const rows = Math.max(short ? 3 : 4, Math.ceil(hand.length / cols));
   const style = `style="--cols:${cols}; --rows:${rows}"`;
   if (hand.length === 0) return `<div class="hand empty" ${style}><span>手札はありません</span></div>`;
-  return `<div class="hand ${cols === 6 ? 'wide' : ''}" ${style}>${hand.map((id) => cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable })).join('')}</div>`;
+  // 自分の番：出せる組み合わせに使えないカードは暗くして押せなくする。自分の番でないときは、見た目はそのままで押せない
+  const ok = g.pressableCards();
+  const face = (id: number) => (ok && selectable
+    ? cardFace(id, { act: true, sel: g.selected.has(id), disabled: !ok.has(id), dim: !ok.has(id) })
+    : cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable }));
+  return `<div class="hand ${cols === 6 ? 'wide' : ''}" ${style}>${hand.map(face).join('')}</div>`;
 }
 
 function flagsView(s: State): string {
@@ -846,7 +954,10 @@ function gameView(g: GameController): string {
 
   // 場：出したカードだけ（出した人の名前は出さない）
   const top = topEntry(s);
-  const center = top ? `<div class="table-cards">${top.play.cards.map((c) => cardFace(c, { big: true })).join('')}</div>` : '';
+  // ルール処理で流れたあとも、帯が終わるまでは出したカードを残す（g.ghost）
+  const shown = top ? top.play.cards : g.ghost;
+  if (shown) tableLog.drawn.add(cardsKey(shown));
+  const center = shown ? `<div class="table-cards">${shown.map((c) => cardFace(c, { big: true })).join('')}</div>` : '';
   // 一瞬見せるカード：表を見せてから捨てる・渡す動き。CPUどうしの7渡しは裏向きのまま動かす（動く先は art.ts の layoutFlash() が決める）
   const fl = g.flash;
   const flash = fl
@@ -973,10 +1084,14 @@ const PANEL_CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i clas
  */
 function fxView(fx: Fx): string {
   if (fx.kind === 'reveal') return revealView(fx);
-  const art = fx.pose !== null ? artImg(fx.char, fx.pose, 'fx-art') : '';
-  const icon = art ? '' : avatarSmall(fx.char);
+  // 出したカードを場に見せて待つ間は、幕を出さない
+  if (fx.kind === 'table' || fx.kind === 'unghost') return '';
+  const art = fx.pose !== null && fx.char ? artImg(fx.char, fx.pose, 'fx-art') : '';
+  const icon = art || !fx.char ? '' : avatarSmall(fx.char);
+  // 回戦の始めの帯は、左から入って右へ抜ける（全体の長さ --ms、描き直したときは --delay で途中から）
+  const round = fx.band === 'round' ? ` style="--ms: ${ROUND_MS}ms; --delay: -${Math.round(performance.now() - (fx.start ?? performance.now()))}ms"` : '';
   return `
-  <div class="fx ${art ? 'cutin' : 'band-only'}" data-act="fxSkip" role="status">
+  <div class="fx ${art ? 'cutin' : 'band-only'} ${fx.hold ? 'hold' : ''}" data-act="fxSkip" role="status"${round}>
     <span class="fx-hint">タップでとばす</span>
     <div class="fx-group">
       <div class="fxband ${fx.band} ${icon ? 'has-icon' : ''}">${icon}<span class="fx-name">${fx.name}</span></div>

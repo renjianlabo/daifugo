@@ -283,6 +283,16 @@ export function listMoves(s: State, player: number): Play[] {
   return enumeratePlays(s.hands[player], filter).filter((p) => canPlay(s, p));
 }
 
+/**
+ * 出せるカードの判定（画面とCPUの両方で使う）。今の場・ルールの状態で出せる出し方と、そのどれかに使えるカードを返す。
+ * 場の枚数・強さ・しばり（マーク・数・激）・革命・11バック・ジョーカー・階段・重ね数字は canPlay() と enumeratePlays() が見る。
+ * selected を渡すと、選んだカードを全部含む出し方だけにしぼる（cards は「選んだカードと一緒に出せるカード」と選んだカード）
+ */
+export function playableCards(s: State, player: number, selected: number[] = []): { plays: Play[]; cards: Set<number> } {
+  const plays = listMoves(s, player).filter((p) => selected.every((c) => p.cards.includes(c)));
+  return { plays, cards: new Set(plays.flatMap((p) => p.cards)) };
+}
+
 export function canPass(s: State, player: number): boolean {
   return s.phase === 'play' && s.turn === player;
 }
@@ -323,13 +333,14 @@ export function play(s: State, player: number, p: Play) {
   emit(s, { type: 'play', player, play: p });
   if (p.cards.some(isJoker)) emit(s, { type: 'joker', player });
 
-  if (prev) updateLocks(s, player, prev, s.table[s.table.length - 1], reversedBefore);
+  const raw = effectsOf(p);
+  const r = s.rules;
+  // 8切りで場が流れるときは、しばりを判定しない（8切りがオフなら今までどおり判定する。2026-10-30 ユーザー指示）
+  if (prev && !(r.eightCut && raw.eightCut)) updateLocks(s, player, prev, s.table[s.table.length - 1], reversedBefore);
 
   if (s.hands[player].length === 0) finishPlayer(s, player);
   if (checkRoundEnd(s)) return;
 
-  const raw = effectsOf(p);
-  const r = s.rules;
   const eff: Effects = {
     bomber: r.twelveBomber ? raw.bomber : 0,
     sevenPass: r.sevenPass ? raw.sevenPass : 0,
