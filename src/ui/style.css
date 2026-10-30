@@ -323,9 +323,9 @@ h1, p { margin: 0; }
 .flash {
   position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 8px;
   border-radius: inherit; background: rgba(36, 16, 32, 0.96); pointer-events: none;
-  animation: flash-bg 1.3s ease forwards; animation-delay: var(--delay, 0ms);
+  animation: flash-bg var(--ms, 1.3s) ease forwards; animation-delay: var(--delay, 0ms);
 }
-.flash .table-cards { animation: flash-none 1.3s ease forwards; animation-delay: var(--delay, 0ms); }
+.flash .table-cards { animation: flash-none var(--ms, 1.3s) ease forwards; animation-delay: var(--delay, 0ms); }
 .flash.discard .table-cards { animation-name: flash-discard; }
 .flash.give .table-cards { animation-name: flash-give; }
 .flash.pass { background: transparent; }
@@ -480,6 +480,29 @@ h1, p { margin: 0; }
 }
 @keyframes name-pop { from { scale: 0.7; opacity: 0; } to { scale: 1; opacity: 1; } }
 @keyframes fx-rise { from { transform: translateY(12%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+
+/* ---------- カードを配る：場のまん中の山札から1枚ずつ飛ばす。覆いは透明で、配っている間は下のものを押せない ---------- */
+.fx.deal { background: transparent; cursor: default; animation: none; }
+.fx.deal .card { --cw: var(--deal-cw, 44px); }
+.deal-deck, .deal-card { position: absolute; left: var(--deck-x, 50%); top: var(--deck-y, 30%); pointer-events: none; }
+.deal-deck { transform: translate(-50%, -50%); animation: deal-deck var(--ms) linear var(--delay, 0ms) both; }
+.deal-card { animation: deal-me var(--fly) ease-out var(--d, 0ms) both; }
+.deal-card.cpu { animation-name: deal-cpu; }
+.fx.deal.hold .deal-deck, .fx.deal.hold .deal-card { animation-play-state: paused; }
+/* 配っている間の手札：位置だけ取って見せない */
+.hand.dealing .card { visibility: hidden; }
+@keyframes deal-deck { 0%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes deal-me {
+  0% { opacity: 0; transform: translate(-50%, -50%); }
+  10% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%) translate(var(--tx, 0px), var(--ty, 0px)); }
+}
+@keyframes deal-cpu {
+  0% { opacity: 0; transform: translate(-50%, -50%); }
+  10% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--tx, 0px), var(--ty, 0px)) scale(0.5); }
+}
 
 /* ---------- タイトル ---------- */
 .title-screen .logo { position: relative; z-index: 1; flex: none; display: flex; flex-direction: column; align-items: center; padding: max(24px, 4vh) 16px 0; text-align: center; }

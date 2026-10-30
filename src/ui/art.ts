@@ -143,12 +143,34 @@ function layoutFlash(root: HTMLElement) {
   if (from) flash.style.cssText += `;--sx:${from[0]}px;--sy:${from[1]}px`;
 }
 
+/** 配るカードの位置：山札は場のまん中。自分のカードは手札の並ぶ位置へ、CPUのカードはアイコンへ（山札からのずれを --tx・--ty に入れる） */
+function layoutDeal(root: HTMLElement) {
+  const box = root.querySelector<HTMLElement>('.fx.deal');
+  const table = root.querySelector('.table');
+  if (!box || !table) return;
+  const o = box.getBoundingClientRect(), t = table.getBoundingClientRect();
+  const cx = t.left + t.width / 2, cy = t.top + t.height / 2;
+  box.style.setProperty('--deck-x', `${cx - o.left}px`);
+  box.style.setProperty('--deck-y', `${cy - o.top}px`);
+  const slots = [...root.querySelectorAll('.hand.dealing .card')];
+  if (slots[0]) box.style.setProperty('--deal-cw', `${slots[0].getBoundingClientRect().width}px`);
+  for (const card of box.querySelectorAll<HTMLElement>('.deal-card')) {
+    const seat = card.dataset.seat;
+    const el = seat === '0' ? slots[Number(card.dataset.slot)] : root.querySelector(`.opp[data-seat="${seat}"] .avatar`);
+    if (!el) continue;
+    const r = el.getBoundingClientRect();
+    card.style.setProperty('--tx', `${r.left + r.width / 2 - cx}px`);
+    card.style.setProperty('--ty', `${r.top + r.height / 2 - cy}px`);
+  }
+}
+
 /** 画面を描いたあとに呼ぶ。絵が読み込み前なら、読み込んだときに置く */
 export function layoutArts(root: HTMLElement) {
   fitBandName(root);
   // 明朝の書体があとから読み込まれると名前の幅が変わるので、読み込み後にもう一度合わせる
   document.fonts?.ready.then(() => fitBandName(root));
   layoutFlash(root);
+  layoutDeal(root);
   for (const img of root.querySelectorAll<HTMLImageElement>('img[data-head], img.fx-art')) {
     const place = () => {
       if (!img.isConnected || !img.naturalWidth) return;

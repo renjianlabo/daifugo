@@ -1,12 +1,12 @@
 // 画面（5章）。タイトル → 設定 → キャラ選択 → 対戦（3回戦） → 最終結果
 import { CHARACTERS, Character, characterById } from '../characters';
-import { RANK_LABEL, cardId, cardLabel, isJoker, rankOf, suitOf } from '../engine/cards';
+import { JOKER, RANK_LABEL, cardId, cardLabel, isJoker, rankOf, suitOf } from '../engine/cards';
 import { interpret } from '../engine/plays';
 import {
   GameEvent, POINTS, RANK_NAMES, RULE_NAMES, Rules, State, canPass, chooseBomber, chooseCards, currentRanks, findPlays, giveExchange,
   isActive, isReversed, listMoves, lockKind, newGame, nextRound, pass, play, playableCards, topEntry,
 } from '../engine/game';
-import { CpuOptions, LEVEL_NAMES, Level, PERSONALITY_WEIGHTS, cpuAct } from '../cpu/cpu';
+import { CpuOptions, LEVEL_NAMES, Level, PERSONALITY_WEIGHTS, STRONG_TIME_MS, cpuAct } from '../cpu/cpu';
 import { bigArt, layoutArts } from './art';
 import { FxPose, artImg, avatarSmall, preloadArt } from './avatar';
 import { Settings, defaultSettings, loadSettings, saveSettings } from './storage';
@@ -22,6 +22,10 @@ const TABLE_MS = 800;
 const BAND_MS = 1000;
 /** 回戦の始めの帯（「第1回戦」）の長さ。左から入って、止まって、右へ抜ける */
 const ROUND_MS = 1500;
+/** カードを配る演出の全体の長さ（1枚ずつ DEAL_FLY_MS かけて飛び、最後の1枚が届いたあと少し待つ） */
+const DEAL_MS = 2600;
+const DEAL_FLY_MS = 350;
+const DEAL_CARDS = 53;
 /** 12ボンバーで捨てられるカードを見せる長さ（表に出てから消えるまで） */
 const BOMBER_MS = 2000;
 /** 出せる手がないとき、自動でパスするまでの間（パスしたことが分かるように少し待つ） */
@@ -80,14 +84,16 @@ interface RevealFx { kind: 'reveal'; cards: number[]; text: string; move: 'disca
  */
 interface TableFx { kind: 'table'; ms: number; start?: number }
 interface UnghostFx { kind: 'unghost'; start?: number }
-type Fx = BandFx | RevealFx | TableFx | UnghostFx;
+/** 山札から全員へ1枚ずつ配る。first は最初に配られる人（53枚なので14枚になる人）。とばせない。hold は検査用（途中で止めて撮る） */
+interface DealFx { kind: 'deal'; first: number; ms: number; start?: number; hold?: boolean }
+type Fx = BandFx | RevealFx | TableFx | UnghostFx | DealFx;
 
 /**
  * 出来事のカードを一瞬見せる。move は、そのあとの動き：
  * discard＝捨てられる（12ボンバー・10捨て）、give＝表のまま受け取る人へ（7渡しで自分が渡す・受け取る）、
  * pass＝裏向きのまま渡す人から受け取る人へ（CPUどうしの7渡し）、none＝消えるだけ（カード交換）
  */
-interface Flash { cards: number[]; start: number; move: 'discard' | 'give' | 'pass' | 'none'; from: number | null; to: number | null }
+interface Flash { cards: number[]; start: number; move: 'discard' | 'give' | 'pass' | 'none'; from: number | null; to: number | null; ms?: number }
 
 /** 人間がカードを選んで手放す作業（カード交換・7渡し・10捨て）。count はちょうど選ぶ枚数 */
 interface HandTask { kind: 'exchange' | 'sevenPass' | 'tenDiscard'; to: number | null; count: number }
@@ -108,8 +114,15 @@ class GameController {
    * 8切りの順番：①場に出したカードを見せる（TABLE_MS）→ ②8切りの帯 → ③場を流す（unghost）
    */
   ghost: number[] | null = null;
+  /** 回戦の始めの帯が出てから配り終わるまで。手札を隠し、CPUの枚数を0から数える */
+  dealing = false;
   thinking: number | null = null;
   quitConfirm = false;
+  /**
+   * 早送り（自分が上がったあとに押せる）。オンの間は帯・絵の演出を飛ばし（順位のカットインだけ通常どおり）、CPUの待ち時間とカードの動きを2倍速にする。
+   * 回戦が終わったら自動でオフに戻す
+   */
+  ffwd = false;
   /** 選択の小窓（12ボンバーの数字）を閉じて、盤面を見ている途中。見るだけで操作はできない。選んだ内容はそのまま残す */
   peek = false;
   /** 自動パスを待っている途中 */
@@ -167,13 +180,14 @@ class GameController {
   }
 
   private showFlash(f: Omit<Flash, 'start'>) {
-    const flash = { ...f, start: performance.now() };
+    const ms = FLASH_MS / this.speed;
+    const flash = { ...f, start: performance.now(), ms };
     this.flash = flash;
     this.later(() => {
       if (this.flash !== flash) return;
       this.flash = null;
       this.onChange();
-    }, this.fast ? 30 : FLASH_MS);
+    }, this.fast ? 30 : ms);
   }
 
   /** 最後に出したカード（場に残しておくときに使う） */
@@ -209,7 +223,12 @@ class GameController {
    */
   private describe(e: GameEvent): Omit<Flash, 'start'> | null {
     switch (e.type) {
-      case 'roundStart': this.fxQueue.push({ kind: 'band', band: 'round', name: `第${e.round}回戦`, char: null, pose: null }); break;
+      // ①回戦の帯 → ②カードを配る → ③手札を並べる（カード交換はそのあと）
+      case 'roundStart':
+        this.dealing = true;
+        this.fxQueue.push({ kind: 'band', band: 'round', name: `第${e.round}回戦`, char: null, pose: null });
+        this.fxQueue.push({ kind: 'deal', first: Math.max(0, this.s.hands.findIndex((h) => h.length === 14)), ms: DEAL_MS });
+        break;
       case 'play':
         this.actor = e.player;
         this.skipShown = false;
@@ -244,28 +263,57 @@ class GameController {
     return null;
   }
 
+  /** 2倍速のときは2。CPUの待ち時間とカードの動きの長さを割る */
+  private get speed(): number {
+    return this.ffwd ? 2 : 1;
+  }
+
+  /** 次に見せる演出を取り出す。早送り中は、順位のカットイン以外の帯を飛ばし、カードを見せる時間を半分にする */
+  private nextFx(): Fx | null {
+    while (this.fxQueue.length) {
+      const fx = this.fxQueue.shift()!;
+      // 場に残しておいたカードを消す（帯が終わった）
+      if (fx.kind === 'unghost') {
+        this.ghost = null;
+        continue;
+      }
+      if (this.ffwd) {
+        if (fx.kind === 'band' && !fx.band.startsWith('rank')) continue;
+        if (fx.kind === 'reveal' || fx.kind === 'table') fx.ms /= 2;
+      }
+      return fx;
+    }
+    return null;
+  }
+
+  /** 早送りのオン・オフ。押せるのは自分が上がってから、回戦が終わるまで */
+  toggleFfwd() {
+    if (isActive(this.s, HUMAN) || this.s.phase === 'roundEnd' || this.s.phase === 'gameEnd') return;
+    this.ffwd = !this.ffwd;
+    this.onChange();
+  }
+
   /** 状態が変わるたびに呼ぶ。演出・CPUの番・人間の入力待ちを振り分ける */
   advance(): void {
     if (!this.alive) return;
     this.consumeEvents();
     if (this.frozen || this.fx) return this.onChange();
-    // 場に残しておいたカードを消す（帯が終わった）
-    while (this.fxQueue[0]?.kind === 'unghost') {
-      this.fxQueue.shift();
-      this.ghost = null;
-    }
-    if (this.fxQueue.length) {
-      const fx = this.fxQueue.shift()!;
+    const fx = this.nextFx();
+    if (fx) {
       fx.start = performance.now();
       this.fx = fx;
       this.onChange();
-      const ms = fx.kind === 'reveal' || fx.kind === 'table' ? fx.ms : fx.kind === 'unghost' ? 0 : fx.band === 'round' ? ROUND_MS : fx.pose !== null ? FX_MS : BAND_MS;
+      const ms = fx.kind === 'reveal' || fx.kind === 'table' || fx.kind === 'deal' ? fx.ms : fx.kind === 'unghost' ? 0 : fx.band === 'round' ? ROUND_MS : fx.pose !== null ? FX_MS : BAND_MS;
       this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : ms);
       return;
     }
     const s = this.s;
     if (s.phase === 'gameEnd') return this.onFinish();
-    if (s.phase === 'roundEnd') return this.onChange();
+    if (s.phase === 'roundEnd') {
+      // 回戦が終わったら早送りをオフに戻す（順位のカットインを見せ終わったあと）
+      this.ffwd = false;
+      return this.onChange();
+    }
     if (s.phase === 'exchange') {
       for (const t of [...s.pendingExchange]) {
         if (t.from === HUMAN) continue;
@@ -310,11 +358,12 @@ class GameController {
   private cpuTurn(p: number) {
     this.thinking = p;
     this.onChange();
-    const delay = this.fast ? 0 : 500 + Math.random() * 1000;
+    const delay = this.fast ? 0 : (500 + Math.random() * 1000) / this.speed;
     const start = Date.now();
     this.later(() => {
       if (this.frozen) return;
-      const a = cpuAct(this.s, p, this.opts[p], this.rng);
+      // 早送り中は、つよいCPUの考える時間の上限も半分にする
+      const a = cpuAct(this.s, p, this.ffwd ? { ...this.opts[p], timeLimitMs: STRONG_TIME_MS / 2 } : this.opts[p], this.rng);
       const wait = Math.max(0, delay - (Date.now() - start));
       this.later(() => {
         if (this.frozen) return;
@@ -330,6 +379,7 @@ class GameController {
 
   skipFx() {
     if (!this.fx) return;
+    if (this.fx.kind === 'deal') this.dealing = false;
     this.fx = null;
     this.advance();
   }
@@ -518,10 +568,22 @@ export function startApp(root: HTMLElement) {
       case 'peek': if (game) { game.peek = true; render(); } break;
       case 'peekBack': if (game) { game.peek = false; render(); } break;
       case 'nextRound': game?.nextRound(); break;
+      case 'ffwd': game?.toggleFfwd(); break;
       case 'quit': if (game) { game.quitConfirm = true; render(); } break;
       case 'quitNo': if (game) { game.quitConfirm = false; render(); } break;
       case 'quitYes': game?.stop(); game = null; go('title'); break;
     }
+  });
+
+  // 配ったカードがCPUのアイコンに届いたら、その人の枚数を1つ増やす（画面を描き直さず、数字だけ変える）
+  root.addEventListener('animationend', (ev) => {
+    if (ev.animationName !== 'deal-cpu') return;
+    const seat = (ev.target as HTMLElement).dataset.seat;
+    const count = root.querySelector<HTMLElement>(`.opp[data-seat="${seat}"] .opp-count`);
+    if (!count) return;
+    const n = Number(count.dataset.count) + 1;
+    count.dataset.count = String(n);
+    count.textContent = `${n}枚`;
   });
 
   // 検査用（開発サーバーのときだけ）：決まった場面を作る・待ち時間をなくす
@@ -537,7 +599,7 @@ export function startApp(root: HTMLElement) {
       unseenPlays: () => ({ plays: tableLog.played.length, unseen: tableLog.played.filter((k) => !tableLog.drawn.has(k)) }),
       shownHand: () => [...document.querySelectorAll('.hand .card')].map((e) => Number((e as HTMLElement).dataset.arg)),
       legal: () => (game && game.s.phase === 'play' && game.s.turn === HUMAN ? listMoves(game.s, HUMAN).map((p) => p.cards) : []),
-      state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, fx: !!game.fx, task: game.humanTask(), bomber: game.s.pendingBomber },
+      state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, fx: !!game.fx, ffwd: game.ffwd, task: game.humanTask(), bomber: game.s.pendingBomber },
     };
   }
 
@@ -557,6 +619,7 @@ export function startApp(root: HTMLElement) {
     g.fx = null;
     g.fxQueue = [];
     g.ghost = null;
+    g.dealing = false;
     const s = g.s;
     const i14 = s.hands.findIndex((h) => h.length === 14);
     [s.hands[0], s.hands[i14]] = [s.hands[i14], s.hands[0]];
@@ -584,6 +647,25 @@ export function startApp(root: HTMLElement) {
         Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
         break;
       }
+      case 'deal':
+        // カードを配っている途中（半分くらい配ったところで止めて撮る）
+        g.dealing = true;
+        g.fx = { kind: 'deal', first: 0, ms: DEAL_MS, start: performance.now() - DEAL_MS / 2, hold: true };
+        break;
+      case 'ffwd': case 'ffwdOn': case 'ffwdRun': {
+        // 自分が1位で上がったあと。ffwdRun は、3人のCPUが8・ジョーカー・Jなどを持って最後まで進む場面
+        s.discard.push(...s.hands[0]);
+        s.hands[0] = [];
+        s.finished = [0];
+        s.turn = 1;
+        g.ffwd = name === 'ffwdOn';
+        if (name === 'ffwdRun') {
+          const hands = [['S', 8], ['H', 3], ['D', 9], ['S', 3], ['D', 4], ['H', 11], ['C', 6], ['S', 5], ['C', 10], ['D', 12], ['H', 7]] as const;
+          const pick = hands.map(([x, r]) => cardId(x, r));
+          s.hands = [[], [pick[0], pick[1], pick[2], pick[9]], [JOKER, pick[3], pick[4], pick[10]], [pick[5], pick[6], pick[7], pick[8]]];
+        }
+        break;
+      }
       case 'table': {
         const stair = [5, 6, 7, 8, 9].map((r) => cardId('H', r));
         s.hands = s.hands.map((h) => h.filter((c) => !stair.includes(c)));
@@ -598,6 +680,8 @@ export function startApp(root: HTMLElement) {
         Object.assign(s, { phase: 'roundEnd', prevRanks: [1, 4, 2, 3], roundRanks: [[1, 4, 2, 3]], scores: [3, 0, 2, 1], round: 1 });
         nextRound(s);
         for (const t of [...s.pendingExchange]) if (t.from !== HUMAN) giveExchange(s, t.from, s.hands[t.from].slice(0, t.count));
+        // 交換を選ぶ場面だけを見せる（回戦の帯と配る演出は出さない）
+        g.eventIdx = s.events.length;
         break;
       case 'bomber':
         s.phase = 'bomber';
@@ -906,6 +990,8 @@ function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: b
 function handView(g: GameController, selectable: boolean): string {
   const hidden = g.hiddenCards();
   const hand = g.s.hands[HUMAN].filter((c) => !hidden.has(c));
+  // 配っている間：カードは置いておくが見せない（配るカードが飛んでいく先の位置に使う）
+  const dealing = g.dealing ? 'dealing' : '';
   const short = window.matchMedia('(max-height: 760px)').matches;
   const cols = short ? (hand.length > 15 ? 6 : 5) : 4;
   const rows = Math.max(short ? 3 : 4, Math.ceil(hand.length / cols));
@@ -916,7 +1002,7 @@ function handView(g: GameController, selectable: boolean): string {
   const face = (id: number) => (ok && selectable
     ? cardFace(id, { act: true, sel: g.selected.has(id), disabled: !ok.has(id), dim: !ok.has(id) })
     : cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable }));
-  return `<div class="hand ${cols === 6 ? 'wide' : ''}" ${style}>${hand.map(face).join('')}</div>`;
+  return `<div class="hand ${cols === 6 ? 'wide' : ''} ${dealing}" ${style}>${hand.map(face).join('')}</div>`;
 }
 
 function flagsView(s: State): string {
@@ -944,10 +1030,10 @@ function gameView(g: GameController): string {
     const passed = !done && s.phase === 'play' && s.passed[i] && !isTurn(i);
     const status = done ? `<span class="rank-tag">${RANK_NAMES[ranks[i] - 1] ?? ''}</span>` : passed ? '<span class="pass-tag">パス</span>' : '';
     return `
-    <div class="opp ${!done && isTurn(i) ? 'turn' : ''} ${passed ? 'passed' : ''}" data-seat="${i}">
+    <div class="opp ${!done && !g.dealing && isTurn(i) ? 'turn' : ''} ${passed ? 'passed' : ''}" data-seat="${i}">
       ${avatarSmall(g.seats[i])}
       <span class="opp-name">${g.seats[i].name}</span>
-      <span class="opp-count">${s.hands[i].length}枚</span>
+      <span class="opp-count" data-count="0">${g.dealing ? 0 : s.hands[i].length}枚</span>
       <span class="opp-status">${status}</span>
     </div>`;
   };
@@ -961,7 +1047,7 @@ function gameView(g: GameController): string {
   // 一瞬見せるカード：表を見せてから捨てる・渡す動き。CPUどうしの7渡しは裏向きのまま動かす（動く先は art.ts の layoutFlash() が決める）
   const fl = g.flash;
   const flash = fl
-    ? `<div class="flash ${fl.move}" style="--delay: -${Math.round(performance.now() - fl.start)}ms" data-from="${fl.from ?? ''}" data-to="${fl.to ?? ''}" aria-hidden="true"><div class="table-cards">${fl.cards.map((c) => (fl.move === 'pass' ? CARD_BACK : cardFace(c, { big: true }))).join('')}</div></div>`
+    ? `<div class="flash ${fl.move}" style="--delay: -${Math.round(performance.now() - fl.start)}ms; --ms: ${fl.ms ?? FLASH_MS}ms" data-from="${fl.from ?? ''}" data-to="${fl.to ?? ''}" aria-hidden="true"><div class="table-cards">${fl.cards.map((c) => (fl.move === 'pass' ? CARD_BACK : cardFace(c, { big: true }))).join('')}</div></div>`
     : '';
 
   // 盤面を見ている途中：選択に戻るボタンだけ（見るだけで操作はできない）
@@ -972,6 +1058,9 @@ function gameView(g: GameController): string {
   } else if (task) {
     const verb = task.kind === 'tenDiscard' ? '捨てる' : `${g.name(task.to!)}に渡す`;
     actions = `<button class="btn primary give" data-act="give" ${g.selected.size === task.count ? '' : 'disabled'}>${verb}（${g.selected.size}/${task.count}枚）</button>`;
+  } else if (!isActive(s, HUMAN)) {
+    // 自分が上がったあとは、パス・出すの代わりに早送り。オンの間は金色で「早送り中」
+    actions = `<button class="btn ${g.ffwd ? 'primary' : 'ghost'} give" data-act="ffwd" aria-pressed="${g.ffwd}" ${s.phase === 'roundEnd' || s.phase === 'gameEnd' ? 'disabled' : ''}>${g.ffwd ? '早送り中' : '早送り'}</button>`;
   } else {
     actions = `
       <button class="btn ghost" data-act="pass" ${myTurn && canPass(s, HUMAN) ? '' : 'disabled'}>パス</button>
@@ -1086,6 +1175,7 @@ function fxView(fx: Fx): string {
   if (fx.kind === 'reveal') return revealView(fx);
   // 出したカードを場に見せて待つ間は、幕を出さない
   if (fx.kind === 'table' || fx.kind === 'unghost') return '';
+  if (fx.kind === 'deal') return dealView(fx);
   const art = fx.pose !== null && fx.char ? artImg(fx.char, fx.pose, 'fx-art') : '';
   const icon = art || !fx.char ? '' : avatarSmall(fx.char);
   // 回戦の始めの帯は、左から入って右へ抜ける（全体の長さ --ms、描き直したときは --delay で途中から）
@@ -1097,6 +1187,26 @@ function fxView(fx: Fx): string {
       <div class="fxband ${fx.band} ${icon ? 'has-icon' : ''}">${icon}<span class="fx-name">${fx.name}</span></div>
       ${art ? `<div class="fx-panel"><div class="art-clip">${art}</div>${PANEL_CORNERS}</div>` : ''}
     </div>
+  </div>`;
+}
+
+/**
+ * カードを配る：場のまん中の山札から、最初の人から順に1枚ずつ飛ばす。自分のカードは手札の並ぶ位置へ、CPUのカードはアイコンへ（位置は art.ts の layoutDeal() が決める）。
+ * 画面全体を覆って、配っている間は何も押せない。描き直しても動きが続くよう、始まってからの時間を引いた遅れで動かす
+ */
+function dealView(fx: DealFx): string {
+  const elapsed = Math.round(performance.now() - (fx.start ?? performance.now()));
+  const step = (fx.ms - DEAL_FLY_MS - 150) / (DEAL_CARDS - 1);
+  const slots = [0, 0, 0, 0];
+  const cards = Array.from({ length: DEAL_CARDS }, (_, k) => {
+    const seat = (fx.first + k) % 4;
+    const slot = slots[seat]++;
+    return `<div class="deal-card ${seat === HUMAN ? 'me' : 'cpu'}" data-seat="${seat}" data-slot="${slot}" style="--d: ${Math.round(k * step) - elapsed}ms">${CARD_BACK}</div>`;
+  }).join('');
+  return `
+  <div class="fx deal ${fx.hold ? 'hold' : ''}" role="status" aria-label="カードを配っています" style="--ms: ${fx.ms}ms; --fly: ${DEAL_FLY_MS}ms; --delay: -${elapsed}ms">
+    <div class="deal-deck">${CARD_BACK}</div>
+    ${cards}
   </div>`;
 }
 
