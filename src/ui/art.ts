@@ -14,11 +14,11 @@ const HEAD: Record<number, [number, number, number, number]> = {
   3: [0.30, 0.07, 0.68, 0.37],
   4: [0.33, 0.07, 0.69, 0.40],
 };
-/** トランプを持った立ち絵（cards.png・1038×1515）の頭の範囲。値は透明でない画素の幅と目で測ったもの（2026-10-30） */
+/** トランプを持った立ち絵（cards.png・1038×1515。チャットの元の絵）の頭の範囲。値は透明でない画素の幅と目で測ったもの（2026-10-30。キャラ2・3は元の絵に入れ替えたあと測り直した） */
 const HEAD_CARDS: Record<number, [number, number, number, number]> = {
   1: [0.27, 0.01, 0.71, 0.32],
-  2: [0.25, 0.01, 0.73, 0.34],
-  3: [0.33, 0.02, 0.71, 0.26],
+  2: [0.25, 0.01, 0.73, 0.35],
+  3: [0.34, 0.02, 0.71, 0.28],
   4: [0.31, 0.05, 0.72, 0.30],
 };
 /** 測っていない絵のときの大まかな範囲 */
@@ -119,7 +119,15 @@ function fitBandName(root: HTMLElement) {
  * 場のまん中からのずれを --tx・--ty（動く先）と --sx・--sy（動き始め）に入れる
  */
 function layoutFlash(root: HTMLElement) {
-  const flash = root.querySelector<HTMLElement>('.flash');
+  // 12ボンバー・カード交換で、ゲームを止めて見せるカード（演出の層）は、場と同じ位置・大きさに置く
+  const reveal = root.querySelector<HTMLElement>('.reveal-box');
+  const table = root.querySelector('.table');
+  if (reveal && table) {
+    const t = table.getBoundingClientRect(), o = reveal.offsetParent!.getBoundingClientRect();
+    // 高さは場以上（12ボンバーの短い文が入るように）。上下のまん中を場のまん中にそろえる
+    Object.assign(reveal.style, { left: `${t.left - o.left}px`, top: `${t.top - o.top + t.height / 2}px`, width: `${t.width}px`, minHeight: `${t.height}px`, translate: '0 -50%' });
+  }
+  const flash = root.querySelector<HTMLElement>('.flash') ?? reveal;
   if (!flash) return;
   const box = flash.getBoundingClientRect();
   const cx = box.left + box.width / 2, cy = box.top + box.height / 2;

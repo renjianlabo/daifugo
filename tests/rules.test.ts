@@ -423,17 +423,20 @@ describe('回の流れ・交換・都落ち・点数', () => {
     nextRound(s);
     expect(s.round).toBe(2);
     expect(s.phase).toBe('exchange');
-    expect(s.hands[2]).toHaveLength(s.hands[2].length);
-    const ex = s.events.filter((e) => e.type === 'exchange');
-    expect(ex).toHaveLength(2);
-    // 大貧民(1)→大富豪(2) 一番強い2枚
-    const strong = (ex[0] as { cards: number[] }).cards;
-    expect(strong).toHaveLength(2);
-    const maxRank = Math.max(...s.hands[1].map(rankOf));
-    expect(Math.min(...strong.map(rankOf))).toBeGreaterThanOrEqual(maxRank);
+    // 先に大富豪・富豪が選んで渡す。それまでは交換が起きない
+    expect(s.events.filter((e) => e.type === 'exchange')).toHaveLength(0);
     expect(listMoves(s, s.turn)).toHaveLength(0);
-    giveExchange(s, 2, s.hands[2].slice(0, 2));
+    const give = s.hands[2].slice(0, 2);
+    giveExchange(s, 2, give);
     expect(s.phase).toBe('exchange');
+    const ex = s.events.filter((e) => e.type === 'exchange') as { from: number; to: number; cards: number[] }[];
+    // 大富豪(2)→大貧民(1) が先、そのあと大貧民(1)→大富豪(2) 一番強い2枚（受け取ったカードは渡し返さない）
+    expect(ex.map((e) => [e.from, e.to])).toEqual([[2, 1], [1, 2]]);
+    const strong = ex[1].cards;
+    expect(strong).toHaveLength(2);
+    expect(strong.some((c) => give.includes(c))).toBe(false);
+    const maxRank = Math.max(...s.hands[1].filter((c) => !give.includes(c)).map(rankOf));
+    expect(Math.min(...strong.map(rankOf))).toBeGreaterThanOrEqual(maxRank);
     giveExchange(s, 0, s.hands[0].slice(0, 1));
     expect(s.phase).toBe('play');
     expect(s.turn).toBe(1);

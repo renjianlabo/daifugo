@@ -6,6 +6,7 @@
 //   円の縁までの距離を左右でそろえる（ユーザー指示 2026-10-29。顔・鼻の位置はキャラごとに少しずれてよい）
 //   見本（1つ前のキャラ1・キャラ2のアイコン）と並べて比べる
 // 使い方：開発サーバー（npm run dev）を動かした状態で `node scripts/make-icons.mjs`
+// 1人だけ作るとき：`ONLY=chara2 node scripts/make-icons.mjs`（そのキャラの icon_game.png だけを書き、一覧画像は作らない）
 // 元の icon.png・立ち絵は変えない。結果は assets/characters/<フォルダ>/icon_game.png と 確認用/アイコン一覧_補助線あり.png・_補助線なし.png
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
@@ -24,7 +25,8 @@ const HEAD_AT = 0.2;
 // 髪のてっぺんと、頭の左右の端は、透明でない画素から機械で探す（顔の輪郭は前髪で隠れて取り違えやすいので使わない）
 const CHARS = [
   { name: 'キャラ1', dir: 'chara1', src: 'icon.png', chin: 197, nose: 133 },
-  { name: 'キャラ2', dir: 'chara2', src: 'icon.png', chin: 204, nose: 132 },
+  // キャラ2の icon.png は2026-10-30にチャットの元PNG（1254×1254）に入れ替えた（ユーザー指示）。あご・鼻はその絵で測った値
+  { name: 'キャラ2', dir: 'chara2', src: 'icon.png', chin: 790, nose: 647 },
   { name: 'キャラ3', dir: 'chara3', src: 'icon.png', chin: 157, nose: 122 },
   // 金髪キャラは今の icon.png に頭のてっぺんが入っていないので、アイコンの元になった2位の絵から切り出す
   { name: 'キャラ4', dir: 'blonde-tomboy', src: 'rank2.png', chin: 405, nose: 496 },
@@ -91,7 +93,8 @@ const topReach = (dataUrl) => page.evaluate(async (dataUrl) => {
   return far;
 }, dataUrl);
 
-for (const c of CHARS) {
+const ONLY = process.env.ONLY;
+for (const c of CHARS.filter((x) => !ONLY || x.dir === ONLY)) {
   Object.assign(c, await measure(c));
   const side = (c.chin - c.top) / (CHIN - TOP);
   // 頭の左右の端の中間を円のまん中にする（＝頭の左右の端から円の縁までの距離が左右で同じ）
@@ -114,6 +117,10 @@ for (const c of CHARS) {
   const out = path.resolve('assets/characters', c.dir, 'icon_game.png');
   fs.writeFileSync(out, Buffer.from(c.data.split(',')[1], 'base64'));
   console.log(`${c.name}: 髪のてっぺん ${c.top}px・あご ${c.chin}px${c.shift ? `（頭の上の髪を円に収めるため ${(c.shift * 100).toFixed(2)}% 下へずらした）` : ''} → ${c.src} の (${r.x.toFixed(1)}, ${r.y.toFixed(1)}) から ${side.toFixed(1)}px 四方。頭の左右の端から縁まで 左${(c.headLAt * 100).toFixed(1)}%・右${((1 - c.headRAt) * 100).toFixed(1)}%。鼻 ${(c.noseAt * 100).toFixed(1)}%（参考）。頭の上の髪は中心から ${(c.reach * 100).toFixed(1)}%（ふちの線の内側は ${((0.5 - RING) * 100).toFixed(1)}% まで）→ ${path.relative(process.cwd(), out)}（${fs.statSync(out).size} バイト）`);
+}
+if (ONLY) {
+  await browser.close();
+  process.exit(0);
 }
 for (const s of SAMPLES) {
   const side = (s.chin - s.top) / (s.chinAt - s.topAt);
