@@ -12,12 +12,12 @@ const SIZES = [
   [430, 932],
   [1280, 800],
 ];
-const SCENES = ['hand', 'dim', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
+const SCENES = ['deal', 'hand', 'dim', 'ffwd', 'ffwdOn', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
   'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1', 'band:round:0',
   'roundEnd', 'quit', 'final'];
 const SCENE_NAMES = {
   title: 'タイトル', settings: '設定（カード）', settings2: '設定（革命・しばり）', settings3: '設定（そのほか）', select: 'キャラ選択',
-  hand: '対戦（手札14枚・2枚選択）', dim: '対戦（場に5が1枚。出せないカードは暗い）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
+  deal: 'カードを配っている途中', hand: '対戦（手札14枚・2枚選択）', dim: '対戦（場に5が1枚。出せないカードは暗い）', ffwd: '自分が上がったあと（早送りオフ）', ffwdOn: '自分が上がったあと（早送りオン）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
   bomber: '12ボンバー', peek: '12ボンバー（盤面を見る）', bomberReveal: '12ボンバー（捨てられるカードと「2を選択」）', exchangeReveal: 'カード交換（自分が渡すカード）', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
   'move:give:0:1': '7渡し（自分→キャラ2。表のまま動く途中）', 'move:pass:1:3': '7渡し（キャラ2→キャラ4。裏向きのまま動く途中）',
   'band:eight:1': '帯：8切り', 'band:five:2': '帯：5スキップ', 'band:eleven:3': '帯：11バック', 'band:bomber:0': '帯：12ボンバー', 'band:ten:1': '帯：10捨て',
@@ -295,7 +295,7 @@ async function screensFor(browser, w, h) {
     await page.waitForTimeout(150);
     await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {});
     // 演出の絵・背景が出てくる動きが終わってから撮る（一瞬表示するカード・ゲームを止めて見せるカードは途中のまま）
-    await page.evaluate(() => Promise.all([...document.querySelectorAll('.fx:not(.reveal), .fx:not(.reveal) *')].flatMap((e) => e.getAnimations().map((a) => a.finished)))).catch(() => {});
+    await page.evaluate(() => Promise.all([...document.querySelectorAll('.fx:not(.reveal):not(.deal), .fx:not(.reveal):not(.deal) *')].flatMap((e) => e.getAnimations().map((a) => a.finished)))).catch(() => {});
     await shot(page, w, sc);
   }
   // 4人の絵すべて（決めポーズ・1〜4位）を演出に出し、切れ目が画面の下端にあるかを確かめる（撮影はしない）
@@ -426,6 +426,130 @@ async function eightOrder(browser) {
     results.push(`${where}：${ok ? '合格' : '不合格'}（${text}）`);
   }
   return results;
+}
+
+/**
+ * 早送り（2026-10-30 ユーザー指示）：自分が上がったあと、オフとオンで同じ場面を最後まで進めて比べる。
+ * オンでは順位のカットインだけが通常の長さで出て、CPUの待ち時間が半分。回戦が終わるとオフに戻り、次の回戦は帯から始まる
+ */
+async function ffwdCheck(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  const where = '早送り';
+  const run = (on) => page.evaluate(async (on) => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    window.__daifugo.scenario('ffwdRun');
+    await w(50);
+    const btn = () => document.querySelector('[data-act=ffwd]');
+    const before = btn()?.textContent;
+    if (on) btn().click();
+    const label = btn()?.textContent;
+    const pressed = btn()?.getAttribute('aria-pressed');
+    // CPUの待ち時間を決まった長さにする（通常1000ms、2倍速で500ms）
+    const random = Math.random;
+    Math.random = () => 0.5;
+    window.__daifugo.unfreeze();
+    const t0 = performance.now();
+    const bands = [];
+    let cur = null;
+    let firstPlay = null;
+    const flash = [];
+    while (performance.now() - t0 < 40000) {
+      const st = window.__daifugo.state();
+      if (firstPlay === null && st.turn !== 1) firstPlay = Math.round(performance.now() - t0);
+      const f = document.querySelector('.flash');
+      if (f) flash.push(f.style.getPropertyValue('--ms'));
+      const name = document.querySelector('.fxband .fx-name')?.textContent ?? null;
+      if (name !== cur) {
+        if (cur) bands[bands.length - 1].ms = Math.round(performance.now() - bands[bands.length - 1].t);
+        if (name) bands.push({ name, t: performance.now() });
+        cur = name;
+      }
+      if (document.querySelector('[data-act=nextRound]')) break;
+      await w(10);
+    }
+    Math.random = random;
+    return { before, label, pressed, firstPlay, total: Math.round(performance.now() - t0), bands: bands.map((b) => [b.name, b.ms]), flash: [...new Set(flash)], after: window.__daifugo.state().ffwd };
+  }, on);
+  const off = await run(false);
+  const on = await run(true);
+  const RANKS = ['大富豪', '富豪', '貧民', '大貧民'];
+  const onOther = on.bands.filter(([n]) => !RANKS.includes(n));
+  const onRanks = on.bands.filter(([n]) => RANKS.includes(n));
+  if (on.before !== '早送り' || on.label !== '早送り中' || on.pressed !== 'true') problems.push({ item: 'ffwd', where, detail: `ボタンの表示：${on.before} → ${on.label}（${on.pressed}）` });
+  if (onOther.length) problems.push({ item: 'ffwd', where, detail: `早送り中に帯が出た：${onOther.map(([n]) => n).join('、')}` });
+  if (onRanks.length < 3 || onRanks.some(([, ms]) => ms < 1100)) problems.push({ item: 'ffwd', where, detail: `順位のカットインが通常の長さで出ていない：${JSON.stringify(onRanks)}` });
+  if (on.firstPlay > off.firstPlay * 0.7) problems.push({ item: 'ffwd', where, detail: `CPUの待ち時間が2倍速になっていない：通常${off.firstPlay}ms・早送り${on.firstPlay}ms` });
+  if (on.after) problems.push({ item: 'ffwd', where, detail: '回戦が終わっても早送りがオフに戻らない' });
+  // 次の回戦は、早送りなしで帯から始まる
+  await page.locator('[data-act=nextRound]').click();
+  await page.waitForTimeout(100);
+  const next = await page.evaluate(() => ({ band: document.querySelector('.fxband .fx-name')?.textContent, ffwd: window.__daifugo.state().ffwd }));
+  // 次の回戦も、帯のあとに配る
+  if (!(await page.locator('.fx.deal').waitFor({ timeout: 3000 }).then(() => true).catch(() => false))) problems.push({ item: 'ffwd', where, detail: '次の回戦でカードを配る演出が出ない' });
+  if (next.ffwd || !/回戦/.test(next.band ?? '')) problems.push({ item: 'ffwd', where, detail: `次の回戦の始まり：${JSON.stringify(next)}` });
+  await page.close();
+  return { off, on, next };
+}
+
+/**
+ * 配る演出（2026-10-30 ユーザー指示）：本物の流れで対戦を始め、①回戦の帯 → ②配る（2〜3秒）→ ③手札を表示 の順を確かめる。
+ * 配っている間は手札が見えず、カード・ボタンの場所を押しても下に届かず、暗いカードも出ない
+ */
+async function dealCheck(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const where = '配る演出';
+  await page.locator('[data-act=toSettings]').click();
+  await page.locator('[data-act=toSelect]').click();
+  const r = await page.evaluate(async () => {
+    const w = (ms) => new Promise((res) => setTimeout(res, ms));
+    document.querySelector('[data-act=start]').click();
+    const t0 = performance.now();
+    const log = [];
+    let prev = '';
+    let blocked = true, hiddenHand = true, dim = 0, maxCards = 0, midCount = null;
+    while (performance.now() - t0 < 6000) {
+      const fx = window.__daifugo.state()?.fx;
+      const deal = document.querySelector('.fx.deal');
+      const band = document.querySelector('.fxband .fx-name')?.textContent;
+      const s = deal ? '配る' : band ?? (fx ? '演出' : '手札');
+      if (s !== prev) { log.push([Math.round(performance.now() - t0), s]); prev = s; }
+      if (deal || band) {
+        const cards = [...document.querySelectorAll('.hand .card')];
+        if (cards.some((c) => getComputedStyle(c).visibility !== 'hidden')) hiddenHand = false;
+        dim += document.querySelectorAll('.hand .card.dim').length;
+      }
+      if (deal) {
+        maxCards = Math.max(maxCards, deal.querySelectorAll('.deal-card').length);
+        for (const sel of ['[data-act=quit]', '[data-act=play]', '[data-act=pass]', '.hand']) {
+          const b = document.querySelector(sel)?.getBoundingClientRect();
+          if (b && !document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)?.closest('.fx.deal')) blocked = false;
+        }
+        if (midCount === null && performance.now() - t0 > 3000) midCount = [...document.querySelectorAll('.opp-count')].map((e) => parseInt(e.textContent));
+      }
+      if (s === '手札' && log.length > 2) break;
+      await w(15);
+    }
+    await w(100);
+    const counts = [...document.querySelectorAll('.opp-count')].map((e) => parseInt(e.textContent));
+    return { log, blocked, hiddenHand, dim, maxCards, midCount, counts, handShown: [...document.querySelectorAll('.hand .card')].filter((c) => getComputedStyle(c).visibility !== 'hidden').length, real: window.__daifugo.hand().length };
+  });
+  await page.close();
+  const names = r.log.map(([, s]) => s);
+  const iBand = names.indexOf('第1回戦'), iDeal = names.indexOf('配る'), iHand = names.indexOf('手札');
+  const dealMs = iDeal >= 0 && iHand > iDeal ? r.log[iHand][0] - r.log[iDeal][0] : 0;
+  const fail = (detail) => problems.push({ item: 'deal', where, detail });
+  if (!(iBand >= 0 && iDeal > iBand && iHand > iDeal)) fail(`順番が違う：${JSON.stringify(r.log)}`);
+  if (dealMs < 2000 || dealMs > 3000) fail(`配る時間が${dealMs}ms`);
+  if (r.maxCards !== 53) fail(`配るカードが${r.maxCards}枚`);
+  if (!r.blocked) fail('配っている間に下のボタン・カードが押せる');
+  if (!r.hiddenHand) fail('配っている間に手札が見えている');
+  if (r.dim) fail('配っている間に暗いカードが出た');
+  if (r.handShown !== r.real) fail(`配り終わったあとの手札が${r.handShown}枚（本当は${r.real}枚）`);
+  return { ...r, dealMs };
 }
 
 /** 通しプレイで出したカードの数と、一度も場に出なかったもの */
@@ -566,6 +690,10 @@ async function playThrough(browser) {
   await page.evaluate(() => window.__daifugo.scenario('bomber'));
   await tap(page, page.locator('[data-act=peek]'), where);
   await tap(page, page.locator('[data-act=peekBack]'), where);
+  // 早送りのオン・オフ
+  await page.evaluate(() => window.__daifugo.scenario('ffwd'));
+  await tap(page, page.locator('[data-act=ffwd]'), where);
+  await tap(page, page.locator('[data-act=ffwd]'), where);
   await page.evaluate(() => window.__daifugo.scenario('fx'));
   await tap(page, page.locator('.fx'), where);
   for (const e of errors) problems.push({ item: '7', where, detail: 'エラー：' + e });
@@ -577,6 +705,8 @@ const browser = await chromium.launch({ executablePath: exe(), headless: true })
 fs.rmSync(OUT, { recursive: true, force: true });
 if (!process.env.ONLY_PLAY) for (const [w, h] of SIZES) await screensFor(browser, w, h);
 const eight = await eightOrder(browser);
+const ffwd = await ffwdCheck(browser);
+const deal = await dealCheck(browser);
 const play = await playThrough(browser);
 const zoom = await zoomCheck(browser);
 await browser.close();
@@ -605,6 +735,10 @@ for (const k of Object.keys(ITEMS)) {
 md += `\n## 演出の絵（自分・CPUの4人×1〜4位の16通り）\n\n- 正しい絵：${fxResults.filter((x) => x.ok).length}/${fxResults.length}\n`;
 for (const p of uniq.filter((p) => p.item === 'fx')) md += `  - ${p.where}：${p.detail}\n`;
 md += `\n## 出したカードと8切りの順番（場に見せる → 8切りの帯 → 場を流す）\n\n${eight.map((x) => `- ${x}`).join('\n')}\n- 記号：場のカード｜演出（table＝出したカードを場に見せて待っている、-＝演出なし）\n- 通しプレイで出したカード ${tableSeen.plays} 回のうち、一度も場に出なかったもの：${tableSeen.unseen.length} 回\n`;
+md += `\n## 早送り（同じ場面をオフ・オンで最後まで）\n\n- オフ：CPUの最初の手まで${ffwd.off.firstPlay}ms／全体${ffwd.off.total}ms／帯 ${ffwd.off.bands.map(([n, ms]) => `${n} ${ms}ms`).join('、')}\n- オン：CPUの最初の手まで${ffwd.on.firstPlay}ms／全体${ffwd.on.total}ms／帯 ${ffwd.on.bands.map(([n, ms]) => `${n} ${ms}ms`).join('、')}\n- ボタン：${ffwd.on.before} → ${ffwd.on.label}／回戦のあと：オン=${ffwd.on.after}／次の回戦：${ffwd.next.band}\n`;
+for (const p of uniq.filter((p) => p.item === 'ffwd')) md += `  - 不合格：${p.detail}\n`;
+md += `\n## 配る演出（本物の流れ）\n\n- 順番：${deal.log.map(([ms, s]) => `${ms}ms ${s}`).join(' → ')}／配る時間${deal.dealMs}ms／${deal.maxCards}枚\n- 配っている間：下を押せない=${deal.blocked}／手札を隠す=${deal.hiddenHand}／暗いカード${deal.dim}枚／途中のCPUの枚数${JSON.stringify(deal.midCount)}\n- 配り終わり：CPUの枚数${JSON.stringify(deal.counts)}／手札${deal.handShown}枚\n`;
+for (const p of uniq.filter((p) => p.item === 'deal')) md += `  - 不合格：${p.detail}\n`;
 md += `\n## キャラ選択のスワイプ\n\n${swipeLog.map((x) => `- ${x}`).join('\n')}\n`;
 md += `\n## ズーム（11）の数字\n\n- 確かめ方の試し（ズーム止めのない普通のページを2本指で広げる）：${zoom.control}倍\n- タイトル画面を2本指で広げる：${zoom.title}倍\n- 対戦画面でカードを40msおきに20回タップ：${zoom.taps}倍／ダブルタップ：${zoom.dbl}倍／2本指で広げる：${zoom.game}倍\n- viewport：${zoom.meta}\n- 注意：このブラウザ（Chrome系）はスマホ向けページでダブルタップ拡大をしないので、ダブルタップは「iPhoneで拡大を止める指定（touch-action: manipulation）がページ全体と押せるもの全部に付いているか」で判定した。本物のiPhoneでは確かめていない\n`;
 const NUMS = [
