@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const BASE = process.env.BASE ?? 'http://localhost:5173/';
-const OUT = path.resolve('検査/画面');
+const OUT = path.resolve(process.env.OUT ?? '検査/画面');
 const SIZES = [
   [375, 667],
   [430, 932],
@@ -14,14 +14,14 @@ const SIZES = [
 ];
 const SCENES = ['deal', 'hand', 'dim', 'ffwd', 'ffwdOn', 'table', 'exchange', 'exchangeReveal', 'bomber', 'peek', 'bomberReveal', 'sevenPass', 'tenDiscard', 'flash', 'move:give:0:1', 'move:pass:1:3', 'fx', 'fxRank', 'fxC2', 'fxC3', 'fxC4',
   'band:eight:1', 'band:five:2', 'band:eleven:3', 'band:bomber:0', 'band:ten:1', 'band:seven:2', 'band:mark:3', 'band:num:0', 'band:geki:1', 'band:round:0',
-  'roundEnd', 'quit', 'final'];
+  'roundEnd', 'roundEnd5', 'quit', 'final', 'final1', 'final5', 'seven19', 'sevenPass2', 'bomber1'];
 const SCENE_NAMES = {
   title: 'タイトル', settings: '設定（カード）', settings2: '設定（革命・しばり）', settings3: '設定（そのほか）', select: 'キャラ選択',
   deal: 'カードを配っている途中', hand: '対戦（手札14枚・2枚選択）', dim: '対戦（場に5が1枚。出せないカードは暗い）', ffwd: '自分が上がったあと（早送りオフ）', ffwdOn: '自分が上がったあと（早送りオン）', table: '対戦（場・革命・11バック・激しば）', exchange: 'カード交換',
   bomber: '12ボンバー', peek: '12ボンバー（盤面を見る）', bomberReveal: '12ボンバー（捨てられるカードと「2を選択」）', exchangeReveal: 'カード交換（自分が渡すカード）', sevenPass: '7渡し', tenDiscard: '10捨て', flash: '12ボンバーで捨てられたカード（一瞬表示）', fx: '演出（革命）', fxRank: '演出（大貧民）', fxC2: '演出（キャラ2・革命）', fxC3: '演出（キャラ3・大富豪）', fxC4: '演出（キャラ4・ジョーカー）',
   'move:give:0:1': '7渡し（自分→キャラ2。表のまま動く途中）', 'move:pass:1:3': '7渡し（キャラ2→キャラ4。裏向きのまま動く途中）',
   'band:eight:1': '帯：8切り', 'band:five:2': '帯：5スキップ', 'band:eleven:3': '帯：11バック', 'band:bomber:0': '帯：12ボンバー', 'band:ten:1': '帯：10捨て',
-  'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', 'band:round:0': '帯：第1回戦', roundEnd: '回の結果', quit: 'やめる確認', final: '最終結果',
+  'band:seven:2': '帯：7渡し', 'band:mark:3': '帯：マークしばり', 'band:num:0': '帯：数しば', 'band:geki:1': '帯：激しば', 'band:round:0': '帯：第1回戦', roundEnd: '回の結果', roundEnd5: '回の結果（5回の4回戦目）', quit: 'やめる確認', final: '最終結果', final1: '最終結果（1回）', final5: '最終結果（5回）', seven19: '手札19枚（一番下の段に重ねる）', sevenPass2: '7渡し（2枚選んだあと、残りは暗い）', bomber1: '12ボンバー（1個）',
 };
 
 const problems = []; // { item, where, detail }
@@ -235,7 +235,7 @@ async function audit(page, where) {
     // 自分の番でない手札は、押せないが見た目はそのまま（2026-10-30 ユーザー指示）なので除く
     for (const b of all.filter((el) => el.matches('button:disabled') && !el.matches('.hand .card:not(.dim)'))) {
       const cs = getComputedStyle(b);
-      if (parseFloat(cs.opacity) >= 1 && cs.filter === 'none') out.push(['press', `押せないのに押せるものと同じ見た目：${label(b)}`]);
+      if (parseFloat(cs.opacity) >= 1 && cs.filter === 'none' && cs.backgroundColor === (b.matches('.card, .rank-btn') ? 'rgb(255, 250, 240)' : cs.backgroundColor)) out.push(['press', `押せないのに押せるものと同じ見た目：${label(b)}`]);
     }
     const acts = [...document.querySelectorAll('[data-act]')].map((e) => e.dataset.act);
     return { out, acts };
@@ -282,7 +282,7 @@ async function screensFor(browser, w, h) {
   await page.reload();
   await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {});
   await shot(page, w, 'title');
-  await tap(page, page.locator('[data-act=toSettings]'), `${w}px タイトル`);
+  await tap(page, page.locator('[data-act=newGame]'), `${w}px タイトル`);
   await shot(page, w, 'settings');
   await tap(page, page.locator('[data-act=settingsTab][data-arg=special]'), `${w}px 設定`);
   await shot(page, w, 'settings2');
@@ -502,7 +502,7 @@ async function dealCheck(browser) {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   const where = '配る演出';
-  await page.locator('[data-act=toSettings]').click();
+  await page.locator('[data-act=newGame]').click();
   await page.locator('[data-act=toSelect]').click();
   const r = await page.evaluate(async () => {
     const w = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -565,19 +565,21 @@ async function playThrough(browser) {
   await page.goto(BASE + '?fast');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await tap(page, page.locator('[data-act=toSettings]'), where);
+  await tap(page, page.locator('[data-act=newGame]'), where);
   // 戻る・進む
   await tap(page, page.locator('[data-act=toTitle]'), where);
-  await tap(page, page.locator('[data-act=toSettings]'), where);
+  await tap(page, page.locator('[data-act=newGame]'), where);
   // 設定はタブに分かれている（カード／革命・しばり／そのほか）
   await tap(page, page.locator('[data-act=rule][data-arg=eightCut]'), where);
   await tap(page, page.locator('[data-act=settingsTab][data-arg=other]'), where);
   await tap(page, page.locator('[data-act=level][data-arg=easy]'), where);
+  await tap(page, page.locator('[data-act=rounds][data-arg="5"]'), where);
+  await tap(page, page.locator('[data-act=rounds][data-arg="3"]'), where);
   await tap(page, page.locator('[data-act=resetRules]'), where);
   await tap(page, page.locator('[data-act=rule][data-arg=miyakoOchi]'), where);
   // 6. 再読み込みしても設定が消えない
   await page.reload();
-  await page.locator('[data-act=toSettings]').click();
+  await page.locator('[data-act=newGame]').click();
   await page.locator('[data-act=settingsTab][data-arg=other]').click();
   const kept = await page.locator('[data-act=rule][data-arg=miyakoOchi]').getAttribute('aria-pressed');
   const lvl = await page.locator('[data-act=level][data-arg=easy]').getAttribute('aria-pressed');

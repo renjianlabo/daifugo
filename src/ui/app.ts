@@ -9,7 +9,8 @@ import {
 import { CpuOptions, LEVEL_NAMES, Level, PERSONALITY_WEIGHTS, STRONG_TIME_MS, cpuAct } from '../cpu/cpu';
 import { bigArt, layoutArts } from './art';
 import { FxPose, artImg, avatarSmall, preloadArt } from './avatar';
-import { Settings, defaultSettings, loadSettings, saveSettings } from './storage';
+import { pickLocked, togglePick } from './pick';
+import { ROUND_CHOICES, Rounds, SavedGame, Settings, clearGame, defaultSettings, loadGame, loadSettings, saveGame, saveSettings } from './storage';
 
 type Screen = 'title' | 'settings' | 'select' | 'game' | 'final';
 
@@ -127,6 +128,10 @@ class GameController {
   peek = false;
   /** 自動パスを待っている途中 */
   private autoPassWaiting = false;
+  /** 渡す・捨てるカードが決まっていて、自動で実行するのを待っている途中 */
+  private autoGiveWaiting = false;
+  /** 前回の保存に失敗したか（知らせを出すのは、失敗し始めたときだけ） */
+  private saveFailed = false;
   alive = true;
   /** 検査用：CPUを動かさず、画面だけ描く */
   frozen = false;
@@ -134,12 +139,24 @@ class GameController {
   fast = false;
   private timers: number[] = [];
 
-  constructor(public settings: Settings, private onChange: () => void, private onFinish: () => void) {
-    const me = characterById(settings.character);
+  /**
+   * saved があれば中断した場面から再開する（演出の途中だったものは出し直さない）。
+   * autosave が false（検査用の場面）のときは保存しない
+   */
+  constructor(public settings: Settings, private onChange: () => void, private onFinish: () => void, saved: SavedGame | null, public autosave: boolean, private onSaveFail: () => void) {
+    const me = characterById(saved?.character ?? settings.character);
     this.seats = [me, ...CHARACTERS.filter((c) => c.id !== me.id)];
     preloadArt(this.seats);
-    this.opts = this.seats.map((c) => ({ level: settings.level, weights: PERSONALITY_WEIGHTS[c.personality] }));
-    this.s = newGame(settings.rules, Math.floor(Math.random() * 2 ** 31));
+    this.opts = this.seats.map((c) => ({ level: saved?.level ?? settings.level, weights: PERSONALITY_WEIGHTS[c.personality] }));
+    this.s = saved?.state ?? newGame(settings.rules, Math.floor(Math.random() * 2 ** 31), settings.rounds);
+  }
+
+  /** 今の状態を保存する。失敗しても遊びは続ける */
+  private persist() {
+    if (!this.autosave) return;
+    const ok = saveGame({ state: this.s, character: this.seats[HUMAN].id, level: this.opts[HUMAN].level });
+    if (!ok && !this.saveFailed) this.onSaveFail();
+    this.saveFailed = !ok;
   }
 
   name(i: number): string {
@@ -297,6 +314,7 @@ class GameController {
   advance(): void {
     if (!this.alive) return;
     this.consumeEvents();
+    this.persist();
     if (this.frozen || this.fx) return this.onChange();
     const fx = this.nextFx();
     if (fx) {
@@ -312,6 +330,11 @@ class GameController {
     if (s.phase === 'roundEnd') {
       // 回戦が終わったら早送りをオフに戻す（順位のカットインを見せ終わったあと）
       this.ffwd = false;
+      // 1回だけの対戦は、回の結果を出さずに最終結果（順位）へ（同じ内容を2回見せない）
+      if (s.rounds === 1 && !this.frozen) {
+        nextRound(s);
+        return this.advance();
+      }
       return this.onChange();
     }
     if (s.phase === 'exchange') {
@@ -331,7 +354,11 @@ class GameController {
     }
     if (s.phase === 'sevenPass' || s.phase === 'tenDiscard') {
       const pc = s.pendingCards!;
-      if (pc.player === HUMAN) return this.onChange();
+      if (pc.player === HUMAN) {
+        // 手札を全部渡す（捨てる）しかないときは、選ぶ余地がないので自動で実行する
+        if (pc.count >= s.hands[HUMAN].length) this.autoGive();
+        return this.onChange();
+      }
       return this.cpuTurn(pc.player);
     }
     if (s.turn === HUMAN) {
@@ -351,6 +378,20 @@ class GameController {
       if (this.fx || s.phase !== 'play' || s.turn !== HUMAN || listMoves(s, HUMAN).length > 0 || !canPass(s, HUMAN)) return;
       this.selected.clear();
       pass(s, HUMAN);
+      this.advance();
+    }, this.fast ? 0 : AUTO_PASS_MS);
+  }
+
+  /** 渡す・捨てるカードが決まっているので、少し待ってから自動で実行する（自動パスと同じ間） */
+  private autoGive() {
+    if (this.autoGiveWaiting) return;
+    this.autoGiveWaiting = true;
+    const pc = this.s.pendingCards;
+    this.later(() => {
+      this.autoGiveWaiting = false;
+      if (this.fx || this.s.pendingCards !== pc) return;
+      this.selected.clear();
+      chooseCards(this.s, HUMAN, [...this.s.hands[HUMAN]]);
       this.advance();
     }, this.fast ? 0 : AUTO_PASS_MS);
   }
@@ -423,8 +464,9 @@ class GameController {
   }
 
   toggleCard(id: number) {
-    if (this.selected.has(id)) this.selected.delete(id);
-    else if (this.humanTask()) this.selected.add(id);
+    const task = this.humanTask();
+    if (task) togglePick(this.selected, id, task.count);
+    else if (this.selected.has(id)) this.selected.delete(id);
     else {
       const ok = this.pressableCards();
       if (!ok || !ok.has(id)) return;
@@ -465,8 +507,7 @@ class GameController {
   toggleBomber(r: number) {
     const pb = this.s.pendingBomber;
     if (!pb || pb.player !== HUMAN) return;
-    if (this.bomberPick.has(r)) this.bomberPick.delete(r);
-    else if (this.bomberPick.size < pb.count) this.bomberPick.add(r);
+    togglePick(this.bomberPick, r, pb.count);
     this.onChange();
   }
 
@@ -511,6 +552,24 @@ export function startApp(root: HTMLElement) {
   let pickChar = settings.character;
   let settingsTab: SettingsTab = 'cards';
   let fastMode = false;
+  /** 中断データがあるときに「はじめる」を押したあとの確認 */
+  let newGameConfirm = false;
+  let noticeTimer = 0;
+
+  /** 保存できなかったことを小さく知らせる（押せない。ほかの部品を動かさない。少しすると消える） */
+  const notice = (text: string) => {
+    let el = document.querySelector<HTMLElement>('.save-notice');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'save-notice';
+      el.setAttribute('role', 'status');
+      document.body.append(el);
+    }
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(noticeTimer);
+    noticeTimer = window.setTimeout(() => { el!.hidden = true; }, 3000);
+  };
 
   const go = (sc: Screen) => {
     screen = sc;
@@ -518,14 +577,15 @@ export function startApp(root: HTMLElement) {
     window.scrollTo(0, 0);
   };
 
-  const startGame = () => {
+  const startGame = (saved: SavedGame | null = null, autosave = true) => {
     game?.stop();
     game = new GameController(settings, render, () => {
       finalState = { s: game!.s, seats: game!.seats };
+      if (game!.autosave) clearGame();
       game!.stop();
       game = null;
       go('final');
-    });
+    }, saved, autosave, () => notice('対戦を保存できませんでした'));
     game.fast = fastMode;
     go('game');
     game.advance();
@@ -533,7 +593,7 @@ export function startApp(root: HTMLElement) {
 
   const update = (next: Settings) => {
     settings = next;
-    saveSettings(settings);
+    if (!saveSettings(settings)) notice('設定を保存できませんでした');
     render();
   };
 
@@ -544,10 +604,18 @@ export function startApp(root: HTMLElement) {
     const arg = el.dataset.arg ?? '';
     switch (act) {
       case 'toTitle': game?.stop(); game = null; go('title'); break;
+      // 中断データがあるときは、確認してから消す
+      case 'newGame':
+        if (loadGame()) { newGameConfirm = true; render(); } else go('settings');
+        break;
+      case 'newGameNo': newGameConfirm = false; render(); break;
+      case 'newGameYes': newGameConfirm = false; clearGame(); go('settings'); break;
+      case 'resume': { const saved = loadGame(); if (saved) startGame(saved); else render(); break; }
       case 'toSettings': go('settings'); break;
       case 'settingsTab': settingsTab = arg as SettingsTab; render(); break;
       case 'toSelect': pickChar = settings.character; go('select'); break;
       case 'level': update({ ...settings, level: arg as Level }); break;
+      case 'rounds': update({ ...settings, rounds: Number(arg) as Rounds }); break;
       case 'rule': {
         const k = arg as keyof Rules;
         update({ ...settings, rules: { ...settings.rules, [k]: !settings.rules[k] } });
@@ -571,7 +639,7 @@ export function startApp(root: HTMLElement) {
       case 'ffwd': game?.toggleFfwd(); break;
       case 'quit': if (game) { game.quitConfirm = true; render(); } break;
       case 'quitNo': if (game) { game.quitConfirm = false; render(); } break;
-      case 'quitYes': game?.stop(); game = null; go('title'); break;
+      case 'quitYes': if (game?.autosave) clearGame(); game?.stop(); game = null; go('title'); break;
     }
   });
 
@@ -593,13 +661,22 @@ export function startApp(root: HTMLElement) {
       scenario,
       // 場面を作ったあと、止めていた進行を動かす（演出の順番を確かめる検査用）
       unfreeze: () => { if (game) { game.frozen = false; game.advance(); } },
+      // 最終結果を、決めた順位から本物の処理と描画で作る（全組み合わせの検査用）
+      finalHtml: (rounds: number, roundRanks: number[][], character: number) => {
+        const me = characterById(character);
+        const s = newGame(settings.rules, 1, rounds);
+        const scores = [0, 1, 2, 3].map((p) => roundRanks.reduce((n, r) => n + POINTS[r[p] - 1], 0));
+        Object.assign(s, { phase: 'roundEnd', round: rounds, roundRanks, scores });
+        nextRound(s);
+        return { html: finalView(s, [me, ...CHARACTERS.filter((c) => c.id !== me.id)]), order: s.finalOrder };
+      },
       fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band } : { kind: game.fx.kind }),
       hand: () => game ? [...game.s.hands[0]] : [],
       // 出したのに一度も場に描かれなかったカード（あれば不具合）と、出した回数
       unseenPlays: () => ({ plays: tableLog.played.length, unseen: tableLog.played.filter((k) => !tableLog.drawn.has(k)) }),
       shownHand: () => [...document.querySelectorAll('.hand .card')].map((e) => Number((e as HTMLElement).dataset.arg)),
       legal: () => (game && game.s.phase === 'play' && game.s.turn === HUMAN ? listMoves(game.s, HUMAN).map((p) => p.cards) : []),
-      state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, fx: !!game.fx, ffwd: game.ffwd, task: game.humanTask(), bomber: game.s.pendingBomber },
+      state: () => game && { phase: game.s.phase, turn: game.s.turn, round: game.s.round, rounds: game.s.rounds, scores: game.s.scores, hands: game.s.hands.map((h) => h.length), table: game.s.table.length, rules: game.s.rules, char: game.seats[0].id, level: game.opts[0].level, fx: !!game.fx, ffwd: game.ffwd, task: game.humanTask(), bomber: game.s.pendingBomber },
     };
   }
 
@@ -610,8 +687,8 @@ export function startApp(root: HTMLElement) {
   };
 
   function scenario(name: string, character = 1) {
-    settings = { ...loadSettings(), character };
-    startGame();
+    settings = { ...loadSettings(), character, rounds: 3 };
+    startGame(null, false);
     const g = game!;
     g.frozen = true;
     g.thinking = null;
@@ -645,6 +722,44 @@ export function startApp(root: HTMLElement) {
         s.hands[who] = [c3, h8];
         s.table = [{ player: 3, play: interpret([s7])[0], effRank: 7, effSuitKey: 'S' }];
         Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'stack15': case 'stack16': case 'stack17': case 'stack18': case 'stack19': case 'stack21': case 'stack24': {
+        // 手札が増えた場面（一番下の段に重ねる）。ほかの人の手札から移す（全部で53枚のまま）
+        const want = Number(name.slice(5));
+        while (s.hands[0].length < want) s.hands[0].push(s.hands[1 + (s.hands[0].length % 3)].pop()!);
+        s.hands[0].sort((a, b) => a - b);
+        break;
+      }
+      case 'give7:1': case 'give10:1': case 'give7:2': case 'give7:keep': {
+        // 自分が7（10）を出すと、残りの手札を全部渡す（捨てる）しかない場面。give7:keep だけは手札が多く、選ぶ余地がある
+        const r = name.startsWith('give10') ? 10 : 7;
+        const count = name.endsWith('2') ? 2 : 1;
+        const plays = (['H', 'D'] as const).slice(0, count).map((x) => cardId(x, r));
+        const rest = [cardId('S', 3), cardId('C', 3), cardId('S', 4)].slice(0, name.endsWith('keep') ? 3 : count);
+        const mine = [...plays, ...rest];
+        s.hands = s.hands.map((h) => h.filter((c) => !mine.includes(c)));
+        s.discard.push(...s.hands[0]);
+        s.hands[0] = mine;
+        Object.assign(s, { turn: 0, table: [], lastPlayer: null, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'seven18': case 'seven19': {
+        // 本物のルール処理で手札を増やす：キャラ4が7を3枚＋ジョーカーで4枚渡す → 全員パス → 残りの7で1枚渡す（これが実際に届く一番多い枚数）
+        const sevens = (['S', 'H', 'D', 'C'] as const).map((x) => cardId(x, 7));
+        const all = Array.from({ length: DEAL_CARDS }, (_, i) => i);
+        const cpu4 = [...sevens, JOKER];
+        for (const c of all) if (!cpu4.includes(c) && cpu4.length < 13) cpu4.push(c);
+        const rest = all.filter((c) => !cpu4.includes(c));
+        Object.assign(s, { hands: [rest.slice(0, 14), rest.slice(14, 27), rest.slice(27), cpu4], turn: 3, table: [], lastPlayer: null });
+        play(s, 3, interpret([sevens[0], sevens[1], sevens[2], JOKER])[0]);
+        chooseCards(s, 3, s.hands[3].filter((c) => c !== sevens[3]).slice(0, 4));
+        if (name === 'seven19') {
+          [0, 1, 2].forEach((p) => pass(s, p));
+          play(s, 3, interpret([sevens[3]])[0]);
+          chooseCards(s, 3, s.hands[3].slice(0, 1));
+        }
+        g.eventIdx = s.events.length;
         break;
       }
       case 'deal':
@@ -684,20 +799,24 @@ export function startApp(root: HTMLElement) {
         g.eventIdx = s.events.length;
         break;
       case 'bomber':
+      case 'bomber1':
         s.phase = 'bomber';
-        s.pendingBomber = { player: 0, count: 2, eff: { ...NO_EFFECTS, bomber: 2 } };
+        s.pendingBomber = { player: 0, count: name === 'bomber' ? 2 : 1, eff: { ...NO_EFFECTS, bomber: name === 'bomber' ? 2 : 1 } };
         g.bomberPick = new Set([3]);
         break;
       case 'sevenPass':
-      case 'tenDiscard': {
-        // 7（10）を誰かの手札から1枚取り、あなたが出したことにする
-        const r = name === 'sevenPass' ? 7 : 10;
+      case 'tenDiscard':
+      case 'sevenPass2':
+      case 'tenDiscard2': {
+        // 7（10）を誰かの手札から1枚取り、あなたが出したことにする。末尾が2の場面は2枚選ぶ
+        const kind = name.startsWith('seven') ? 'sevenPass' : 'tenDiscard';
+        const r = kind === 'sevenPass' ? 7 : 10;
         const card = s.hands.flat().find((c) => !isJoker(c) && rankOf(c) === r)!;
         s.hands = s.hands.map((h) => h.filter((c) => c !== card));
         s.table = [{ player: 0, play: interpret([card])[0], effRank: r, effSuitKey: suitOf(card) }];
         s.lastPlayer = 0;
-        s.phase = name;
-        s.pendingCards = { kind: name, player: 0, count: 1, to: name === 'sevenPass' ? 1 : null, eff: { ...NO_EFFECTS } };
+        s.phase = kind;
+        s.pendingCards = { kind, player: 0, count: name.endsWith('2') ? 2 : 1, to: kind === 'sevenPass' ? 1 : null, eff: { ...NO_EFFECTS } };
         g.selected = new Set([s.hands[0][0]]);
         break;
       }
@@ -785,6 +904,9 @@ export function startApp(root: HTMLElement) {
         }
         break;
       }
+      case 'roundEnd5':
+        Object.assign(s, { phase: 'roundEnd', rounds: 5, round: 4, roundRanks: [[1, 2, 3, 4], [2, 1, 3, 4], [2, 3, 1, 4], [1, 3, 2, 4]], scores: [9, 7, 6, 2] });
+        break;
       case 'roundEnd':
         Object.assign(s, { phase: 'roundEnd', round: 2, roundRanks: [[2, 1, 3, 4], [1, 3, 4, 2]], scores: [5, 4, 1, 2] });
         break;
@@ -792,7 +914,11 @@ export function startApp(root: HTMLElement) {
         g.quitConfirm = true;
         break;
       case 'final':
-        Object.assign(s, { phase: 'gameEnd', round: 3, scores: [6, 5, 5, 2], roundRanks: [[1, 2, 3, 4], [2, 1, 3, 4], [2, 3, 1, 4]], finalOrder: [0, 2, 1, 3] });
+      case 'final1':
+      case 'final5':
+        if (name === 'final') Object.assign(s, { phase: 'gameEnd', round: 3, scores: [6, 5, 5, 2], roundRanks: [[1, 2, 3, 4], [2, 1, 3, 4], [2, 3, 1, 4]], finalOrder: [0, 2, 1, 3] });
+        if (name === 'final1') Object.assign(s, { phase: 'gameEnd', rounds: 1, round: 1, scores: [2, 3, 1, 0], roundRanks: [[2, 1, 3, 4]], finalOrder: [1, 0, 2, 3] });
+        if (name === 'final5') Object.assign(s, { phase: 'gameEnd', rounds: 5, round: 5, scores: [10, 9, 9, 2], roundRanks: [[1, 2, 3, 4], [2, 1, 3, 4], [2, 3, 1, 4], [1, 3, 2, 4], [3, 1, 2, 4]], finalOrder: [0, 2, 1, 3] });
         finalState = { s, seats: g.seats };
         g.stop();
         game = null;
@@ -811,12 +937,12 @@ export function startApp(root: HTMLElement) {
   }
 
   function render() {
-    if (screen === 'title') root.innerHTML = titleView(settings.character);
+    if (screen === 'title') root.innerHTML = titleView(settings, !!loadGame(), newGameConfirm);
     else if (screen === 'settings') root.innerHTML = settingsView(settings, settingsTab);
     else if (screen === 'select') root.innerHTML = selectView(pickChar);
     else if (screen === 'game' && game) root.innerHTML = gameView(game);
     else if (screen === 'final' && finalState) root.innerHTML = finalView(finalState.s, finalState.seats);
-    else root.innerHTML = titleView(settings.character);
+    else root.innerHTML = titleView(settings, !!loadGame(), newGameConfirm);
     layoutArts(root);
   }
 
@@ -882,18 +1008,32 @@ export function startApp(root: HTMLElement) {
 // 角の小さな飾り（枠の4隅）
 const CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>';
 
-function titleView(pick: number): string {
+function titleView(st: Settings, hasSaved: boolean, confirm: boolean): string {
   // 最後に選んだキャラに絵があればその絵、なければ絵のあるキャラ。絵は下が切れているので画面の下端につける
-  const c = [characterById(pick), ...CHARACTERS].find((x) => x.images);
+  const c = [characterById(st.character), ...CHARACTERS].find((x) => x.images);
+  const lead = st.rounds === 1 ? 'CPU 3人と 1回戦。<br>大富豪を めざそう。' : `CPU 3人と ${st.rounds}回戦。<br>合計ポイントで 1位を めざそう。`;
   return `
   <main class="screen title-screen">
     <section class="logo">
       <div class="suits" aria-hidden="true"><span>♠</span><span class="r">♥</span><span class="r">♦</span><span>♣</span></div>
       <h1 class="gold-text">大富豪</h1>
-      <p class="lead">CPU 3人と 3回戦。<br>合計ポイントで 1位を めざそう。</p>
+      <p class="lead">${lead}</p>
     </section>
     <section class="title-stage">${c ? bigArt(c, 'title-art', 'special') : ''}</section>
-    <div class="title-start"><button class="btn primary" data-act="toSettings">はじめる</button></div>
+    <div class="title-start ${hasSaved ? 'two' : ''}">
+      ${hasSaved ? '<button class="btn ghost" data-act="newGame">はじめる</button><button class="btn primary" data-act="resume">続きから</button>' : '<button class="btn primary" data-act="newGame">はじめる</button>'}
+    </div>
+    ${confirm ? `
+    <div class="modal-back">
+      <div class="modal frame" role="dialog" aria-label="中断した対戦を消す確認">
+        ${CORNERS}
+        <p>${wb('中断した対戦は|消えます。')}</p>
+        <div class="row">
+          <button class="btn ghost" data-act="newGameNo">戻る</button>
+          <button class="btn primary" data-act="newGameYes">新しく始める</button>
+        </div>
+      </div>
+    </div>` : ''}
   </main>`;
 }
 
@@ -919,6 +1059,10 @@ function settingsView(st: Settings, tabId: SettingsTab): string {
       <section class="panel frame" role="tabpanel">
         ${CORNERS}
         ${tabId === 'other' ? `
+        <h2 class="panel-title gold-text">対戦の回数</h2>
+        <div class="seg" role="group" aria-label="対戦の回数">
+          ${ROUND_CHOICES.map((n) => `<button class="btn ${st.rounds === n ? 'primary' : 'ghost'}" aria-pressed="${st.rounds === n}" data-act="rounds" data-arg="${n}">${n}回</button>`).join('')}
+        </div>
         <h2 class="panel-title gold-text">CPUの強さ</h2>
         <div class="seg" role="group" aria-label="CPUの強さ">
           ${levels.map((l) => `<button class="btn ${st.level === l ? 'primary' : 'ghost'}" aria-pressed="${st.level === l}" data-act="level" data-arg="${l}">${LEVEL_NAMES[l]}</button>`).join('')}
@@ -983,9 +1127,9 @@ function cardFace(id: number, opts: { act?: boolean; sel?: boolean; disabled?: b
 }
 
 /**
- * 手札：右の列に並べ、上の段から詰める（空きは下の段に出る）。場所の高さは配られる最大の14枚ぶんで固定するので、
- * 14枚までは「あなたの番」と上の段の位置が枚数で動かない。ふだんは4列×4段、背の低い画面は5列×3段。
- * それより多いとき（交換・7渡しで受け取った）は段を増やし、カードを小さくして画面に収める。背の低い画面で16枚以上は6列
+ * 手札：右の列に並べ、上の段から詰める（空きは下の段に出る）。ふだんは横4枚×4段、背の低い画面は横5枚×3段。
+ * 場所の大きさは枚数に関係なく固定する（「あなたの番」とボタンの位置を動かさないため）。
+ * 段が埋まったら段を増やさず、一番下の段の左側にカードを重ねて詰める
  */
 function handView(g: GameController, selectable: boolean): string {
   const hidden = g.hiddenCards();
@@ -993,16 +1137,26 @@ function handView(g: GameController, selectable: boolean): string {
   // 配っている間：カードは置いておくが見せない（配るカードが飛んでいく先の位置に使う）
   const dealing = g.dealing ? 'dealing' : '';
   const short = window.matchMedia('(max-height: 760px)').matches;
-  const cols = short ? (hand.length > 15 ? 6 : 5) : 4;
-  const rows = Math.max(short ? 3 : 4, Math.ceil(hand.length / cols));
+  const cols = short ? 5 : 4;
+  const rows = short ? 3 : 4;
   const style = `style="--cols:${cols}; --rows:${rows}"`;
   if (hand.length === 0) return `<div class="hand empty" ${style}><span>手札はありません</span></div>`;
   // 自分の番：出せる組み合わせに使えないカードは暗くして押せなくする。自分の番でないときは、見た目はそのままで押せない
+  // 渡す・捨てるカードを選ぶとき：上限まで選んだら、残りを暗くして押せなくする
   const ok = g.pressableCards();
-  const face = (id: number) => (ok && selectable
-    ? cardFace(id, { act: true, sel: g.selected.has(id), disabled: !ok.has(id), dim: !ok.has(id) })
-    : cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable }));
-  return `<div class="hand ${cols === 6 ? 'wide' : ''} ${dealing}" ${style}>${hand.map(face).join('')}</div>`;
+  const task = g.humanTask();
+  const face = (id: number) => {
+    const locked = selectable && !!task && pickLocked(g.selected, id, task.count);
+    return ok && selectable
+      ? cardFace(id, { act: true, sel: g.selected.has(id), disabled: !ok.has(id), dim: !ok.has(id) })
+      : cardFace(id, { act: true, sel: g.selected.has(id), disabled: !selectable || locked, dim: locked });
+  };
+  const upper = (rows - 1) * cols;
+  const last = hand.slice(upper);
+  if (last.length <= cols) return `<div class="hand ${dealing}" ${style}>${hand.map(face).join('')}</div>`;
+  // 一番下の段に入りきらないとき：その段のカードを全部、同じ間隔で重ねて左に詰める
+  const lastRow = last.map((id, i) => `<div class="stack-slot" style="--i:${i}">${face(id)}</div>`).join('');
+  return `<div class="hand ${dealing}" ${style}>${hand.slice(0, upper).map(face).join('')}<div class="hand-last" style="--n:${last.length}">${lastRow}</div></div>`;
 }
 
 function flagsView(s: State): string {
@@ -1114,7 +1268,7 @@ function bomberView(g: GameController): string {
       ${CORNERS}
       <h2 class="modal-title gold-text">12ボンバー</h2>
       <div class="rank-grid">
-        ${ranks.map((r) => `<button class="rank-btn ${g.bomberPick.has(r) ? 'on' : ''}" aria-pressed="${g.bomberPick.has(r)}" data-act="bomberRank" data-arg="${r}">${RANK_LABEL[r]}</button>`).join('')}
+        ${ranks.map((r) => `<button class="rank-btn ${g.bomberPick.has(r) ? 'on' : ''}" aria-pressed="${g.bomberPick.has(r)}" data-act="bomberRank" data-arg="${r}" ${pickLocked(g.bomberPick, r, pb.count) ? 'disabled' : ''}>${RANK_LABEL[r]}</button>`).join('')}
       </div>
       <div class="row">
         <button class="btn ghost" data-act="peek">盤面を見る</button>
@@ -1128,7 +1282,7 @@ function roundEndView(g: GameController): string {
   const s = g.s;
   const ranks = s.roundRanks[s.roundRanks.length - 1];
   const order = [0, 1, 2, 3].sort((a, b) => ranks[a] - ranks[b]);
-  const last = s.round >= 3;
+  const last = s.round >= s.rounds;
   return `
   <div class="modal-back">
     <div class="modal frame" role="dialog" aria-label="第${s.round}回戦の結果">
@@ -1229,23 +1383,28 @@ function revealView(fx: RevealFx): string {
 function finalView(s: State, seats: Character[]): string {
   const order = s.finalOrder ?? [0, 1, 2, 3];
   const name = (i: number) => (i === HUMAN ? 'あなた' : seats[i].name);
-  const tie = new Set(s.scores).size < s.scores.length;
+  // 1回だけの対戦はポイントを使わない：順位（大富豪〜大貧民）だけを出す
+  const single = s.rounds === 1;
+  const tie = !single && new Set(s.scores).size < s.scores.length;
   return `
   <main class="screen final-screen">
     ${headerBar('最終結果', null)}
     <div class="scroll">
-      <ol class="final-list">
+      <ol class="final-list ${single ? 'single' : ''}">
         ${order.map((p, i) => `
-          <li class="final-row ${i === 0 ? 'first frame' : ''} ${p === HUMAN ? 'me' : ''}">
+          <li class="final-row ${i === 0 ? 'first frame' : ''} ${p === HUMAN ? 'me' : ''} ${single ? 'single' : ''}">
             ${i === 0 ? CORNERS : ''}
-            <span class="final-place ${i === 0 ? 'gold-text' : ''}">${i + 1}位</span>
+            <span class="final-place ${i === 0 ? 'gold-text' : ''}">${single ? RANK_NAMES[s.roundRanks[0][p] - 1] : `${i + 1}位`}</span>
             ${avatarSmall(seats[p])}
             <span class="final-name">${name(p)}${p === HUMAN ? `<small>${seats[p].name}</small>` : ''}</span>
-            <span class="final-score">${s.scores[p]}点</span>
-            <span class="final-rounds">${s.roundRanks.map((r, k) => `<span>${k + 1}回戦 ${RANK_NAMES[r[p] - 1]}</span>`).join(' ／ ')}</span>
+            ${single ? '' : `<span class="final-score">${s.scores[p]}点</span>
+            <span class="final-rounds">${s.rounds > 3
+              // 5回は1行に収める（左から1回戦目の順に並ぶ。画面に収めるため「◯回戦」は書かない）
+              ? s.roundRanks.map((r) => RANK_NAMES[r[p] - 1]).join('／')
+              : s.roundRanks.map((r, k) => `<span>${k + 1}回戦 ${RANK_NAMES[r[p] - 1]}</span>`).join(' ／ ')}</span>`}
           </li>`).join('')}
       </ol>
-      ${tie ? `<p class="tie">${wb('同点のときは、|3回戦目の順位が|上の人が上です。')}</p>` : ''}
+      ${tie ? `<p class="tie">${wb('同点のときは、|最後の回の順位が|上の人が上です。')}</p>` : ''}
     </div>
     <footer class="foot-bar two">
       <button class="btn ghost" data-act="toTitle">タイトルへ</button>

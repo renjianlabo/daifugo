@@ -79,6 +79,8 @@ export interface State {
   rules: Rules;
   seed: number;
   round: number;
+  /** 対戦の回数（1・3・5） */
+  rounds: number;
   hands: number[][];
   table: TableEntry[];
   discard: number[];
@@ -107,9 +109,9 @@ export interface State {
 
 // ---------------- 作る・複製する ----------------
 
-export function newGame(rules: Rules, seed: number): State {
+export function newGame(rules: Rules, seed: number, rounds: number = ROUNDS): State {
   const s: State = {
-    rules: { ...rules }, seed: seed | 0, round: 0,
+    rules: { ...rules }, seed: seed | 0, round: 0, rounds,
     hands: [[], [], [], []], table: [], discard: [], turn: 0, lastPlayer: null,
     passed: [false, false, false, false], revolution: false, elevenBack: false,
     lockSuit: null, lockNum: false, finished: [], fallen: [], phase: 'play',
@@ -564,10 +566,10 @@ function checkRoundEnd(s: State): boolean {
   return true;
 }
 
-/** 次の回へ。3回戦が終わっていれば最終結果にする */
+/** 次の回へ。決めた回数が終わっていれば最終結果にする */
 export function nextRound(s: State) {
   if (s.phase !== 'roundEnd') throw new Error('回が終わっていない');
-  if (s.round >= ROUNDS) {
+  if (s.round >= s.rounds) {
     const last = s.roundRanks[s.roundRanks.length - 1];
     s.finalOrder = [0, 1, 2, 3].sort((a, b) => s.scores[b] - s.scores[a] || last[a] - last[b]);
     s.phase = 'gameEnd';
