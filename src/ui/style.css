@@ -216,8 +216,8 @@ h1, p { margin: 0; }
 .me-label.off { visibility: hidden; }
 .hand {
   /* 手札の列は幅を決めておく（イラストの頭をこの列の左に収めるため） */
-  /* 高さは配られる最大の14枚（--rows 段）ぶんで固定。カードは上の段から詰め、空きは下の段に出る。
-     こうすると「あなたの番」と上の段の位置が、枚数で動かない */
+  /* 高さは --rows 段ぶんで固定。カードは上の段から詰め、空きは下の段に出る。段が埋まったら、一番下の段に重ねる（段は増やさない）。
+     こうすると「あなたの番」と上の段とボタンの位置が、枚数で動かない */
   /* 列と段の数は app.ts の handView() が決めて style で渡す（ふだんは4列×4段）。
      カードの幅は、画面の幅（12vw）と、画面の高さに収まる大きさの小さい方。
      高さの計算の 537px は、見出し62・状態の札の段33・盤299（上の余白10を含む）・「あなたの番」54・ボタンの帯89 の合計
@@ -225,16 +225,28 @@ h1, p { margin: 0; }
   --cols: 4; --rows: 4;
   --cw: max(36px, min(clamp(44px, 12vw, 52px), calc((100dvh - 537px - (var(--rows) - 1) * 8px) / (1.36 * var(--rows)))));
   width: calc(var(--cols) * var(--cw) + (var(--cols) - 1) * var(--gap));
-  min-height: calc(var(--rows) * var(--cw) * 1.36 + (var(--rows) - 1) * 8px);
+  height: calc(var(--rows) * var(--cw) * 1.36 + (var(--rows) - 1) * 8px);
   margin-top: 8px; display: grid; grid-template-columns: repeat(var(--cols), var(--cw)); grid-auto-rows: calc(var(--cw) * 1.36);
   align-content: start; gap: 8px var(--gap);
 }
+/* 一番下の段に入りきらないとき：その段の --n 枚を全部同じ間隔で重ね、左に詰める。
+   間隔はカードの幅の6割（数字とマークが読める幅）。枚数が増えて段の幅を超えるときだけ、段の幅に収まるまで狭くする */
+.hand-last {
+  grid-column: 1 / -1; position: relative; height: calc(var(--cw) * 1.36);
+  --step: min(calc(var(--cw) * 0.6), calc((100% - var(--cw)) / (var(--n) - 1)));
+}
+.stack-slot { position: absolute; top: 0; left: calc(var(--i) * var(--step)); }
+.stack-slot .c-rank, .stack-slot .c-suit { left: 3px; }
+.stack-slot .c-rank { letter-spacing: -1.5px; }
 .hand .card { cursor: pointer; }
 .hand .card.sel { transform: translateY(-5px); box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75), 0 0 0 2.5px var(--gold), 0 0 12px 2px rgba(255, 214, 120, 0.7); }
 /* 自分の番でないときは押せないが、見た目はそのまま（2026-10-30 ユーザー指示）。
    自分の番で、出せる組み合わせに使えないカード（dim）は暗くして押せなくする */
 .hand .card:disabled { cursor: default; }
-.hand .card.dim { filter: brightness(0.5) saturate(0.6); }
+/* 暗くしても、数字・マークと背景の明暗差は4.5:1以上を保つ（暗くする処理ではなく、色を直接決める） */
+.hand .card.dim { --paper: #8f8c88; background: var(--paper); color: #0d0c0c; border-color: #5c5850; box-shadow: inset 0 0 0 2px var(--paper), 0 1px 3px rgba(0, 0, 0, 0.45); }
+.hand .card.dim.red { color: #4e0808; }
+.hand .card.dim.joker { color: #2a1060; }
 
 /* ---------- イラスト ----------
    大きく見せる：盤の下から画面の下端までの高さいっぱいに出す（下が切れた絵なので、切れ目は画面の下端）。
@@ -266,12 +278,6 @@ h1, p { margin: 0; }
 /* 背の低い画面：改善案（承認済み）の形。場を低くし、手札を5列×3段にして高さに収める */
 @media (max-height: 760px) {
   .hand { --cw: min(calc((100dvh - 500px) / 4.1), 48px); }
-  /* 16枚以上（交換・7渡しで受け取ったとき）だけ6列。列の幅は5列のときと同じにして、カードを小さくする（顔にかけないため） */
-  .hand.wide {
-    --cw: calc((5 * min(calc((100dvh - 500px) / 4.1), 48px) - var(--gap)) / 6);
-    /* 高さは5列×3段のときと同じ（「あなたの番」の位置を変えないため） */
-    min-height: calc(3 * min(calc((100dvh - 500px) / 4.1), 48px) * 1.36 + 16px);
-  }
   /* 状態の札の段はいつも場所を空けておくので、その分だけ場を低くする（手札の大きさと位置を改善案と同じにするため） */
   .table { height: 70px; margin-top: 12px; }
   .table .card { --cw: 44px; }
@@ -294,6 +300,8 @@ h1, p { margin: 0; }
   font-family: var(--font-read); font-size: 18px; font-weight: 800;
   box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75); transition: transform 0.1s ease;
 }
+/* 上限まで選んだとき、残りの数字は暗くして押せなくする（文字と背景の明暗差は4.5:1以上を保つ） */
+.rank-btn:disabled { background: #8a8783; color: #0d0c0c; box-shadow: none; border-color: #4a4640; cursor: default; }
 .rank-btn.on { background: var(--gold-fill); color: #2e1a04; box-shadow: 0 0 0 2px var(--gold-hi), 0 0 10px 2px rgba(255, 214, 120, 0.6); }
 .modal > .btn.primary { min-height: 52px; font-size: 19px; }
 
@@ -302,7 +310,7 @@ h1, p { margin: 0; }
 /* 革命中は背景を少し赤みに（強さが逆なのが一目で分かるように。文字の表示は上の小さな札） */
 .game-screen.reversed { background-image: radial-gradient(ellipse 90% 55% at 50% 40%, #5e1f33 0%, rgba(36, 16, 32, 0) 72%); }
 /* 見出しのすぐ下に横1列（あるときだけ） */
-.flags { flex: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px 12px 0; min-height: 33px; }
+.flags { flex: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px 12px 0; min-height: 33.2px; }
 /* 続いている状態（革命中・11バック中・しばり中）だけを小さく出す */
 .flag {
   font-family: var(--font-read); font-size: 16px; line-height: 1.2; font-weight: 700; padding: 2px 6px; border-radius: 3px;
@@ -539,6 +547,15 @@ h1, p { margin: 0; }
   background: linear-gradient(180deg, rgba(23, 10, 20, 0) 0%, rgba(23, 10, 20, 0.85) 50%);
 }
 .title-start .btn { min-height: 56px; font-size: 22px; letter-spacing: 0.4em; padding-left: calc(18px + 0.4em); }
+/* 中断データがあるとき：はじめる（左）と続きから（右） */
+.title-start.two { grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.title-start.two .btn { font-size: 19px; letter-spacing: 0.2em; padding: 0 8px 0 calc(8px + 0.2em); }
+/* 保存できなかったときの小さな知らせ。押せず、ほかの部品を動かさない */
+.save-notice {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; white-space: nowrap;
+  padding: 4px 12px; border: 1px solid var(--gold-line); border-radius: 4px; background: rgba(23, 10, 20, 0.92);
+  color: #fffaf0; font-family: var(--font-read); font-size: 16px; line-height: 1.4;
+}
 
 /* ---------- 設定・最終結果：スクロールする中身 ---------- */
 .scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 14px 18px; display: grid; gap: 18px; align-content: start; }
@@ -622,6 +639,10 @@ h1, p { margin: 0; }
   display: grid; grid-template-columns: 44px 56px 1fr auto; grid-template-rows: auto auto; align-items: center; gap: 4px 10px;
   padding: 12px 12px 10px; border-radius: 4px; background: rgba(23, 10, 20, 0.55); border: 1px solid rgba(214, 176, 92, 0.35);
 }
+/* 1回だけの対戦：順位（大富豪〜大貧民）・アイコン・名前だけの1行 */
+.final-row.single { grid-template-columns: 76px 56px 1fr; grid-template-rows: auto; }
+/* 行が少なく余りが出るので、上下のまん中に置く（下にだけ空きを残さない） */
+.final-screen .scroll:has(> .final-list.single) { align-content: center; }
 /* 1位だけ、金の二重線の枠と角の飾り */
 .final-row.first { border-color: var(--gold-line); background: rgba(58, 29, 51, 0.8); }
 .final-place { font-family: var(--font-deco); font-weight: 800; font-size: 22px; letter-spacing: 0.04em; text-align: center; white-space: nowrap; }
