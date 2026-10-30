@@ -405,6 +405,27 @@ describe('しばり', () => {
     doPlay(s, 1, 'S4');
     expect(lockKind(s)).toBeNull();
   });
+  it('8切りで場が流れるときは、しばりを判定しない（激しばになる形でも）', () => {
+    const s = makeTestState({ hands: [H('S7 D9'), H('S8 C4'), H('D5'), H('C6')], turn: 0, rules: { sevenPass: false } });
+    doPlay(s, 0, 'S7');
+    doPlay(s, 1, 'S8');
+    expect(types(s)).not.toContain('lock');
+    expect(types(s)).toContain('eightCut');
+    expect(lockKind(s)).toBeNull();
+  });
+  it('階段に8が入って8切りになるときも、しばりを判定しない', () => {
+    const s = makeTestState({ hands: [H('S4 S5 S6 D9'), H('S7 S8 S9 C4'), H('D5'), H('C6')], turn: 0, rules: { fiveSkip: false, sevenPass: false } });
+    doPlay(s, 0, 'S4 S5 S6');
+    doPlay(s, 1, 'S7 S8 S9');
+    expect(types(s)).not.toContain('lock');
+  });
+  it('8切りがオフなら、8でもしばりを判定する', () => {
+    const s = makeTestState({ hands: [H('S7 D9'), H('S8 C4'), H('D5 S9'), H('C6')], turn: 0, rules: { eightCut: false, sevenPass: false } });
+    doPlay(s, 0, 'S7');
+    doPlay(s, 1, 'S8');
+    expect(lockKind(s)).toBe('geki');
+    expect(types(s)).toContain('lock');
+  });
 });
 
 describe('回の流れ・交換・都落ち・点数', () => {

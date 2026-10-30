@@ -2,7 +2,7 @@
 import { DECK_SIZE, JOKER, MAX_RANK, MIN_RANK, SUITS, cardId, isJoker, nextRandom, rankOf, shuffle, sortHand, suitOf } from '../engine/cards';
 import { Play, effectsOf, isJokerSingle } from '../engine/plays';
 import {
-  PLAYERS, State, canPass, chooseBomber, chooseCards, cloneState, isActive, isReversed, listMoves, pass, play, topEntry,
+  PLAYERS, State, canPass, chooseBomber, chooseCards, cloneState, isActive, isReversed, pass, playableCards, play, topEntry,
 } from '../engine/game';
 import { PersonalityId } from '../characters';
 
@@ -204,7 +204,7 @@ export interface Scored { play: Play | null; score: number }
 
 /** 作戦ルールで、出せる手（とパス）に点をつけて良い順に並べる */
 export function rankMoves(s: State, p: number, w: Weights, unseen: Set<number> | null): Scored[] {
-  const moves = listMoves(s, p);
+  const moves = playableCards(s, p).plays;
   const ctx = makeCtx(s, p, w, unseen);
   const out: Scored[] = moves.map((m) => ({ play: m, score: scoreMove(ctx, m) }));
   if (canPass(s, p)) out.push({ play: null, score: scorePass(ctx) });

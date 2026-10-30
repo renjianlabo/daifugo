@@ -231,8 +231,10 @@ h1, p { margin: 0; }
 }
 .hand .card { cursor: pointer; }
 .hand .card.sel { transform: translateY(-5px); box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px rgba(201, 162, 74, 0.75), 0 0 0 2.5px var(--gold), 0 0 12px 2px rgba(255, 214, 120, 0.7); }
-/* 自分の番でないときは押せないので少し暗くする */
-.hand .card:disabled { cursor: default; filter: brightness(0.72); }
+/* 自分の番でないときは押せないが、見た目はそのまま（2026-10-30 ユーザー指示）。
+   自分の番で、出せる組み合わせに使えないカード（dim）は暗くして押せなくする */
+.hand .card:disabled { cursor: default; }
+.hand .card.dim { filter: brightness(0.5) saturate(0.6); }
 
 /* ---------- イラスト ----------
    大きく見せる：盤の下から画面の下端までの高さいっぱいに出す（下が切れた絵なので、切れ目は画面の下端）。
@@ -432,6 +434,12 @@ h1, p { margin: 0; }
 .fxband.rank2      { --c1: #4a5260; --c2: #c9d0da; --ink: #1d222b; --line: #f4f7fb; } /* 富豪：銀 */
 .fxband.rank3      { --c1: #3e2414; --c2: #9a6238; }                       /* 貧民：銅 */
 .fxband.rank4      { --c1: #15181f; --c2: #3a4150; --ink: #d9dde6; --line: rgba(200, 208, 222, 0.6); } /* 大貧民：くすんだ灰青 */
+/* 回戦の始め（第1回戦など）：色はこの画面の地の紫（帯の初めの色のまま）。左から入って止まり、右へ抜ける。
+   長さ（--ms）と途中から続けるための --delay は app.ts の fxView() が .fx に書く */
+.fxband.round { animation: band-slide var(--ms, 1500ms) linear var(--delay, 0ms) both; }
+.fxband.round .fx-name { animation: none; }
+/* 検査用の場面：帯がまん中に止まったところで撮る */
+.fx.hold .fxband { animation: none; }
 /* 明るい帯は、文字の影を明るくする */
 .fxband.rank1 .fx-name, .fxband.rank2 .fx-name { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55); }
 /* 絵の枠：横は画面いっぱい。高さは画面の54%（帯と上下の余白が入らないときは縮める） */
@@ -464,6 +472,12 @@ h1, p { margin: 0; }
 }
 @keyframes fx-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes band-in { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes band-slide {
+  0% { transform: translateX(-100%); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  20% { transform: none; }
+  80% { transform: none; animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4); }
+  100% { transform: translateX(100%); }
+}
 @keyframes name-pop { from { scale: 0.7; opacity: 0; } to { scale: 1; opacity: 1; } }
 @keyframes fx-rise { from { transform: translateY(12%); opacity: 0.4; } to { transform: none; opacity: 1; } }
 
