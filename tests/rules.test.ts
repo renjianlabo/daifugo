@@ -307,12 +307,12 @@ describe('ジョーカーの数え方と重なり', () => {
     doPlay(s, 0, 'H4 H5 H6');
     expect(s.turn).toBe(2);
   });
-  it('複数の効果は ボンバー→革命→11バック→8切り の順、8切りがあれば5スキップなし', () => {
+  it('複数の効果は 革命→ボンバー→11バック→8切り の順、8切りがあれば5スキップなし', () => {
     const s = makeTestState({ hands: [H('H8 H9 H10 HJ HQ S3'), H('C4'), H('D7'), H('C10')], turn: 0, rules: NO_HAND });
     doPlay(s, 0, 'H8 H9 H10 HJ HQ');
     chooseBomber(s, 0, [4]);
     const order = types(s).filter((t) => ['bomber', 'revolution', 'elevenBack', 'eightCut', 'skip'].includes(t));
-    expect(order).toEqual(['bomber', 'revolution', 'elevenBack', 'eightCut']);
+    expect(order).toEqual(['revolution', 'bomber', 'elevenBack', 'eightCut']);
     const s2 = makeTestState({ hands: [H('H5 H6 H7 H8 S3'), H('C4'), H('D7'), H('C10')], turn: 0, rules: NO_HAND });
     doPlay(s2, 0, 'H5 H6 H7 H8');
     expect(types(s2)).not.toContain('skip');
@@ -597,7 +597,7 @@ describe('7渡し・10捨て', () => {
     expect(s.turn).toBe(1);
     expect(totalCards(s)).toBe(53);
   });
-  it('順番は 7渡し → 10捨て → 革命 → 8切り', () => {
+  it('順番は 革命 → 7渡し → 10捨て → 8切り', () => {
     const s = makeTestState({ hands: [H('H7 H8 H9 H10 S3 S4 S5'), H('C4'), H('D7'), H('C10')], turn: 0 });
     doPlay(s, 0, 'H7 H8 H9 H10');
     expect(s.phase).toBe('sevenPass');
@@ -605,8 +605,30 @@ describe('7渡し・10捨て', () => {
     expect(s.phase).toBe('tenDiscard');
     chooseCards(s, 0, H('S4'));
     const order = types(s).filter((t) => ['sevenPass', 'tenDiscard', 'revolution', 'eightCut'].includes(t));
-    expect(order).toEqual(['sevenPass', 'tenDiscard', 'revolution', 'eightCut']);
+    expect(order).toEqual(['revolution', 'sevenPass', 'tenDiscard', 'eightCut']);
     expect(s.turn).toBe(0);
+  });
+  it('革命は選ぶ効果より先に起き、知らせはジョーカーの直後に出る（画面で1回にまとめるため）', () => {
+    const s = makeTestState({ hands: [H('H6 JK H8 H9 S3 S4'), H('C4'), H('D7'), H('C10')], turn: 0 });
+    doPlay(s, 0, 'H6 JK H8 H9');
+    expect(s.phase).toBe('sevenPass');
+    expect(s.revolution).toBe(true);
+    const all = types(s);
+    expect(all.slice(all.indexOf('joker'), all.indexOf('joker') + 3)).toEqual(['joker', 'revolution', 'effectStart']);
+  });
+  it('革命は上がりの知らせより先に出る', () => {
+    const s = makeTestState({ hands: [H('H3 H4 H5 H6'), H('C4'), H('D7'), H('C10')], turn: 0 });
+    doPlay(s, 0, 'H3 H4 H5 H6');
+    const order = types(s).filter((t) => ['revolution', 'finish'].includes(t));
+    expect(order).toEqual(['revolution', 'finish']);
+    expect(s.revolution).toBe(true);
+  });
+  it('回が終わるカードでは革命は起きない', () => {
+    const s = makeTestState({ hands: [H('H3 H4 H5 H6'), H('C4'), [], []], turn: 0 });
+    s.finished = [2, 3];
+    doPlay(s, 0, 'H3 H4 H5 H6');
+    expect(s.phase).toBe('roundEnd');
+    expect(types(s)).not.toContain('revolution');
   });
   it('7渡し・10捨ての始まりの知らせ（帯の演出のもと）は、選ぶ前に1回ずつ、効果の順に出る', () => {
     const s = makeTestState({ hands: [H('H7 H8 H9 H10 S3 S4 S5'), H('C4'), H('D7'), H('C10')], turn: 0 });
