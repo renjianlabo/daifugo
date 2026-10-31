@@ -1,5 +1,5 @@
-// 大きく出すキャラの絵（タイトル・キャラ選択・対戦の自分の欄）。新しいUIの目的の一つは、キャラの絵を目立たせること。
-// タイトルは決めポーズ（special.png）、キャラ選択と対戦の自分の欄はトランプを持った立ち絵（cards.png）を使う（ユーザー指示 2026-10-30）。
+// 大きく出すキャラの絵（キャラ選択・対戦の自分の欄）。新しいUIの目的の一つは、キャラの絵を目立たせること。
+// キャラ選択と対戦の自分の欄はトランプを持った立ち絵（cards.png）を使う（ユーザー指示 2026-10-30）。タイトルにキャラの絵は出さない（ユーザー指示 2026-10-31）。
 // 絵を差し替えたら、下の HEAD・HEAD_CARDS の数字だけを直せばよい。
 import { Character } from '../characters';
 
@@ -34,7 +34,7 @@ export function bigArt(c: Character, cls: string, kind: 'special' | 'cards'): st
 const headOf = (img: HTMLImageElement) => img.dataset.head!.split(',').map(Number);
 
 /**
- * 頭をまん中に置く絵（タイトル・キャラ選択）：入れ物の下端につけ、頭のてっぺんを入れ物の上端から8px下に置く。
+ * 頭をまん中に置く絵（キャラ選択）：入れ物の下端につけ、頭のてっぺんを入れ物の上端から8px下に置く。
  * 頭の横のまん中を、入れ物の横のまん中に合わせる
  */
 function centerArt(img: HTMLImageElement, box: HTMLElement) {
