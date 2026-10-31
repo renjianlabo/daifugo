@@ -334,6 +334,7 @@ export function play(s: State, player: number, p: Play) {
   s.passed = [false, false, false, false];
   emit(s, { type: 'play', player, play: p });
   if (p.cards.some(isJoker)) emit(s, { type: 'joker', player });
+  const revolutionAt = s.events.length;
 
   const raw = effectsOf(p);
   const r = s.rules;
@@ -343,11 +344,17 @@ export function play(s: State, player: number, p: Play) {
   if (s.hands[player].length === 0) finishPlayer(s, player);
   if (checkRoundEnd(s)) return;
 
+  // 革命は、しばり・上がり・ほかの効果より先に見せる（ユーザー指示 2026-10-31）。回が終わるカードでは起きないので、終わらないと分かってから知らせを前に入れる
+  if (r.revolution && raw.revolution) {
+    s.revolution = !s.revolution;
+    s.events.splice(revolutionAt, 0, { type: 'revolution', player, active: s.revolution });
+  }
+
   const eff: Effects = {
     bomber: r.twelveBomber ? raw.bomber : 0,
     sevenPass: r.sevenPass ? raw.sevenPass : 0,
     tenDiscard: r.tenDiscard ? raw.tenDiscard : 0,
-    revolution: r.revolution && raw.revolution,
+    revolution: false,
     elevenBack: r.elevenBack && raw.elevenBack,
     eightCut: r.eightCut && raw.eightCut,
     skip: r.fiveSkip ? raw.skip : 0,
@@ -421,10 +428,6 @@ function updateLocks(s: State, player: number, prev: TableEntry, cur: TableEntry
 }
 
 function continueEffects(s: State, player: number, eff: Effects) {
-  if (eff.revolution) {
-    s.revolution = !s.revolution;
-    emit(s, { type: 'revolution', player, active: s.revolution });
-  }
   // 11バック中にもう一度Jが出ても、逆のまま変わらない
   if (eff.elevenBack && !s.elevenBack) {
     s.elevenBack = true;

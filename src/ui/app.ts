@@ -235,7 +235,7 @@ class GameController {
   }
 
   /**
-   * 出来事を演出に変える。文字では説明しない。帯は起きた順（＝ルール処理の順：しばり → 12ボンバー → 7渡し → 10捨て → 革命 → 11バック → 8切り → 5スキップ）に積む。
+   * 出来事を演出に変える。文字では説明しない。帯は起きた順（＝ルール処理の順：革命 → しばり → 上がり → 12ボンバー → 7渡し → 10捨て → 11バック → 8切り → 5スキップ）に積む。
    * 一瞬見せるカードがあれば返す
    */
   private describe(e: GameEvent): Omit<Flash, 'start'> | null {
@@ -722,6 +722,14 @@ export function startApp(root: HTMLElement) {
         s.hands[who] = [c3, h8];
         s.table = [{ player: 3, play: interpret([s7])[0], effRank: 7, effSuitKey: 'S' }];
         Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'revJoker': {
+        // ジョーカーで革命する順番を確かめる：♥6・ジョーカー・♥8・♥9（7の代わり）で、革命のあとに7渡しが起きる
+        const mine = [cardId('H', 6), JOKER, cardId('H', 8), cardId('H', 9), cardId('S', 3), cardId('C', 3)];
+        s.hands = s.hands.map((h) => h.filter((c) => !mine.includes(c)));
+        s.discard.push(...s.hands[0]);
+        s.hands[0] = [...mine].sort((a, b) => a - b);
         break;
       }
       case 'stack15': case 'stack16': case 'stack17': case 'stack18': case 'stack19': case 'stack21': case 'stack24': {
