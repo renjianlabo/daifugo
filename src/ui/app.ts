@@ -937,12 +937,12 @@ export function startApp(root: HTMLElement) {
   }
 
   function render() {
-    if (screen === 'title') root.innerHTML = titleView(settings, !!loadGame(), newGameConfirm);
+    if (screen === 'title') root.innerHTML = titleView(!!loadGame(), newGameConfirm);
     else if (screen === 'settings') root.innerHTML = settingsView(settings, settingsTab);
     else if (screen === 'select') root.innerHTML = selectView(pickChar);
     else if (screen === 'game' && game) root.innerHTML = gameView(game);
     else if (screen === 'final' && finalState) root.innerHTML = finalView(finalState.s, finalState.seats);
-    else root.innerHTML = titleView(settings, !!loadGame(), newGameConfirm);
+    else root.innerHTML = titleView(!!loadGame(), newGameConfirm);
     layoutArts(root);
   }
 
@@ -1008,18 +1008,13 @@ export function startApp(root: HTMLElement) {
 // 角の小さな飾り（枠の4隅）
 const CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>';
 
-function titleView(st: Settings, hasSaved: boolean, confirm: boolean): string {
-  // 最後に選んだキャラに絵があればその絵、なければ絵のあるキャラ。絵は下が切れているので画面の下端につける
-  const c = [characterById(st.character), ...CHARACTERS].find((x) => x.images);
-  const lead = st.rounds === 1 ? 'CPU 3人と 1回戦。<br>大富豪を めざそう。' : `CPU 3人と ${st.rounds}回戦。<br>合計ポイントで 1位を めざそう。`;
+function titleView(hasSaved: boolean, confirm: boolean): string {
   return `
   <main class="screen title-screen">
     <section class="logo">
       <div class="suits" aria-hidden="true"><span>♠</span><span class="r">♥</span><span class="r">♦</span><span>♣</span></div>
       <h1 class="gold-text">大富豪</h1>
-      <p class="lead">${lead}</p>
     </section>
-    <section class="title-stage">${c ? bigArt(c, 'title-art', 'special') : ''}</section>
     <div class="title-start ${hasSaved ? 'two' : ''}">
       ${hasSaved ? '<button class="btn ghost" data-act="newGame">はじめる</button><button class="btn primary" data-act="resume">続きから</button>' : '<button class="btn primary" data-act="newGame">はじめる</button>'}
     </div>

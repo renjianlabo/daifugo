@@ -513,6 +513,16 @@ h1, p { margin: 0; }
 }
 
 /* ---------- タイトル ---------- */
+/* 背景の絵は下端を画面の下端にそろえる。上だけ少し暗くして文字を読みやすくする */
+.title-screen {
+  background-image:
+    linear-gradient(180deg, rgba(23, 10, 20, 0.72) 0%, rgba(23, 10, 20, 0.6) 24%, rgba(23, 10, 20, 0) 38%),
+    url("../../assets/backgrounds/title.webp");
+  background-position: center, center bottom;
+  background-size: auto, cover;
+  background-repeat: no-repeat;
+}
+.title-screen::before { content: none; }
 .title-screen .logo { position: relative; z-index: 1; flex: none; display: flex; flex-direction: column; align-items: center; padding: max(24px, 4vh) 16px 0; text-align: center; }
 .suits { display: flex; gap: 14px; font-size: 30px; line-height: 1; font-family: var(--font-read); }
 .suits span { color: var(--gold); }
@@ -530,14 +540,11 @@ h1, p { margin: 0; }
 }
 .logo h1::before { top: -5px; }
 .logo h1::after { bottom: -5px; }
-.lead { margin-top: 12px; color: var(--ink); font-size: 17px; line-height: 1.6; }
-/* 絵：説明の下から画面の下端まで（下が切れた絵なので、切れ目は画面の下端）。頭をまん中に。位置と大きさは art.ts で決める */
-.title-stage { position: relative; flex: 1 1 auto; min-height: 0; }
-.title-stage::before, .slide::before {
+.slide::before {
   content: ""; position: absolute; left: 50%; top: 0; width: 120%; height: 60%; translate: -50% 0; pointer-events: none;
   background: radial-gradient(ellipse 45% 50% at 50% 35%, rgba(255, 214, 140, 0.2), rgba(255, 214, 140, 0) 70%);
 }
-.title-art, .char-art {
+.char-art {
   position: absolute; bottom: 0; display: block; user-select: none; pointer-events: none; -webkit-user-drag: none;
   filter: drop-shadow(0 0 1px rgba(255, 240, 200, 0.6)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
 }
