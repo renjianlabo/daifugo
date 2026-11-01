@@ -33,6 +33,12 @@ const BOMBER_MS = 2000;
 const AUTO_PASS_MS = 700;
 /** 出来事のカードを一瞬見せて、捨てる・渡す動きをする時間 */
 const FLASH_MS = 1300;
+/** 演出が終わってから次の演出が始まるまでの、最低の間（早送り中は半分）。この値だけ変えれば調整できる */
+const EFFECT_GAP_MS = 1000;
+/** 文を添えてカードを見せる長さ（交換・自分が受け取る7渡し） */
+const TALK_MS = 2000;
+/** 飛ばされた人に「スキップ」を出す間隔（早送り中は半分） */
+const SKIP_MS = 700;
 // 「|」は折り返してよい場所（言葉の途中で折り返さないようにする）
 const RULE_HELP: Record<keyof Rules, string> = {
   eightCut: '8を出すと|場が流れる',
@@ -87,7 +93,12 @@ interface TableFx { kind: 'table'; ms: number; start?: number }
 interface UnghostFx { kind: 'unghost'; start?: number }
 /** 山札から全員へ1枚ずつ配る。first は最初に配られる人（53枚なので14枚になる人）。とばせない。hold は検査用（途中で止めて撮る） */
 interface DealFx { kind: 'deal'; first: number; ms: number; start?: number; hold?: boolean }
-type Fx = BandFx | RevealFx | TableFx | UnghostFx | DealFx;
+/** 演出と演出の間（何も重ねず、今の場を見せて待つ。とばせない） */
+interface GapFx { kind: 'gap'; ms: number; start?: number }
+/** 飛ばされた人に「スキップ」を出して待つ（幕は出さない）。unskip は、出していた「スキップ」を消す印（待たない） */
+interface SkipTagFx { kind: 'skipTag'; player: number; ms: number; start?: number }
+interface UnskipFx { kind: 'unskip'; start?: number }
+type Fx = BandFx | RevealFx | TableFx | UnghostFx | DealFx | GapFx | SkipTagFx | UnskipFx;
 
 /**
  * 出来事のカードを一瞬見せる。move は、そのあとの動き：
@@ -115,6 +126,8 @@ class GameController {
    * 8切りの順番：①場に出したカードを見せる（TABLE_MS）→ ②8切りの帯 → ③場を流す（unghost）
    */
   ghost: number[] | null = null;
+  /** 「スキップ」を出している人。次に誰かが出すか、場が流れるまで出しておく */
+  skipTags = new Set<number>();
   /** 回戦の始めの帯が出てから配り終わるまで。手札を隠し、CPUの枚数を0から数える */
   dealing = false;
   thinking: number | null = null;
@@ -149,12 +162,14 @@ class GameController {
     preloadArt(this.seats);
     this.opts = this.seats.map((c) => ({ level: saved?.level ?? settings.level, weights: PERSONALITY_WEIGHTS[c.personality] }));
     this.s = saved?.state ?? newGame(settings.rules, Math.floor(Math.random() * 2 ** 31), settings.rounds);
+    this.skipTags = new Set((saved?.skipped ?? []).filter((i) => this.s.passed[i]));
   }
 
   /** 今の状態を保存する。失敗しても遊びは続ける */
   private persist() {
     if (!this.autosave) return;
-    const ok = saveGame({ state: this.s, character: this.seats[HUMAN].id, level: this.opts[HUMAN].level });
+    const skipped = [...this.skipTags, ...this.fxQueue.flatMap((f) => (f.kind === 'skipTag' ? [f.player] : []))];
+    const ok = saveGame({ state: this.s, character: this.seats[HUMAN].id, level: this.opts[HUMAN].level, skipped });
     if (!ok && !this.saveFailed) this.onSaveFail();
     this.saveFailed = !ok;
   }
@@ -193,7 +208,12 @@ class GameController {
     if (rev) this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !(f.kind === 'band' && f.band === 'joker' && f.char === rev.char))];
     if (!shown.length) return;
     // 1回に2つ以上（カード交換）のときは、まとめて見せて消すだけにする
-    this.showFlash(shown.length === 1 ? shown[0] : { cards: shown.flatMap((f) => f.cards), move: 'none', from: null, to: null });
+    const flash = shown.length === 1 ? shown[0] : { cards: shown.flatMap((f) => f.cards), move: 'none' as const, from: null, to: null };
+    // カードの動きも演出なので、前の演出から間を空けて始める。そのあとの演出は、動きが終わってから間を空ける
+    const wait = this.gapLeft();
+    this.lastFxEnd = performance.now() + wait + FLASH_MS / this.speed;
+    if (wait > 0) this.later(() => this.showFlash(flash), wait);
+    else this.showFlash(flash);
   }
 
   private showFlash(f: Omit<Flash, 'start'>) {
@@ -234,6 +254,23 @@ class GameController {
     this.fxQueue.push({ kind: 'band', band, name, char: this.seats[player], pose });
   }
 
+  /** 受け取ったカードを、誰からかの文と一緒に見せる。見せ終わるまで手札に出さない */
+  private receive(from: number, cards: number[]) {
+    this.fxQueue.push({ kind: 'reveal', cards, text: `${this.name(from)}から受け取りました`, move: 'give', to: HUMAN, ms: TALK_MS, hide: cards });
+  }
+
+  /** その人の札：飛ばされた人は「スキップ」、パスした人は「パス」。「スキップ」を出す順番がまだの人は何も出さない */
+  statusTag(i: number): 'skip' | 'pass' | null {
+    if (this.skipTags.has(i)) return 'skip';
+    if (this.fxQueue.some((f) => f.kind === 'skipTag' && f.player === i)) return null;
+    return this.s.phase === 'play' && this.s.passed[i] ? 'pass' : null;
+  }
+
+  /** 「スキップ」を出し終わるまでは、番を出した人のままにする。その人の席（出し終わっていれば null） */
+  heldTurn(): number | null {
+    return this.fx?.kind === 'skipTag' || this.fxQueue.some((f) => f.kind === 'skipTag') ? this.actor : null;
+  }
+
   /**
    * 出来事を演出に変える。文字では説明しない。帯は起きた順（＝ルール処理の順：革命 → しばり → 上がり → 12ボンバー → 7渡し → 10捨て → 11バック → 8切り → 5スキップ）に積む。
    * 一瞬見せるカードがあれば返す
@@ -243,6 +280,9 @@ class GameController {
       // ①回戦の帯 → ②カードを配る → ③手札を並べる（カード交換はそのあと）
       case 'roundStart':
         this.dealing = true;
+        // 結果の画面をはさむので、前の回戦の演出からの間は数えない
+        this.lastFxEnd = -Infinity;
+        this.skipTags.clear();
         this.fxQueue.push({ kind: 'band', band: 'round', name: `第${e.round}回戦`, char: null, pose: null });
         this.fxQueue.push({ kind: 'deal', first: Math.max(0, this.s.hands.findIndex((h) => h.length === 14)), ms: DEAL_MS });
         break;
@@ -250,20 +290,35 @@ class GameController {
         this.actor = e.player;
         this.skipShown = false;
         this.lastPlay = e.play.cards;
+        this.skipTags.clear();
         tableLog.played.push(cardsKey(e.play.cards));
         this.playInBatch = true;
         this.playMark = this.fxQueue.length;
         break;
-      case 'flush': case 'roundEnd': this.keepOnTable(); break;
+      case 'flush':
+        this.keepOnTable();
+        this.fxQueue.push({ kind: 'unskip' });
+        break;
+      case 'roundEnd': this.keepOnTable(); break;
       // カード交換：自分が渡すカードは受け取る人へ、受け取ったカードは手札へ動かして見せる（起きた順。自分が大富豪・富豪なら渡すのが先）
       case 'exchange':
-        if (e.from === HUMAN || e.to === HUMAN) this.fxQueue.push({ kind: 'reveal', cards: e.cards, text: '', move: 'give', to: e.to, ms: FLASH_MS, hide: e.to === HUMAN ? e.cards : [] });
+        if (e.to === HUMAN) this.receive(e.from, e.cards);
+        else if (e.from === HUMAN) {
+          // 貧民・大貧民は渡すカードを選ばないので、文を添える
+          const text = (this.s.prevRanks?.[HUMAN] ?? 0) >= 3 ? `このカードを${this.name(e.to)}に渡します` : '';
+          this.fxQueue.push({ kind: 'reveal', cards: e.cards, text, move: 'give', to: e.to, ms: text ? TALK_MS : FLASH_MS, hide: [] });
+        }
         break;
       case 'bomber':
         this.fxQueue.push({ kind: 'reveal', cards: e.removed.flat(), text: `${e.ranks.map((r) => RANK_LABEL[r]).join('と')}を選択`, move: 'discard', to: null, ms: BOMBER_MS, hide: [] });
         break;
-      // 自分が関わる7渡しは表のまま、CPUどうしは裏向きのまま動かす
-      case 'sevenPass': return { cards: e.cards, move: e.from === HUMAN || e.to === HUMAN ? 'give' : 'pass', from: e.from, to: e.to };
+      // 自分が渡す7渡しは表のまま、CPUどうしは裏向きのまま動かす。自分が受け取るときはゲームを止めて見せる
+      case 'sevenPass':
+        if (e.to === HUMAN) {
+          this.receive(e.from, e.cards);
+          break;
+        }
+        return { cards: e.cards, move: e.from === HUMAN ? 'give' : 'pass', from: e.from, to: e.to };
       case 'tenDiscard': return { cards: e.cards, move: 'discard', from: e.player, to: null };
       case 'joker': this.band('joker', e.player, 'special'); break;
       case 'revolution': this.band('revolution', e.player, 'special'); break;
@@ -271,7 +326,10 @@ class GameController {
       case 'effectStart': this.band(({ bomber: 'bomber', sevenPass: 'seven', tenDiscard: 'ten' } as const)[e.kind], e.player); break;
       case 'elevenBack': this.band('eleven', e.player); break;
       case 'eightCut': this.band('eight', e.player); this.eightInBatch = true; break;
-      case 'skip': if (!this.skipShown) { this.skipShown = true; this.band('five', this.actor); } break;
+      case 'skip':
+        if (!this.skipShown) { this.skipShown = true; this.band('five', this.actor); }
+        this.fxQueue.push({ kind: 'skipTag', player: e.player, ms: SKIP_MS });
+        break;
       case 'finish': this.band(`rank${e.rank}` as BandKind, e.player, e.rank as FxPose); break;
       // 都落ちした人は、その時点で大貧民（4位）に決まる
       case 'fall': this.band('rank4', e.player, 4); break;
@@ -285,19 +343,42 @@ class GameController {
     return this.ffwd ? 2 : 1;
   }
 
-  /** 次に見せる演出を取り出す。早送り中は、順位のカットイン以外の帯を飛ばし、カードを見せる時間を半分にする */
+  /** 前の演出が終わった時刻（カードの動きが続いているときは、終わる予定の時刻） */
+  private lastFxEnd = -Infinity;
+
+  /** 次の演出を始められるまでの残り時間 */
+  private gapLeft(): number {
+    return this.fast ? 0 : Math.max(0, this.lastFxEnd + EFFECT_GAP_MS / this.speed - performance.now());
+  }
+
+  /**
+   * 次に見せる演出を取り出す。早送り中は、順位のカットイン以外の帯を飛ばし、カードを見せる時間を半分にする。
+   * 前の演出から間が空いていなければ、先に残りの間を返す（出したカードを場に見せるだけの table と、5スキップの帯に続く「スキップ」は待たない）
+   */
   private nextFx(): Fx | null {
     while (this.fxQueue.length) {
-      const fx = this.fxQueue.shift()!;
+      const fx = this.fxQueue[0];
       // 場に残しておいたカードを消す（帯が終わった）
       if (fx.kind === 'unghost') {
+        this.fxQueue.shift();
         this.ghost = null;
         continue;
       }
-      if (this.ffwd) {
-        if (fx.kind === 'band' && !fx.band.startsWith('rank')) continue;
-        if (fx.kind === 'reveal' || fx.kind === 'table') fx.ms /= 2;
+      // 「スキップ」を消す（場が流れた）
+      if (fx.kind === 'unskip') {
+        this.fxQueue.shift();
+        this.skipTags.clear();
+        continue;
       }
+      if (this.ffwd && fx.kind === 'band' && !fx.band.startsWith('rank')) {
+        this.fxQueue.shift();
+        continue;
+      }
+      const wait = fx.kind === 'table' || fx.kind === 'skipTag' ? 0 : this.gapLeft();
+      if (wait > 0) return { kind: 'gap', ms: wait };
+      this.fxQueue.shift();
+      if (this.ffwd && (fx.kind === 'reveal' || fx.kind === 'table' || fx.kind === 'skipTag')) fx.ms /= 2;
+      if (fx.kind === 'skipTag') this.skipTags.add(fx.player);
       return fx;
     }
     return null;
@@ -321,7 +402,7 @@ class GameController {
       fx.start = performance.now();
       this.fx = fx;
       this.onChange();
-      const ms = fx.kind === 'reveal' || fx.kind === 'table' || fx.kind === 'deal' ? fx.ms : fx.kind === 'unghost' ? 0 : fx.band === 'round' ? ROUND_MS : fx.pose !== null ? FX_MS : BAND_MS;
+      const ms = fx.kind === 'reveal' || fx.kind === 'table' || fx.kind === 'deal' || fx.kind === 'gap' || fx.kind === 'skipTag' ? fx.ms : fx.kind === 'unghost' || fx.kind === 'unskip' ? 0 : fx.band === 'round' ? ROUND_MS : fx.pose !== null ? FX_MS : BAND_MS;
       this.later(() => { if (this.fx === fx) this.skipFx(); }, this.fast ? 30 : ms);
       return;
     }
@@ -399,7 +480,8 @@ class GameController {
   private cpuTurn(p: number) {
     this.thinking = p;
     this.onChange();
-    const delay = this.fast ? 0 : (500 + Math.random() * 1000) / this.speed;
+    // 出したカードで次の演出が出てもよいように、前の演出から間が空くまでは出さない
+    const delay = this.fast ? 0 : Math.max((500 + Math.random() * 1000) / this.speed, this.gapLeft());
     const start = Date.now();
     this.later(() => {
       if (this.frozen) return;
@@ -421,6 +503,7 @@ class GameController {
   skipFx() {
     if (!this.fx) return;
     if (this.fx.kind === 'deal') this.dealing = false;
+    if (this.fx.kind !== 'table' && this.fx.kind !== 'gap') this.lastFxEnd = Math.max(this.lastFxEnd, performance.now());
     this.fx = null;
     this.advance();
   }
@@ -670,7 +753,7 @@ export function startApp(root: HTMLElement) {
         nextRound(s);
         return { html: finalView(s, [me, ...CHARACTERS.filter((c) => c.id !== me.id)]), order: s.finalOrder };
       },
-      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band } : { kind: game.fx.kind }),
+      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide, text: game.fx.text } : game.fx.kind === 'skipTag' ? { kind: 'skipTag', player: game.fx.player } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band } : { kind: game.fx.kind }),
       hand: () => game ? [...game.s.hands[0]] : [],
       // 出したのに一度も場に描かれなかったカード（あれば不具合）と、出した回数
       unseenPlays: () => ({ plays: tableLog.played.length, unseen: tableLog.played.filter((k) => !tableLog.drawn.has(k)) }),
@@ -730,6 +813,79 @@ export function startApp(root: HTMLElement) {
         s.hands = s.hands.map((h) => h.filter((c) => !mine.includes(c)));
         s.discard.push(...s.hands[0]);
         s.hands[0] = [...mine].sort((a, b) => a - b);
+        break;
+      }
+      case 'gap85': case 'gap85Cpu': {
+        // 演出の間を確かめる：場に♠7。♥8で場が流れ、同じ人が続けて5を出す
+        const who = name === 'gap85' ? 0 : 1;
+        const s7 = cardId('S', 7);
+        const mine = [cardId('H', 8), cardId('S', 5), who ? cardId('S', 6) : cardId('C', 3)];
+        s.hands = s.hands.map((h) => h.filter((c) => c !== s7 && !mine.includes(c)));
+        s.discard.push(...s.hands[who]);
+        s.hands[who] = mine;
+        s.table = [{ player: 3, play: interpret([s7])[0], effRank: 7, effSuitKey: 'S' }];
+        Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'gapRevJ': case 'gapRevJCpu': {
+        // 演出の間を確かめる：場に3が4枚。Jの4枚で革命と11バックが続けて起きる
+        const who = name === 'gapRevJ' ? 0 : 1;
+        const threes = (['S', 'H', 'D', 'C'] as const).map((x) => cardId(x, 3));
+        const mine = [...(['S', 'H', 'D', 'C'] as const).map((x) => cardId(x, 11)), cardId('S', 4)];
+        s.hands = s.hands.map((h) => h.filter((c) => !threes.includes(c) && !mine.includes(c)));
+        s.discard.push(...s.hands[who]);
+        s.hands[who] = mine;
+        s.table = [{ player: 3, play: interpret(threes)[0], effRank: 3, effSuitKey: null }];
+        Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'exR1': case 'exR2': case 'exR3': case 'exR4': {
+        // カード交換を、自分の階級ごとに本物の流れで確かめる（帯と配る演出は出さない）
+        const ranks = { exR1: [1, 4, 2, 3], exR2: [2, 3, 1, 4], exR3: [3, 2, 1, 4], exR4: [4, 1, 2, 3] }[name]!;
+        Object.assign(s, { phase: 'roundEnd', prevRanks: ranks, roundRanks: [ranks], scores: [0, 0, 0, 0], round: 1 });
+        nextRound(s);
+        g.eventIdx = s.events.length;
+        break;
+      }
+      case 'sevenFromCpu': {
+        // キャラ4（自分の前の人）が7を出して、自分へ渡す。場に♥6なので、キャラ4が出せるのは7だけ
+        const h6 = cardId('H', 6);
+        const mine = [cardId('S', 7), cardId('C', 3), cardId('C', 4)];
+        s.hands = s.hands.map((h) => h.filter((c) => c !== h6 && !mine.includes(c)));
+        s.discard.push(...s.hands[3]);
+        s.hands[3] = mine;
+        s.table = [{ player: 2, play: interpret([h6])[0], effRank: 6, effSuitKey: 'H' }];
+        Object.assign(s, { lastPlayer: 2, turn: 3, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'skip1': case 'skip1Cpu': case 'skipFfwd': {
+        // 5スキップで1人飛ばす。場に♠4で、出す人が出せるのは♥5だけ。skipFfwd は自分が上がったあとの早送り
+        const who = name === 'skip1' ? 0 : 1;
+        const s4 = cardId('S', 4);
+        const mine = [cardId('H', 5), cardId('C', 3), cardId('D', 3)];
+        s.hands = s.hands.map((h) => h.filter((c) => c !== s4 && !mine.includes(c)));
+        s.discard.push(...s.hands[who]);
+        s.hands[who] = mine;
+        s.table = [{ player: 2, play: interpret([s4])[0], effRank: 4, effSuitKey: 'S' }];
+        Object.assign(s, { lastPlayer: 2, turn: who, lockSuit: null, lockNum: false });
+        if (name === 'skipFfwd') {
+          s.discard.push(...s.hands[0]);
+          s.hands[0] = [];
+          s.finished = [0];
+          g.ffwd = true;
+        }
+        break;
+      }
+      case 'skipAll': case 'skipAllCpu': {
+        // 5を3枚で全員を飛ばし、出した人の番に戻す。場に3が3枚で、出す人が出せるのは5の3枚だけ
+        const who = name === 'skipAll' ? 0 : 1;
+        const threes = (['S', 'H', 'D'] as const).map((x) => cardId(x, 3));
+        const mine = [...(['S', 'H', 'D'] as const).map((x) => cardId(x, 5)), cardId('C', 4)];
+        s.hands = s.hands.map((h) => h.filter((c) => !threes.includes(c) && !mine.includes(c)));
+        s.discard.push(...s.hands[who]);
+        s.hands[who] = mine;
+        s.table = [{ player: 3, play: interpret(threes)[0], effRank: 3, effSuitKey: null }];
+        Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
         break;
       }
       case 'stack15': case 'stack16': case 'stack17': case 'stack18': case 'stack19': case 'stack21': case 'stack24': {
@@ -1174,18 +1330,22 @@ function flagsView(s: State): string {
   return flags.join('');
 }
 
+const statusTagView = (tag: 'skip' | 'pass' | null) => `<span class="pass-tag">${tag === 'skip' ? 'スキップ' : 'パス'}</span>`;
+
 function gameView(g: GameController): string {
   const s = g.s;
   const ranks = currentRanks(s);
   const task = g.humanTask();
   const myTurn = s.phase === 'play' && s.turn === HUMAN && !g.fx;
-  const isTurn = (i: number) => (s.phase === 'play' && s.turn === i) || (s.phase === 'bomber' && s.pendingBomber?.player === i)
+  const held = g.heldTurn();
+  const isTurn = (i: number) => (held !== null ? held === i : s.phase === 'play' && s.turn === i) || (s.phase === 'bomber' && s.pendingBomber?.player === i)
     || ((s.phase === 'sevenPass' || s.phase === 'tenDiscard') && s.pendingCards?.player === i);
-  // CPUの状態：上がった人は順位、パスした人は朱色の枠の札（アイコンを暗く）。手番はアイコンを金色に光らせる（文字は出さない）
+  // CPUの状態：上がった人は順位、パス・スキップの人は朱色の枠の札（アイコンを暗く）。手番はアイコンを金色に光らせる（文字は出さない）
   const opp = (i: number) => {
     const done = !isActive(s, i) || !!ranks[i];
-    const passed = !done && s.phase === 'play' && s.passed[i] && !isTurn(i);
-    const status = done ? `<span class="rank-tag">${RANK_NAMES[ranks[i] - 1] ?? ''}</span>` : passed ? '<span class="pass-tag">パス</span>' : '';
+    const tag = g.statusTag(i);
+    const passed = !done && !!tag && !isTurn(i);
+    const status = done ? `<span class="rank-tag">${RANK_NAMES[ranks[i] - 1] ?? ''}</span>` : passed ? statusTagView(tag) : '';
     return `
     <div class="opp ${!done && !g.dealing && isTurn(i) ? 'turn' : ''} ${passed ? 'passed' : ''}" data-seat="${i}">
       ${avatarSmall(g.seats[i])}
@@ -1228,8 +1388,9 @@ function gameView(g: GameController): string {
   const meStatus = ranks[HUMAN] ? `<span class="rank-tag">${RANK_NAMES[ranks[HUMAN] - 1]}</span>`
     : myTurn ? '<span class="gold-text">あなたの番</span>'
     : s.phase === 'bomber' && s.pendingBomber?.player === HUMAN ? '<span class="gold-text">数字を選ぶ</span>'
-    : task && task.kind !== 'exchange' ? '<span class="gold-text">カードを選ぶ</span>'
-    : s.phase === 'play' && s.passed[HUMAN] ? '<span class="pass-tag">パス</span>' : '';
+    // 手札を全部渡す（捨てる）ときは自動で進むので、案内しない
+    : task && !g.fx && task.count < s.hands[HUMAN].length ? `<span class="gold-text guide-text">${task.kind === 'tenDiscard' ? '捨てる' : '渡す'}カードを選んでください</span>`
+    : g.statusTag(HUMAN) ? statusTagView(g.statusTag(HUMAN)) : '';
 
   const flags = flagsView(s);
   return `
@@ -1331,7 +1492,7 @@ const PANEL_CORNERS = '<i class="corner tl"></i><i class="corner tr"></i><i clas
 function fxView(fx: Fx): string {
   if (fx.kind === 'reveal') return revealView(fx);
   // 出したカードを場に見せて待つ間は、幕を出さない
-  if (fx.kind === 'table' || fx.kind === 'unghost') return '';
+  if (fx.kind === 'table' || fx.kind === 'unghost' || fx.kind === 'gap' || fx.kind === 'skipTag' || fx.kind === 'unskip') return '';
   if (fx.kind === 'deal') return dealView(fx);
   const art = fx.pose !== null && fx.char ? artImg(fx.char, fx.pose, 'fx-art') : '';
   const icon = art || !fx.char ? '' : avatarSmall(fx.char);
@@ -1376,7 +1537,7 @@ function revealView(fx: RevealFx): string {
   return `
   <div class="fx reveal" data-act="fxSkip" role="status">
     <span class="fx-hint">タップでとばす</span>
-    <div class="reveal-box ${fx.move}" style="--delay: -${elapsed}ms; --ms: ${fx.ms}ms" data-to="${fx.to ?? ''}" aria-hidden="true">
+    <div class="reveal-box ${fx.move} ${fx.to === HUMAN ? 'to-me' : ''}" style="--delay: -${elapsed}ms; --ms: ${fx.ms}ms" data-to="${fx.to ?? ''}" aria-hidden="true">
       <div class="table-cards">${fx.cards.map((c) => cardFace(c, { big: true })).join('')}</div>
       ${fx.text ? `<p class="reveal-text">${esc(fx.text)}</p>` : ''}
     </div>

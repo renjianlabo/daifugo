@@ -486,10 +486,257 @@ async function ffwdCheck(browser) {
   await page.waitForTimeout(100);
   const next = await page.evaluate(() => ({ band: document.querySelector('.fxband .fx-name')?.textContent, ffwd: window.__daifugo.state().ffwd }));
   // 次の回戦も、帯のあとに配る
-  if (!(await page.locator('.fx.deal').waitFor({ timeout: 3000 }).then(() => true).catch(() => false))) problems.push({ item: 'ffwd', where, detail: '次の回戦でカードを配る演出が出ない' });
+  if (!(await page.locator('.fx.deal').waitFor({ timeout: 4000 }).then(() => true).catch(() => false))) problems.push({ item: 'ffwd', where, detail: '次の回戦でカードを配る演出が出ない' });
   if (next.ffwd || !/回戦/.test(next.band ?? '')) problems.push({ item: 'ffwd', where, detail: `次の回戦の始まり：${JSON.stringify(next)}` });
   await page.close();
   return { off, on, next };
+}
+
+/**
+ * 演出の間（2026-11-01 ユーザー指示）：演出が終わってから次の演出が始まるまで、通常は1秒、早送り中は0.5秒空く。
+ * 間の間は幕が出ず、場が見える。自分・CPUが出す場面と、早送りの場面で実測する
+ */
+async function gapCheck(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  const run = (scene) => page.evaluate(async ({ scene }) => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const d = window.__daifugo;
+    d.scenario(scene.name);
+    await w(50);
+    if (scene.ffwd) document.querySelector('[data-act=ffwd]').click();
+    const random = Math.random;
+    Math.random = () => 0;
+    d.unfreeze();
+    const clickCards = async (labels) => {
+      for (const l of labels) {
+        [...document.querySelectorAll('.hand .card')].find((e) => e.getAttribute('aria-label') === l).click();
+        await w(5);
+      }
+      document.querySelector('[data-act=play]').click();
+    };
+    if (scene.first) await clickCards(scene.first);
+    const t0 = performance.now();
+    const log = [];
+    let cur = null;
+    let gaps = [];
+    let thenDone = false;
+    while (performance.now() - t0 < scene.ms) {
+      const fx = d.fxNow();
+      // 順位・効果の帯、12ボンバーのカード、配る、カードの動きを「演出」として記録する
+      const flash = document.querySelector('.flash');
+      const name = fx?.kind === 'band' ? fx.band : fx?.kind === 'reveal' || fx?.kind === 'deal' ? fx.kind : flash ? 'flash' : null;
+      const now = performance.now() - t0;
+      if (name !== cur) {
+        if (cur) log[log.length - 1].end = now;
+        if (name) log.push({ name, start: now });
+        cur = name;
+      }
+      if (fx?.kind === 'gap') {
+        gaps.push({
+          cover: !!document.querySelector('.fx, .fxband'),
+          table: [...document.querySelectorAll('.table > .table-cards .card')].map((e) => e.getAttribute('aria-label')).join('') || '空',
+        });
+      }
+      // 8切りのすぐあとに、自分が5を出す
+      if (scene.then && !thenDone && log.length && log[log.length - 1].end && !fx && d.legal().length) {
+        thenDone = true;
+        await clickCards(scene.then);
+      }
+      if (document.querySelector('[data-act=nextRound]')) break;
+      await w(4);
+    }
+    Math.random = random;
+    return { log: log.map((x) => ({ name: x.name, start: Math.round(x.start), end: Math.round(x.end ?? x.start) })), covered: gaps.some((g) => g.cover), tables: [...new Set(gaps.map((g) => g.table))] };
+  }, { scene });
+  const scenes = [
+    { label: '自分：8切り→5スキップ', name: 'gap85', first: ['♥8'], then: ['♠5'], want: 1000, pair: ['eight', 'five'], ms: 5000 },
+    { label: 'CPU：8切り→5スキップ', name: 'gap85Cpu', want: 1000, pair: ['eight', 'five'], ms: 6000 },
+    { label: '自分：革命→11バック', name: 'gapRevJ', first: ['♠J', '♥J', '♦J', '♣J'], want: 1000, pair: ['revolution', 'eleven'], ms: 4500 },
+    { label: 'CPU：革命→11バック', name: 'gapRevJCpu', want: 1000, pair: ['revolution', 'eleven'], ms: 5500 },
+    { label: '早送り（CPU）：順位→順位', name: 'ffwdRun', ffwd: true, want: 500, pair: null, ms: 40000 },
+  ];
+  const results = [];
+  for (const scene of scenes) {
+    const r = await run(scene);
+    const pairs = r.log.slice(1).map((x, i) => [r.log[i], x]);
+    const hit = scene.pair
+      ? pairs.filter(([a, b]) => a.name === scene.pair[0] && b.name === scene.pair[1])
+      : pairs.filter(([a, b]) => a.name.startsWith('rank') && b.name.startsWith('rank'));
+    const measured = hit.map(([a, b]) => b.start - a.end);
+    const all = pairs.map(([, b], i) => b.start - pairs[i][0].end);
+    const ok = measured.length > 0 && measured.every((m) => m >= scene.want - 30 && m <= scene.want + 150) && all.every((m) => m >= scene.want - 30) && !r.covered;
+    if (!ok) problems.push({ item: 'gap', where: '演出の間', detail: `${scene.label}：${JSON.stringify(r)}` });
+    results.push(`${scene.label}：${ok ? '合格' : '不合格'}（間 ${measured.join('・')}ms／目標${scene.want}ms／間の場：${r.tables.join('・') || '-'}／順番と間：${r.log.map((x, i) => (i ? `[${x.start - r.log[i - 1].end}ms]→` : '') + x.name).join('')}）`);
+  }
+  await page.close();
+  return results;
+}
+
+/**
+ * 操作の案内・カードのやり取りの文・5スキップ（2026-11-01 ユーザー指示）：幅ごとに本物の流れで動かして撮り、
+ * 文が手札・ボタン・場のカード・顔に重なっていないか、見切れていないかを数字で確かめる
+ */
+async function talkCheck(browser, w, h) {
+  const dir = path.join(OUT, 'やり取り', String(w));
+  fs.mkdirSync(dir, { recursive: true });
+  const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
+  await page.goto(BASE);
+  const lines = [];
+  const fail = (where, detail) => problems.push({ item: 'talk', where: `${w}px ${where}`, detail });
+  const start = async (name) => {
+    await page.evaluate((name) => { window.__daifugo.scenario(name); }, name);
+    await page.waitForTimeout(60);
+    await page.evaluate(() => { Math.random = () => 0; window.__daifugo.unfreeze(); });
+  };
+  /** 文が、ほかのものと重なっていないか・画面に収まっているか */
+  const layout = (selector, against) => page.evaluate(({ selector, against }) => {
+    const el = document.querySelector(selector);
+    if (!el) return ['文がない'];
+    const r = el.getBoundingClientRect();
+    const hit = (b) => r.left < b.right && b.left < r.right && r.top < b.bottom && b.top < r.bottom;
+    const out = [];
+    if (r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight) out.push('画面からはみ出す');
+    if (el.scrollWidth > el.clientWidth + 1) out.push('文が見切れる');
+    for (const q of against) for (const b of document.querySelectorAll(q)) if (hit(b.getBoundingClientRect())) { out.push(`${q}に重なる`); break; }
+    // 顔（大きく出す絵の頭の範囲）
+    const art = document.querySelector('img.me-art');
+    if (art?.dataset.head) {
+      const a = art.getBoundingClientRect();
+      const [l, t, x2, b] = art.dataset.head.split(',').map(Number);
+      if (hit({ left: a.left + l * a.width, right: a.left + x2 * a.width, top: a.top + t * a.height, bottom: a.top + b * a.height })) out.push('顔に重なる');
+    }
+    // 一番手前に見えているのが文そのものか（不透明な箱の中に置く文は、箱の下のカードとは重ならない）
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    if (top !== el && !el.contains(top) && !top?.closest('.fx')) out.push('文が隠れている');
+    return out;
+  }, { selector, against });
+  const check = async (where, selector, against, want) => {
+    const text = await page.locator(selector).first().textContent().catch(() => null);
+    if (want && text !== want) fail(where, `文が違う：${text}（正：${want}）`);
+    const bad = await layout(selector, against);
+    if (bad.length) fail(where, bad.join('、'));
+    lines.push(`${where}：${text}：${bad.length ? '不合格 ' + bad.join('、') : '合格'}`);
+  };
+  const shoot = (name) => page.screenshot({ path: path.join(dir, `${name}.png`) });
+  const waitReveal = (text) => page.locator('.reveal-text', { hasText: text }).waitFor({ timeout: 8000 });
+  const GUIDE = '.guide-text';
+  const NEAR = ['.hand', '.actions', '.board .table-cards'];
+  const REVEAL_NEAR = ['.hand', '.actions', '.opp-name', '.opp-count'];
+
+  // 7渡し・10捨ての案内
+  for (const [name, label, want] of [['sevenPass', '7渡し', '渡すカードを選んでください'], ['tenDiscard', '10捨て', '捨てるカードを選んでください']]) {
+    await page.evaluate((name) => { window.__daifugo.scenario(name); }, name);
+    await page.waitForTimeout(60);
+    await check(`${label}の案内`, GUIDE, NEAR, want);
+    await shoot(`01_${label}_案内`);
+  }
+  // CPUから7渡しで受け取る
+  await start('sevenFromCpu');
+  await waitReveal('から受け取りました');
+  await page.waitForTimeout(400);
+  await check('CPUから7渡しで受け取る', '.reveal-text', REVEAL_NEAR, 'キャラ4から受け取りました');
+  await shoot('02_7渡し_受け取り');
+  const hideOk = await page.evaluate(() => { const f = window.__daifugo.fxNow(); return f?.kind === 'reveal' && f.hide.every((c) => !window.__daifugo.shownHand().includes(c)); });
+  if (!hideOk) fail('7渡しの受け取り', '見せている間に手札に出ている');
+
+  // カード交換：自分の階級ごと
+  const NAMES = { 1: '大富豪', 2: '富豪', 3: '貧民', 4: '大貧民' };
+  for (const r of [1, 2]) {
+    await start(`exR${r}`);
+    await page.locator(GUIDE).waitFor({ timeout: 8000 });
+    await check(`${NAMES[r]}の案内`, GUIDE, NEAR, '渡すカードを選んでください');
+    await shoot(`03_${NAMES[r]}_案内`);
+    const count = r === 1 ? 2 : 1;
+    for (let k = 0; k < count; k++) await page.locator('.hand .card').nth(k).click({ position: { x: 10, y: 20 } });
+    await page.locator('[data-act=give]').click();
+    await waitReveal('から受け取りました');
+    await page.waitForTimeout(400);
+    await check(`${NAMES[r]}の受け取り`, '.reveal-text', REVEAL_NEAR, 'キャラ2から受け取りました');
+    await shoot(`04_${NAMES[r]}_受け取り`);
+  }
+  for (const r of [3, 4]) {
+    await start(`exR${r}`);
+    await waitReveal('から受け取りました');
+    await page.waitForTimeout(400);
+    await check(`${NAMES[r]}の受け取り`, '.reveal-text', REVEAL_NEAR, 'キャラ2から受け取りました');
+    await shoot(`04_${NAMES[r]}_受け取り`);
+    await waitReveal('に渡します');
+    await page.waitForTimeout(400);
+    await check(`${NAMES[r]}の渡す文`, '.reveal-text', REVEAL_NEAR, 'このカードをキャラ2に渡します');
+    await shoot(`05_${NAMES[r]}_渡す`);
+  }
+
+  // 5スキップ：飛ばされた人に順番に「スキップ」が出てから番が移る
+  const skipRun = async (name, cards, wantSeats, wantTurn, label, actor, wantMs) => {
+    await start(name);
+    if (cards) {
+      for (const c of cards) await page.locator(`.hand .card[aria-label="${c}"]`).click({ position: { x: 10, y: 20 } });
+      await page.locator('[data-act=play]').click();
+    }
+    const log = await page.evaluate(async ({ ms }) => {
+      const d = window.__daifugo;
+      const t0 = performance.now();
+      const out = [];
+      let prev = '';
+      while (performance.now() - t0 < ms) {
+        const fx = d.fxNow();
+        const seats = [1, 2, 3].filter((i) => document.querySelector(`.opp[data-seat="${i}"] .pass-tag`)?.textContent === 'スキップ');
+        if (document.querySelector('.me-label .pass-tag')?.textContent === 'スキップ') seats.unshift(0);
+        const pass = [...document.querySelectorAll('.pass-tag')].filter((e) => e.textContent === 'パス').length;
+        const glow = [...document.querySelectorAll('.opp.turn')].map((e) => Number(e.dataset.seat));
+        const key = JSON.stringify([fx?.kind === 'skipTag' ? 'skipTag' : fx?.kind === 'band' ? fx.band : fx?.kind ?? null, seats, glow, pass]);
+        if (key !== prev) { out.push({ t: Math.round(performance.now() - t0), fx: fx?.kind === 'band' ? fx.band : fx?.kind ?? null, seats, glow, pass, turn: d.state().turn }); prev = key; }
+        await new Promise((r) => setTimeout(r, 8));
+        if (out.length && seats.length === 0 && out.some((x) => x.seats.length) && !fx) break;
+      }
+      return out;
+    }, { ms: 9000 });
+    const tagged = log.filter((x) => x.fx === 'skipTag');
+    const order = tagged.map((x, i) => x.seats.find((p) => !(tagged[i - 1]?.seats ?? []).includes(p)));
+    const lens = tagged.map((x) => log[log.indexOf(x) + 1].t - x.t);
+    // 出し終わった直後に光っている人が、次の番
+    const after = log[log.indexOf(tagged.at(-1)) + 1];
+    const turn = after.glow[0] ?? 0;
+    lines.push(`${label}：順番 ${order.join('→')}／1人の長さ ${lens.join('・')}ms／そのあとの番 ${turn}`);
+    if (JSON.stringify(order) !== JSON.stringify(wantSeats)) fail(label, `スキップの順番が違う：${JSON.stringify(log)}`);
+    if (log.some((x) => x.pass > 0)) fail(label, `「パス」が出た：${JSON.stringify(log)}`);
+    if (turn !== wantTurn) fail(label, `番が違う：${turn}（正：${wantTurn}）`);
+    // 「スキップ」を出している間は、番を出した人のままにする
+    if (tagged.some((x) => JSON.stringify(x.glow) !== JSON.stringify(actor ? [actor] : []))) fail(label, `出している途中で番が移った：${JSON.stringify(log)}`);
+    if (lens.some((ms) => ms < wantMs - 30 || ms > wantMs + 100)) fail(label, `長さが違う：${lens.join('・')}ms（正：${wantMs}ms）`);
+  };
+  await skipRun('skip1', ['♥5'], [1], 2, '自分が1人飛ばし', 0, 700);
+  await skipRun('skip1Cpu', null, [2], 3, 'CPUが1人飛ばし', 1, 700);
+  await skipRun('skipAll', ['♠5', '♥5', '♦5'], [1, 2, 3], 0, '自分が全員飛ばし', 0, 700);
+  await skipRun('skipAllCpu', null, [2, 3, 0], 1, 'CPUが全員飛ばし', 1, 700);
+  await skipRun('skipFfwd', null, [2], 3, '早送りで1人飛ばし', 1, 350);
+  // 撮影：全員飛ばしの途中（2人目が出たところ）と、出し終わる直前（全員）。1人飛ばしは「スキップ」が出たところ
+  for (const [name, cards, n, file] of [
+    ['skip1', ['♥5'], 1, '06_自分が1人飛ばし'], ['skip1Cpu', null, 1, '07_CPUが1人飛ばし'],
+    ['skipAll', ['♠5', '♥5', '♦5'], 2, '08_自分が全員飛ばし_途中'], ['skipAll', ['♠5', '♥5', '♦5'], 3, '09_自分が全員飛ばし_全員'],
+    ['skipAllCpu', null, 3, '10_CPUが全員飛ばし_全員'],
+  ]) {
+    await start(name);
+    if (cards) {
+      for (const c of cards) await page.locator(`.hand .card[aria-label="${c}"]`).click({ position: { x: 10, y: 20 } });
+      await page.locator('[data-act=play]').click();
+    }
+    await page.waitForFunction((n) => document.querySelectorAll('.pass-tag').length >= n, n, { polling: 8, timeout: 9000 });
+    for (const sel of ['.opp-status .pass-tag', '.me-label .pass-tag']) {
+      const bad = await page.evaluate((sel) => [...document.querySelectorAll(sel)].filter((e) => { const r = e.getBoundingClientRect(); return r.left < 0 || r.right > innerWidth || e.scrollWidth > e.clientWidth + 1; }).length, sel);
+      if (bad) fail(file, `「スキップ」が見切れる（${sel}）`);
+    }
+    const tagHit = await page.evaluate(() => {
+      const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      const others = [...document.querySelectorAll('.hand, .actions, .board .table-cards, .opp .avatar, .opp-count')].map((e) => e.getBoundingClientRect());
+      return [...document.querySelectorAll('.pass-tag')].filter((e) => others.some((o) => hit(e.getBoundingClientRect(), o))).length;
+    });
+    if (tagHit) fail(file, '「スキップ」が手札・ボタン・場のカード・アイコンに重なる');
+    await shoot(file);
+  }
+  await page.close();
+  return lines;
 }
 
 /**
@@ -707,6 +954,10 @@ const browser = await chromium.launch({ executablePath: exe(), headless: true })
 fs.rmSync(OUT, { recursive: true, force: true });
 if (!process.env.ONLY_PLAY) for (const [w, h] of SIZES) await screensFor(browser, w, h);
 const eight = await eightOrder(browser);
+const gaps = await gapCheck(browser);
+gaps.forEach((g) => console.log(g));
+for (const [w, h] of SIZES.filter(([w]) => w < 500)) (await talkCheck(browser, w, h)).forEach((l) => console.log(`${w}px ${l}`));
+for (const p of problems.filter((p) => p.item === 'talk')) console.log(`不合格 ${p.where}：${p.detail}`);
 const ffwd = await ffwdCheck(browser);
 const deal = await dealCheck(browser);
 const play = await playThrough(browser);

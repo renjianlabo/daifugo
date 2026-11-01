@@ -57,6 +57,8 @@ export interface SavedGame {
   state: State;
   character: number;
   level: Level;
+  /** 5スキップで飛ばされている人（「パス」と区別して出すため） */
+  skipped?: number[];
 }
 
 /** 保存できたら true。出来事の記録（events）は演出にしか使わないので残さない */

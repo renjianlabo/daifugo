@@ -213,6 +213,8 @@ h1, p { margin: 0; }
   height: 38px; display: flex; align-items: center;
 }
 .me-label .pass-tag { margin-left: 2px; }
+/* 操作の案内：手札の上の場所に小さく出す */
+.me-label .guide-text { font-family: var(--font-read); font-size: 16px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
 .me-label.off { visibility: hidden; }
 .hand {
   /* 手札の列は幅を決めておく（イラストの頭をこの列の左に収めるため） */
@@ -356,6 +358,8 @@ h1, p { margin: 0; }
 .reveal-box .card { --cw: 54px; }
 @media (max-height: 760px) { .reveal-box .card { --cw: 44px; } }
 .reveal-box.give .table-cards { animation-name: flash-give; }
+/* 手札へ動くカードが文の上を通らないように、文をカードの上に置く */
+.reveal-box.to-me { flex-direction: column-reverse; }
 .reveal-text { font-family: var(--font-deco); font-weight: 800; font-size: 18px; letter-spacing: 0.1em; line-height: 1.3; color: var(--gold-hi); white-space: nowrap; }
 @keyframes flash-bg {
   0% { opacity: 0; }
