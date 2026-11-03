@@ -740,6 +740,99 @@ async function talkCheck(browser, w, h) {
 }
 
 /**
+ * 描き直し（画面の大きさが変わったときなど）で、動きが最初から出し直されない（2026-11-03 ユーザー報告：順位のカットイン・帯で同じものが2回続けて出た）。
+ * 動きのある場面すべてで、途中で描き直し、どの動きも前より戻っていない（始まってからの時間が減っていない）ことを確かめる
+ */
+async function rerenderCheck(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  const r = await page.evaluate(async () => {
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const d = window.__daifugo;
+    // 動きごとの、始まってからの時間（ずらした分も含む）
+    const anims = () => Object.fromEntries(document.getAnimations().filter((a) => a.animationName).map((a) => [a.animationName, Math.round(a.currentTime - a.effect.getTiming().delay)]));
+    const until = async (f, ms = 40000) => { const t = performance.now(); while (!f() && performance.now() - t < ms) await w(4); return !!f(); };
+    const out = {};
+    const probe = async (label, wait) => {
+      await w(wait);
+      const before = anims();
+      window.dispatchEvent(new Event('resize'));
+      await w(16);
+      const after = anims();
+      const back = Object.keys(after).filter((k) => before[k] === undefined || after[k] < before[k] - 5);
+      out[label] = { before, after, ok: back.length === 0 && Object.keys(before).length > 0 };
+    };
+    d.scenario('ffwdRun'); await w(50); d.unfreeze();
+    if (await until(() => /富豪|貧民/.test(document.querySelector('.fx-name')?.textContent ?? ''))) await probe('順位のカットイン', 100);
+    d.scenario('eightCpu'); await w(50); d.unfreeze();
+    if (await until(() => d.fxNow()?.band === 'eight')) await probe('帯だけ（8切り）', 100);
+    d.scenario('sevenFromCpu'); await w(50); d.unfreeze();
+    if (await until(() => d.fxNow()?.kind === 'reveal')) await probe('受け取ったカードと文', 600);
+    d.scenario('ffwdRun'); await w(50); d.unfreeze();
+    if (await until(() => document.querySelector('.flash'))) await probe('カードの動き（7渡し・10捨て）', 400);
+    // 本物の流れで対戦を始める：回戦の帯と配る
+    d.scenario('quit'); await w(30);
+    document.querySelector('[data-act=quitYes]')?.click(); await w(30);
+    for (const a of ['newGame', 'newGameYes', 'toSelect', 'start']) { document.querySelector(`[data-act=${a}]`)?.click(); await w(60); }
+    if (await until(() => document.querySelector('.fxband.round'))) await probe('回戦の帯', 300);
+    if (await until(() => document.querySelector('.fx.deal'))) await probe('配る', 900);
+    await until(() => !document.querySelector('.fx.deal'), 6000);
+    const shown = [...document.querySelectorAll('.opp-count')].map((e) => e.textContent).join(',');
+    const real = d.state().hands.slice(1).map((n) => n + '枚').join(',');
+    out['配り終わりのCPUの枚数'] = { before: { 表示: shown }, after: { 本当: real }, ok: shown === real };
+    return out;
+  });
+  const lines = [];
+  for (const want of ['順位のカットイン', '帯だけ（8切り）', '受け取ったカードと文', 'カードの動き（7渡し・10捨て）', '回戦の帯', '配る', '配り終わりのCPUの枚数']) {
+    const v = r[want];
+    if (!v?.ok) problems.push({ item: 'rerender', where: `描き直し：${want}`, detail: JSON.stringify(v ?? '場面が出なかった') });
+    lines.push(`${want}：${v?.ok ? '合格' : '不合格'}（前 ${JSON.stringify(v?.before)} → 後 ${JSON.stringify(v?.after)}）`);
+  }
+  await page.close();
+  return lines;
+}
+
+/**
+ * 1回のカードで上がるとき、同じキャラの絵の演出は順位の1回だけ（2026-11-03 ユーザー報告）。
+ * ジョーカー1枚で上がる・9の4枚（革命）で上がる場面で、出た帯を順に記録する
+ */
+async function mergeCheck(browser) {
+  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  await page.goto(BASE);
+  const lines = [];
+  for (const [name, cards, label] of [['jokerFinish', ['JK'], 'ジョーカー1枚で上がる'], ['revFinish', ['♠9', '♥9', '♦9', '♣9'], '9の4枚（革命）で上がる']]) {
+    const bands = await page.evaluate(async ({ name, cards }) => {
+      const w = (ms) => new Promise((r) => setTimeout(r, ms));
+      const d = window.__daifugo;
+      d.scenario(name);
+      await w(50);
+      d.unfreeze();
+      await w(30);
+      for (const c of cards) {
+        [...document.querySelectorAll('.hand .card')].find((e) => e.getAttribute('aria-label') === c).click();
+        await w(5);
+      }
+      document.querySelector('[data-act=play]').click();
+      const seen = [];
+      let last = null;
+      const t0 = performance.now();
+      while (performance.now() - t0 < 4000) {
+        const fx = d.fxNow();
+        if (fx?.kind === 'band' && fx.id !== last) { seen.push(`${fx.band}:${fx.seat}`); last = fx.id; }
+        await w(5);
+      }
+      return seen;
+    }, { name, cards });
+    const mine = bands.filter((b) => /^(rank|revolution|joker)/.test(b) && b.endsWith(':0'));
+    const ok = mine.length === 1 && mine[0] === 'rank1:0';
+    if (!ok) problems.push({ item: 'merge', where: label, detail: `帯：${bands.join('→')}` });
+    lines.push(`${label}：${ok ? '合格' : '不合格'}（帯 ${bands.join('→') || 'なし'}）`);
+  }
+  await page.close();
+  return lines;
+}
+
+/**
  * 配る演出（2026-10-30 ユーザー指示）：本物の流れで対戦を始め、①回戦の帯 → ②配る（2〜3秒）→ ③手札を表示 の順を確かめる。
  * 配っている間は手札が見えず、カード・ボタンの場所を押しても下に届かず、暗いカードも出ない
  */
@@ -956,6 +1049,8 @@ if (!process.env.ONLY_PLAY) for (const [w, h] of SIZES) await screensFor(browser
 const eight = await eightOrder(browser);
 const gaps = await gapCheck(browser);
 gaps.forEach((g) => console.log(g));
+(await rerenderCheck(browser)).forEach((l) => console.log(`描き直し ${l}`));
+(await mergeCheck(browser)).forEach((l) => console.log(`上がりの演出 ${l}`));
 for (const [w, h] of SIZES.filter(([w]) => w < 500)) (await talkCheck(browser, w, h)).forEach((l) => console.log(`${w}px ${l}`));
 for (const p of problems.filter((p) => p.item === 'talk')) console.log(`不合格 ${p.where}：${p.detail}`);
 const ffwd = await ffwdCheck(browser);

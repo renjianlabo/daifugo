@@ -202,10 +202,14 @@ class GameController {
       const f = this.describe(s.events[this.eventIdx]);
       if (f) shown.push(f);
     }
-    // ジョーカーで革命したときは、絵の演出を1回にする（革命を出す）
+    // 1回のカードで同じキャラの絵の演出が続くときは、1回にする（2026-11-03 ユーザー報告：順位のカットインで同じキャラが2回続けて出た）。
+    // 順位 ＞ 革命 ＞ ジョーカー の順に残す（順位は結果なので必ず見せる。革命は「革命中」の札でも分かる）
     const added = this.fxQueue.slice(queued);
-    const rev = added.find((f): f is BandFx => f.kind === 'band' && f.band === 'revolution');
-    if (rev) this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !(f.kind === 'band' && f.band === 'joker' && f.char === rev.char))];
+    const charsOf = (test: (b: BandKind) => boolean) => new Set(added.flatMap((f) => (f.kind === 'band' && test(f.band) ? [f.char] : [])));
+    const ranked = charsOf((b) => b.startsWith('rank'));
+    const revved = charsOf((b) => b === 'revolution');
+    const drop = (f: Fx) => f.kind === 'band' && ((f.band === 'revolution' && ranked.has(f.char)) || (f.band === 'joker' && (ranked.has(f.char) || revved.has(f.char))));
+    this.fxQueue = [...this.fxQueue.slice(0, queued), ...added.filter((f) => !drop(f))];
     if (!shown.length) return;
     // 1回に2つ以上（カード交換）のときは、まとめて見せて消すだけにする
     const flash = shown.length === 1 ? shown[0] : { cards: shown.flatMap((f) => f.cards), move: 'none' as const, from: null, to: null };
@@ -740,6 +744,10 @@ export function startApp(root: HTMLElement) {
   // 検査用（開発サーバーのときだけ）：決まった場面を作る・待ち時間をなくす
   if (import.meta.env.DEV) {
     fastMode = new URLSearchParams(location.search).has('fast');
+    // 演出ごとの番号（同じ演出が2回出ていないかを見分ける検査用）
+    const fxIds = new WeakMap<Fx, number>();
+    let fxCount = 0;
+    const fxId = (fx: Fx) => fxIds.get(fx) ?? (fxIds.set(fx, ++fxCount), fxCount);
     (window as unknown as { __daifugo: unknown }).__daifugo = {
       scenario,
       // 場面を作ったあと、止めていた進行を動かす（演出の順番を確かめる検査用）
@@ -753,7 +761,7 @@ export function startApp(root: HTMLElement) {
         nextRound(s);
         return { html: finalView(s, [me, ...CHARACTERS.filter((c) => c.id !== me.id)]), order: s.finalOrder };
       },
-      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide, text: game.fx.text } : game.fx.kind === 'skipTag' ? { kind: 'skipTag', player: game.fx.player } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band } : { kind: game.fx.kind }),
+      fxNow: () => game?.fx && (game.fx.kind === 'reveal' ? { kind: 'reveal', to: game.fx.to, cards: game.fx.cards, hide: game.fx.hide, text: game.fx.text } : game.fx.kind === 'skipTag' ? { kind: 'skipTag', player: game.fx.player } : game.fx.kind === 'band' ? { kind: 'band', band: game.fx.band, seat: game.fx.char ? game.seats.indexOf(game.fx.char) : null, id: fxId(game.fx) } : { kind: game.fx.kind }),
       hand: () => game ? [...game.s.hands[0]] : [],
       // 出したのに一度も場に描かれなかったカード（あれば不具合）と、出した回数
       unseenPlays: () => ({ plays: tableLog.played.length, unseen: tableLog.played.filter((k) => !tableLog.drawn.has(k)) }),
@@ -886,6 +894,15 @@ export function startApp(root: HTMLElement) {
         s.hands[who] = mine;
         s.table = [{ player: 3, play: interpret(threes)[0], effRank: 3, effSuitKey: null }];
         Object.assign(s, { lastPlayer: 3, turn: who, lockSuit: null, lockNum: false });
+        break;
+      }
+      case 'jokerFinish': case 'revFinish': {
+        // 1回のカードで上がる：ジョーカー1枚、または9の4枚（革命）。絵の演出が順位の1回だけになるかを確かめる
+        const mine = name === 'jokerFinish' ? [JOKER] : (['S', 'H', 'D', 'C'] as const).map((x) => cardId(x, 9));
+        s.hands = s.hands.map((h) => h.filter((c) => !mine.includes(c)));
+        s.discard.push(...s.hands[0]);
+        s.hands[0] = mine;
+        Object.assign(s, { turn: 0, table: [], lastPlayer: null, lockSuit: null, lockNum: false });
         break;
       }
       case 'stack15': case 'stack16': case 'stack17': case 'stack18': case 'stack19': case 'stack21': case 'stack24': {
@@ -1496,10 +1513,12 @@ function fxView(fx: Fx): string {
   if (fx.kind === 'deal') return dealView(fx);
   const art = fx.pose !== null && fx.char ? artImg(fx.char, fx.pose, 'fx-art') : '';
   const icon = art || !fx.char ? '' : avatarSmall(fx.char);
-  // 回戦の始めの帯は、左から入って右へ抜ける（全体の長さ --ms、描き直したときは --delay で途中から）
-  const round = fx.band === 'round' ? ` style="--ms: ${ROUND_MS}ms; --delay: -${Math.round(performance.now() - (fx.start ?? performance.now()))}ms"` : '';
+  // 描き直したときは --delay で動きを途中から続ける（最初から出し直すと、同じ演出が2回出たように見える）。
+  // 回戦の始めの帯は、左から入って右へ抜ける（全体の長さ --ms）
+  const elapsed = Math.round(performance.now() - (fx.start ?? performance.now()));
+  const style = `--delay: -${elapsed}ms${fx.band === 'round' ? `; --ms: ${ROUND_MS}ms` : ''}`;
   return `
-  <div class="fx ${art ? 'cutin' : 'band-only'} ${fx.hold ? 'hold' : ''}" data-act="fxSkip" role="status"${round}>
+  <div class="fx ${art ? 'cutin' : 'band-only'} ${fx.hold ? 'hold' : ''}" data-act="fxSkip" role="status" style="${style}">
     <span class="fx-hint">タップでとばす</span>
     <div class="fx-group">
       <div class="fxband ${fx.band} ${icon ? 'has-icon' : ''}">${icon}<span class="fx-name">${fx.name}</span></div>
@@ -1535,7 +1554,7 @@ function dealView(fx: DealFx): string {
 function revealView(fx: RevealFx): string {
   const elapsed = Math.round(performance.now() - (fx.start ?? performance.now()));
   return `
-  <div class="fx reveal" data-act="fxSkip" role="status">
+  <div class="fx reveal" data-act="fxSkip" role="status" style="--delay: -${elapsed}ms">
     <span class="fx-hint">タップでとばす</span>
     <div class="reveal-box ${fx.move} ${fx.to === HUMAN ? 'to-me' : ''}" style="--delay: -${elapsed}ms; --ms: ${fx.ms}ms" data-to="${fx.to ?? ''}" aria-hidden="true">
       <div class="table-cards">${fx.cards.map((c) => cardFace(c, { big: true })).join('')}</div>
